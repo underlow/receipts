@@ -22,10 +22,11 @@
 
 ## Authentication & Security
 4. **Implement OAuth2 login flow**
-    - Configure Spring Security for Google OAuth2.
-    - Define public routes (login, static) and secured routes (all others).
-    - Persist minimal user profile (email, name) on first login.
-    - Log each login event with timestamp and user ID.
+    - ✅Configure Spring Security for Google OAuth2.
+    - ✅Define public routes (login, static) and secured routes (all others).
+    - ✅Persist minimal user profile (email, name) on first login.
+    - ✅Log each login event with timestamp and user ID.
+    - ✅implement a minimal login web page 
 
 5. **Audit logging framework**
     - Add an interceptor or aspect to log all create/update/delete on Receipts, Payments, Service Providers, Attachments.
@@ -169,3 +170,22 @@
 
 35. **Staging deployment job**
     - Automate deployment to a staging environment post-publish, with a health-check validation step.
+
+---
+
+## Database Management
+36. **Replace Spring Data JPA with Spring Data JDBC and integrate Liquibase**
+    - ✅Update `build.gradle.kts` to include `liquibase-core`.
+    - ✅Adjust Model Classes (`User.kt`, `LoginEvent.kt`) for JDBC compatibility.
+    - ✅Configure Liquibase in `application.yaml` and `application-test.yaml`.
+    - ✅Create Liquibase Changelog Files (`db.changelog-master.yaml` and `001-initial-schema.yaml`).
+    - ✅Remove `schema.sql` for the main application.
+    - ✅Rewrote Liquibase changelog from YAML to SQL.
+37. **Rework repositories to use JdbcTemplate**
+    - ✅Modified `UserRepository` and `LoginEventRepository` interfaces.
+    - ✅Created `UserRepositoryImpl` and `LoginEventRepositoryImpl` using `JdbcTemplate`.
+    - ✅Removed `@Repository` annotations from implementation classes.
+    - ✅Removed `@Table` and `@Id` annotations from model classes.
+    - ✅Updated `build.gradle.kts` to use `spring-boot-starter-jdbc`.
+    - ✅Created `JdbcConfig` to define repository beans.
+    - ✅Configured `ReceiptApplication` and `ReceiptApplicationTests` to import `JdbcConfig`.

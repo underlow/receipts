@@ -12,7 +12,7 @@
 
 ## Writing code.
 
-Before writing code
+- try to use immutable data structures when possible
 
 ## Planning
 

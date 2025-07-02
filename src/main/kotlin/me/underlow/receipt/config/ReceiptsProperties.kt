@@ -6,11 +6,9 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties(prefix = "receipts")
 data class ReceiptsProperties(
-    val inboxPath: String = "/data/inbox",
-    val attachmentsPath: String = "/data/attachments",
-    val openaiApiKey: String? = null,
-    val claudeApiKey: String? = null,
-    val googleAiApiKey: String? = null,
-    val googleClientId: String? = null,
-    val googleClientSecret: String? = null,
+    var inboxPath: String = "/data/inbox",
+    var attachmentsPath: String = "/data/attachments",
+    var openaiApiKey: String? = null,
+    var claudeApiKey: String? = null,
+    var googleAiApiKey: String? = null,
     )
