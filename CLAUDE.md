@@ -3,8 +3,7 @@
 
 # Bash commands
 
-- ./gradlew desktopTest: Run desktop tests
-- ./gradlew desktopTest: Run unit tests
+- ./gradlew test: Run unit tests
 
 ## Documentation
 
