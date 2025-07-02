@@ -49,11 +49,18 @@
 ## Core Domain Model
 
 6. **Define domain entities**
-    - Create model classes for `ServiceProvider`, `PaymentMethod`, `Receipt`, `Payment`, `Attachment`.
+    - Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive
+    - Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER)
+    - Create `Receipt` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
+    - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, isRecurrent, receiptId, userId, notes
+    - Create `Attachment` entity with fields: id, paymentId, filename, filePath, uploadDate, comment, userId
+    - Define relationships: Receipt -> User, Payment -> ServiceProvider/PaymentMethod/Receipt/User, Attachment -> Payment/User
+    - Add validation annotations for required fields and constraints
+    - Ensure all entities are compatible with Spring Data JDBC (no JPA annotations)
 
 7. **Implement repository layer**
     - Define repository interfaces for each entity.
-    - Add custom queries for filtering by provider, date ranges, payment status, recurrence.
+    - Add basic CRUD queries.
 
 ---
 
