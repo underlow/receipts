@@ -28,16 +28,28 @@
     - ✅Log each login event with timestamp and user ID.
     - ✅implement a minimal login web page 
 
-5. **Audit logging framework**
-    - Add an interceptor or aspect to log all create/update/delete on Receipts, Payments, Service Providers, Attachments.
-    - Store logs with: user ID, entity type, operation, timestamp, before/after data.
+## Database Management
 
----
+36. **Replace Spring Data JPA with Spring Data JDBC and integrate Liquibase**
+    - ✅Update `build.gradle.kts` to include `liquibase-core`.
+    - ✅Adjust Model Classes (`User.kt`, `LoginEvent.kt`) for JDBC compatibility.
+    - ✅Configure Liquibase in `application.yaml` and `application-test.yaml`.
+    - ✅Create Liquibase Changelog Files (`db.changelog-master.yaml` and `001-initial-schema.yaml`).
+    - ✅Remove `schema.sql` for the main application.
+    - ✅Rewrote Liquibase changelog from YAML to SQL.
+37. **Rework repositories to use JdbcTemplate**
+    - ✅Modified `UserRepository` and `LoginEventRepository` interfaces.
+    - ✅Created `UserRepositoryImpl` and `LoginEventRepositoryImpl` using `JdbcTemplate`.
+    - ✅Removed `@Repository` annotations from implementation classes.
+    - ✅Removed `@Table` and `@Id` annotations from model classes.
+    - ✅Updated `build.gradle.kts` to use `spring-boot-starter-jdbc`.
+    - ✅Created `JdbcConfig` to define repository beans.
+    - ✅Configured `ReceiptApplication` and `ReceiptApplicationTests` to import `JdbcConfig`.
 
 ## Core Domain Model
+
 6. **Define domain entities**
     - Create model classes for `ServiceProvider`, `PaymentMethod`, `Receipt`, `Payment`, `Attachment`.
-    - Annotate JPA relationships (e.g. `@OneToMany`, `@ManyToOne`).
 
 7. **Implement repository layer**
     - Define repository interfaces for each entity.
@@ -173,19 +185,8 @@
 
 ---
 
-## Database Management
-36. **Replace Spring Data JPA with Spring Data JDBC and integrate Liquibase**
-    - ✅Update `build.gradle.kts` to include `liquibase-core`.
-    - ✅Adjust Model Classes (`User.kt`, `LoginEvent.kt`) for JDBC compatibility.
-    - ✅Configure Liquibase in `application.yaml` and `application-test.yaml`.
-    - ✅Create Liquibase Changelog Files (`db.changelog-master.yaml` and `001-initial-schema.yaml`).
-    - ✅Remove `schema.sql` for the main application.
-    - ✅Rewrote Liquibase changelog from YAML to SQL.
-37. **Rework repositories to use JdbcTemplate**
-    - ✅Modified `UserRepository` and `LoginEventRepository` interfaces.
-    - ✅Created `UserRepositoryImpl` and `LoginEventRepositoryImpl` using `JdbcTemplate`.
-    - ✅Removed `@Repository` annotations from implementation classes.
-    - ✅Removed `@Table` and `@Id` annotations from model classes.
-    - ✅Updated `build.gradle.kts` to use `spring-boot-starter-jdbc`.
-    - ✅Created `JdbcConfig` to define repository beans.
-    - ✅Configured `ReceiptApplication` and `ReceiptApplicationTests` to import `JdbcConfig`.
+5. **Audit logging framework**
+    - Add an interceptor or aspect to log all create/update/delete on Receipts, Payments, Service Providers, Attachments.
+    - Store logs with: user ID, entity type, operation, timestamp, before/after data.
+
+

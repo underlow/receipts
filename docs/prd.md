@@ -24,12 +24,6 @@ Enable individuals and families to digitize, review, and manage household (and o
 - **Adoption**: 80% of users schedule at least one recurring payment tab
 - **Retention**: 70% monthly active users after 3 months
 
-## 4. Stakeholders & Roles
-- **Product Owner**: Defines vision & prioritizes features
-- **Engineering Lead**: Oversees architecture & implementation
-- **QA Lead**: Develops test plans & verifies acceptance
-- **End Users**: Individual household members & family heads
-
 ## 5. User Personas
 | Persona                    | Description                                      | Goals                                             |
 |----------------------------|--------------------------------------------------|---------------------------------------------------|
