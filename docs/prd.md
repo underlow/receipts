@@ -10,7 +10,7 @@
 Enable individuals and families to digitize, review, and manage household (and other) expenses via receipt images, automated OCR extraction, manual approval, and rich reporting.
 
 **Scope**
-- Receipt ingestion (watch folder + web UI)
+- Bill ingestion (watch folder + web UI)
 - OCR via OpenAI, Claude, Google AI
 - Manual review & approval
 - Payment record management (one-off & recurring)
@@ -31,7 +31,7 @@ Enable individuals and families to digitize, review, and manage household (and o
 | Family Head                | Oversees family finances                         | Ensure all recurring bills are paid on time       |
 
 ## 6. User Scenarios & Stories
-1. **Ingest Receipt**
+1. **Ingest Bill**
     - *As a user*, I want to drop my receipt into a watched folder or upload via UI so that I don’t have to manually enter data.
 2. **Review Extraction**
     - *As a user*, I want to edit or approve OCR-extracted data to ensure accuracy before payment.
@@ -46,7 +46,7 @@ Enable individuals and families to digitize, review, and manage household (and o
 
 ## 7. Functional Requirements
 
-### 7.1 Receipt Ingestion & Inbox
+### 7.1 Bill Ingestion & Inbox
 - **Folder Watcher**
     - Poll a configurable path (e.g. `/data/inbox`) every 30 s
     - Supported file types: `.jpg`, `.png`, `.pdf`
@@ -65,7 +65,7 @@ Enable individuals and families to digitize, review, and manage household (and o
     2. Response JSON parsed into fields
     3. Guess `serviceProvider`; flag ambiguous
 
-### 7.3 Receipt Review & Approval
+### 7.3 Bill Review & Approval
 - **Inbox List View**
     - Columns: Thumbnail, Filename, UploadedAt, Provider (if guessed), Status
     - Click row opens Detail View
@@ -216,7 +216,7 @@ Browser
 
 ## 12. Acceptance Criteria & Test Cases
 
-### 12.1 Receipt Ingestion
+### 12.1 Bill Ingestion
 - Drop a JPEG into watch folder → appears in Inbox within 30 s
 - Upload via UI → success toast + new row
 

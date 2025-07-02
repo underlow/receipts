@@ -51,10 +51,10 @@
 6. **Define domain entities**
     - Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive
     - Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER)
-    - Create `Receipt` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
+    - Create `Bill` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
     - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, isRecurrent, receiptId, userId, notes
     - Create `Attachment` entity with fields: id, paymentId, filename, filePath, uploadDate, comment, userId
-    - Define relationships: Receipt -> User, Payment -> ServiceProvider/PaymentMethod/Receipt/User, Attachment -> Payment/User
+    - Define relationships: Bill -> User, Payment -> ServiceProvider/PaymentMethod/Bill/User, Attachment -> Payment/User
     - Add validation annotations for required fields and constraints
     - Ensure all entities are compatible with Spring Data JDBC (no JPA annotations)
 
@@ -68,11 +68,11 @@
 8. **Folder-watcher service**
     - Develop a scheduled task that polls the inbox directory every 30 seconds.
     - Detect new files (by filename or checksum) and move to app storage.
-    - Create a `Receipt` entity in “Pending” status with file metadata.
+    - Create a `Bill` entity in “Pending” status with file metadata.
 
 9. **Web-UI upload endpoint**
     - Build a multipart upload REST endpoint.
-    - On upload, save file to the same storage area and create a matching `Receipt` record.
+    - On upload, save file to the same storage area and create a matching `Bill` record.
     - Return success/failure feedback to the user.
 
 ---
@@ -86,7 +86,7 @@
     - Each bean handles authentication with its API key and parses the engine’s JSON response into the common format.
 
 12. **Dispatch logic**
-    - Upon `Receipt` creation, invoke the selected engine bean.
+    - Upon `Bill` creation, invoke the selected engine bean.
     - Persist raw JSON and extract core fields (provider guess, amount, dates).
     - Flag ambiguous or missing provider info for manual review.
 
@@ -96,7 +96,7 @@
 13. **Inbox list page**
     - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge.
 
-14. **Receipt detail view**
+14. **Bill detail view**
     - Design a split-pane template:
         - **Left pane**: zoomable receipt image viewer
         - **Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
@@ -106,7 +106,7 @@
 
 ## Payments Module
 15. **Approve-to-Payment flow**
-    - In controller, map approved `Receipt` data into a new `Payment` entity, linking back to the original receipt.
+    - In controller, map approved `Bill` data into a new `Payment` entity, linking back to the original receipt.
 
 16. **Payments table view**
     - Build an Excel-style grid with sortable columns: Provider, Method, Amount, Currency, Invoice Date, Payment Date, Recurrent
@@ -193,7 +193,7 @@
 ---
 
 5. **Audit logging framework**
-    - Add an interceptor or aspect to log all create/update/delete on Receipts, Payments, Service Providers, Attachments.
+    - Add an interceptor or aspect to log all create/update/delete on Bills, Payments, Service Providers, Attachments.
     - Store logs with: user ID, entity type, operation, timestamp, before/after data.
 
 
