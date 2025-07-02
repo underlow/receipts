@@ -19,7 +19,7 @@ This document provides a high-level overview of the system architecture for the 
     - Authentication (OAuth2 with Google)
     - Receipt and Bill ingestion API (watch folder + file upload endpoints)
     - OCR orchestration (dispatch to selected AI engine)
-    - CRUD operations for Bills, Payments, Service Providers, Attachments
+    - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
     - Settings management (OCR keys, folder paths)
     - API endpoints for table data and exports
 
@@ -35,10 +35,24 @@ This document provides a high-level overview of the system architecture for the 
 
 ### 2.4 Database
 - **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
-- **Schema**: Entities for User, LoginEvent, ServiceProvider, PaymentMethod, Bill, Receipt, Payment, Attachment
-- **Access Layer**: JdbcTemplate with custom repository implementations
+- **Schema**: Comprehensive domain model with the following entities:
+  - **User Management**: User, LoginEvent
+  - **Core Domain**: ServiceProvider, PaymentMethod, Bill, Receipt, Payment
+  - **Future**: Attachment (planned)
+- **Access Layer**: Spring Data JDBC with JdbcTemplate custom repository implementations
 - **Migration**: Liquibase for schema versioning and database migrations
+- **Validation**: Jakarta Bean Validation for entity constraints
 - **Backup**: Scheduled SQL dumps
+
+#### 2.4.1 Entity Relationships
+- **Users** → LoginEvents (one-to-many)
+- **Users** → Bills (one-to-many) 
+- **Users** → Receipts (one-to-many)
+- **Users** → Payments (one-to-many)
+- **Bills** → Receipts (one-to-many, optional)
+- **Bills** → Payments (one-to-one, optional)
+- **ServiceProviders** → Payments (one-to-many)
+- **PaymentMethods** → Payments (one-to-many)
 
 ### 2.5 File Storage
 - **Location**: Host filesystem within Docker volume
@@ -81,6 +95,7 @@ flowchart LR
 
 3. **Review & Approval**:
     - User edits/extracts data via UI
+    - Bills can be associated with Receipts for better organization
     - On approval, Bill → Payment entry created in `Database`
 
 ## 4. Deployment Topology
@@ -127,6 +142,8 @@ flowchart LR
 | Language          | Kotlin                             |
 | Framework         | Spring Boot + Thymeleaf SSR        |
 | Database          | PostgreSQL (prod), H2 (dev/test)   |
+| ORM/Data Access   | Spring Data JDBC + JdbcTemplate    |
+| Validation        | Jakarta Bean Validation            |
 | OCR Engines       | OpenAI, Claude, Google AI          |
 | Containerization  | Docker Compose / Kubernetes        |
 | CI/CD             | GitHub Actions                     |

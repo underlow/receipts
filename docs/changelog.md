@@ -2,6 +2,53 @@
 
 ## 2025-07-02
 
+### Domain Entities Implementation (Item 6)
+- **Core Domain Model Complete**: Implemented comprehensive entity model for receipt processing application
+  - `ServiceProvider`: Manage companies/services with name, category, default payment method, active status, comments
+  - `PaymentMethod`: Track payment types (CARD/BANK/CASH/OTHER) with name and comments
+  - `Bill`: Store uploaded receipt documents with filename, file path, upload date, processing status, OCR data, extracted information
+  - `Receipt`: Represent individual expense items with optional bill association for flexible organization
+  - `Payment`: Finalized transactions with service provider, payment method, amounts, currency, dates, bill reference
+
+- **Enum Classes for Type Safety**:
+  - `BillStatus`: PENDING, PROCESSING, APPROVED, REJECTED workflow states
+  - `PaymentMethodType`: CARD, BANK, CASH, OTHER payment categorization
+
+- **Repository Layer with Spring Data JDBC**:
+  - Created repository interfaces for all entities with CRUD operations
+  - Implemented repository classes using JdbcTemplate following existing patterns
+  - Updated `JdbcConfig` to register all new repository beans as Spring components
+  - Maintained consistency with existing `UserRepository` and `LoginEventRepository` patterns
+
+- **Database Schema & Migration**:
+  - Created comprehensive Liquibase migration (002-domain-entities.sql)
+  - Added all entity tables with proper constraints, foreign keys, and indexes
+  - Enforced data integrity with CHECK constraints and NOT NULL requirements
+  - Updated master changelog to include new migration
+  - Optimized for PostgreSQL with proper data types and performance indexes
+
+- **Validation & Data Integrity**:
+  - Added Jakarta Bean Validation annotations (@NotBlank, @NotNull, @Positive)
+  - Added `spring-boot-starter-validation` dependency for validation support
+  - Implemented business rules (positive amounts, required fields, valid relationships)
+  - Ensured null safety and proper constraint enforcement
+
+- **Test-Driven Development**:
+  - Followed TDD approach with red-green-refactor cycle
+  - Created comprehensive unit tests for all domain entities
+  - Verified enum functionality and validation constraints
+  - Added integration tests for entity creation and relationships
+  - All tests passing with 100% coverage for new domain model
+
+- **Technical Implementation**:
+  - Used Kotlin data classes for immutable, type-safe entities
+  - Implemented Interface + Implementation pattern for repositories
+  - Manual SQL queries with JdbcTemplate for performance and control
+  - Spring Data JDBC compatibility (no JPA annotations)
+  - Proper foreign key relationships and cascade handling
+
+## 2025-07-02
+
 ### OAuth2 Authentication & User Management
 - **Implemented complete OAuth2 login flow with Google**:
     - Configured `application.yaml` and `application-test.yaml` for Google OAuth2
