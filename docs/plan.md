@@ -4,7 +4,6 @@
 1. **Set up project skeleton**
     - ✅Generate a Kotlin/Spring Boot project (Web, Thymeleaf, Spring Data JDBC, OAuth2 Client).
     - Define package structure: `config`, `controller`, `service`, `repository`, `model`, `security`.
-    - Configure Gradle/Maven with formatting and static-analysis plugins.
 
 2. **Configure Docker environment**
     - Write a `Dockerfile` to containerize the Spring Boot app.
