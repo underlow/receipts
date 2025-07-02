@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    # Will be dynamically configured by TestContainers
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://localhost:{server.port}/login/oauth2/code/google"
+        provider:
+          google:
+            # Will be dynamically configured to point to WireMock
+            user-name-attribute: email
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: TRACE
+    me.underlow.receipt: DEBUG
+    com.codeborne.selenide: DEBUG

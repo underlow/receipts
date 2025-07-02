@@ -38,11 +38,13 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="header" data-testid="dashboard">
         <h1>Receipt Tracker Dashboard</h1>
         <p class="welcome">Welcome! You have successfully logged in.</p>
+        <p>Email: <span data-testid="user-email" th:text="${userEmail}">user@example.com</span></p>
+        <p>Name: <span data-testid="user-name" th:text="${userName}">User Name</span></p>
         <form th:action="@{/logout}" method="post" style="display: inline;">
-            <button type="submit" class="logout-btn">Logout</button>
+            <button type="submit" class="logout-btn" data-testid="logout-button">Logout</button>
         </form>
     </div>
     
