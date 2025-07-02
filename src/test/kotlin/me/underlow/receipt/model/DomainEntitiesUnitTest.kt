@@ -173,4 +173,70 @@ class DomainEntitiesUnitTest {
         assertEquals(BillStatus.APPROVED, BillStatus.valueOf("APPROVED"))
         assertEquals(BillStatus.REJECTED, BillStatus.valueOf("REJECTED"))
     }
+
+    @Test
+    fun `given valid data when creating IncomingFile then should create successfully`() {
+        // Given: Valid incoming file data
+        val filename = "receipt_2024_01_15.pdf"
+        val filePath = "/data/attachments/2024/01/15/receipt_2024_01_15.pdf"
+        val uploadDate = LocalDateTime.now()
+        val status = BillStatus.PENDING
+        val checksum = "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+        val userId = 1L
+
+        // When: IncomingFile is created
+        val incomingFile = IncomingFile(
+            id = null,
+            filename = filename,
+            filePath = filePath,
+            uploadDate = uploadDate,
+            status = status,
+            checksum = checksum,
+            userId = userId
+        )
+
+        // Then: IncomingFile should be created with correct values
+        assertNotNull(incomingFile)
+        assertEquals(filename, incomingFile.filename)
+        assertEquals(filePath, incomingFile.filePath)
+        assertEquals(uploadDate, incomingFile.uploadDate)
+        assertEquals(status, incomingFile.status)
+        assertEquals(checksum, incomingFile.checksum)
+        assertEquals(userId, incomingFile.userId)
+    }
+
+    @Test
+    fun `given IncomingFile with same checksum when comparing then should be considered duplicate`() {
+        // Given: Two IncomingFiles with same checksum but different names
+        val checksum = "duplicate_checksum_test_12345"
+        val userId = 1L
+        
+        val file1 = IncomingFile(
+            id = 1L,
+            filename = "receipt1.pdf",
+            filePath = "/path/to/receipt1.pdf",
+            uploadDate = LocalDateTime.now(),
+            status = BillStatus.PENDING,
+            checksum = checksum,
+            userId = userId
+        )
+        
+        val file2 = IncomingFile(
+            id = 2L,
+            filename = "receipt2.pdf",
+            filePath = "/path/to/receipt2.pdf",
+            uploadDate = LocalDateTime.now(),
+            status = BillStatus.APPROVED,
+            checksum = checksum,
+            userId = userId
+        )
+
+        // When: Comparing checksums
+        val haveSameChecksum = file1.checksum == file2.checksum
+
+        // Then: Files should be considered duplicates based on checksum
+        assertEquals(true, haveSameChecksum)
+        assertEquals(checksum, file1.checksum)
+        assertEquals(checksum, file2.checksum)
+    }
 }

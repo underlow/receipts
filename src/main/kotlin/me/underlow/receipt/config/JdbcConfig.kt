@@ -51,4 +51,9 @@ class JdbcConfig {
     fun paymentRepository(jdbcTemplate: JdbcTemplate): PaymentRepository {
         return PaymentRepositoryImpl(jdbcTemplate)
     }
+
+    @Bean
+    fun incomingFileRepository(jdbcTemplate: JdbcTemplate): IncomingFileRepository {
+        return IncomingFileRepositoryImpl(jdbcTemplate)
+    }
 }
