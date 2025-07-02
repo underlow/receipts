@@ -2,7 +2,7 @@
 
 ## 1. Project Initialization
 1. **Set up project skeleton**
-    - Generate a Kotlin/Spring Boot project (Web, Thymeleaf, Spring Data JPA, OAuth2 Client).
+    - ✅Generate a Kotlin/Spring Boot project (Web, Thymeleaf, Spring Data JDBC, OAuth2 Client).
     - Define package structure: `config`, `controller`, `service`, `repository`, `model`, `security`.
     - Configure Gradle/Maven with formatting and static-analysis plugins.
 
