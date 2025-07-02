@@ -17,6 +17,7 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
             .authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers("/login", "/static/**", "/error").permitAll()
+                    .requestMatchers("/api/files/**").authenticated()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2Login ->
@@ -31,6 +32,10 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
                 logout
                     .logoutSuccessUrl("/login?logout")
                     .permitAll()
+            }
+            .csrf { csrf ->
+                csrf
+                    .ignoringRequestMatchers("/api/files/**")
             }
         return http.build()
     }

@@ -72,10 +72,10 @@
     - ✅Detect new files (by filename or checksum) and move to app storage.
     - ✅Create a `IncomingFile` entity in “Pending” status with file metadata. It will become either bill or receipt after ocr/accept
 
-9. **Web-UI upload endpoint**
-    - Build a multipart upload REST endpoint.
-    - On upload, save file to the same storage area and create a matching `IncomingFile` record.
-    - Return success/failure feedback to the user.
+9. **Web-UI upload endpoint** ✅
+    - ✅Build a multipart upload REST endpoint.
+    - ✅On upload, save file to the same storage area and create a matching `IncomingFile` record.
+    - ✅Return success/failure feedback to the user.
 
 ## Inbox Review & Approval UI
 13. **Inbox list page**
