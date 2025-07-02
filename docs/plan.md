@@ -51,10 +51,11 @@
 6. **Define domain entities**
     - Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive
     - Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER)
-    - Create `Bill` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
-    - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, isRecurrent, receiptId, userId, notes
+    - Create `Receipt` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId, billId (nullable FK to Bill)
+    - Create `Bill` entity with fields: id, userId (representing the aggregated expense, potentially composed of one or more Receipts)
+    - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, isRecurrent, billId, userId, notes
     - Create `Attachment` entity with fields: id, paymentId, filename, filePath, uploadDate, comment, userId
-    - Define relationships: Bill -> User, Payment -> ServiceProvider/PaymentMethod/Bill/User, Attachment -> Payment/User
+    - Define relationships: Receipt -> Bill (one-to-many), Bill -> User, Payment -> ServiceProvider/PaymentMethod/Bill/User, Attachment -> Payment/User
     - Add validation annotations for required fields and constraints
     - Ensure all entities are compatible with Spring Data JDBC (no JPA annotations)
 
@@ -68,11 +69,11 @@
 8. **Folder-watcher service**
     - Develop a scheduled task that polls the inbox directory every 30 seconds.
     - Detect new files (by filename or checksum) and move to app storage.
-    - Create a `Bill` entity in “Pending” status with file metadata.
+    - Create a `Receipt` entity in “Pending” status with file metadata.
 
 9. **Web-UI upload endpoint**
     - Build a multipart upload REST endpoint.
-    - On upload, save file to the same storage area and create a matching `Bill` record.
+    - On upload, save file to the same storage area and create a matching `Receipt` record.
     - Return success/failure feedback to the user.
 
 ---
@@ -86,7 +87,7 @@
     - Each bean handles authentication with its API key and parses the engine’s JSON response into the common format.
 
 12. **Dispatch logic**
-    - Upon `Bill` creation, invoke the selected engine bean.
+    - Upon `Receipt` creation, invoke the selected engine bean.
     - Persist raw JSON and extract core fields (provider guess, amount, dates).
     - Flag ambiguous or missing provider info for manual review.
 
@@ -94,12 +95,16 @@
 
 ## Inbox Review & Approval UI
 13. **Inbox list page**
-    - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge.
+    - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge. This view will primarily display `Receipt`s.
 
-14. **Bill detail view**
-    - Design a split-pane template:
+14. **Receipt/Bill detail view**
+    - Design a split-pane template for `Receipt` detail view:
         - **Left pane**: zoomable receipt image viewer
         - **Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
+    - Add “Associate with Bill” (link this receipt to an existing bill or create a new bill), “Accept as Payment” (approve & convert to Payment for standalone receipts), and “Save Draft” (persist edits) buttons.
+    - Design a split-pane template for `Bill` detail view:
+        - **Left pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
+        - **Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
     - Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
 
 ---

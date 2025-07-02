@@ -17,7 +17,7 @@ This document provides a high-level overview of the system architecture for the 
 - **Rendering**: Thymeleaf for server-side rendering
 - **Responsibilities**:
     - Authentication (OAuth2 with Google)
-    - Bill ingestion API (watch folder + file upload endpoints)
+    - Receipt and Bill ingestion API (watch folder + file upload endpoints)
     - OCR orchestration (dispatch to selected AI engine)
     - CRUD operations for Bills, Payments, Service Providers, Attachments
     - Settings management (OCR keys, folder paths)
@@ -35,7 +35,7 @@ This document provides a high-level overview of the system architecture for the 
 
 ### 2.4 Database
 - **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
-- **Schema**: Entities for User, LoginEvent, ServiceProvider, PaymentMethod, Bill, Payment, Attachment
+- **Schema**: Entities for User, LoginEvent, ServiceProvider, PaymentMethod, Bill, Receipt, Payment, Attachment
 - **Access Layer**: JdbcTemplate with custom repository implementations
 - **Migration**: Liquibase for schema versioning and database migrations
 - **Backup**: Scheduled SQL dumps
@@ -67,10 +67,13 @@ flowchart LR
     BackgroundWorker -->|File Ops| FileStorage
 ```
 
-1. **Bill Ingestion**:
+1. **Receipt/Bill Ingestion**:
     - User uploads via UI or drops into watched folder
     - File saved to `FileStorage`
-    - WebServer enqueues OCR job
+    - WebServer enqueues OCR job for the `Receipt`.
+
+2. **Receipt/Bill Association (New Step)**:
+    - Ingested `Receipt`s can be associated with an existing `Bill` or used to create a new `Bill`.
 
 2. **OCR & Extraction**:
     - WebServer calls external OCR engine

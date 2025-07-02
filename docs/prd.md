@@ -7,12 +7,13 @@
 
 ## 2. Purpose & Scope
 **Purpose**  
-Enable individuals and families to digitize, review, and manage household (and other) expenses via receipt images, automated OCR extraction, manual approval, and rich reporting.
+Enable individuals and families to digitize, review, and manage household (and other) expenses via receipt and bill images, automated OCR extraction, manual approval, and rich reporting.
 
 **Scope**
-- Bill ingestion (watch folder + web UI)
+- Receipt and Bill ingestion (watch folder + web UI)
 - OCR via OpenAI, Claude, Google AI
-- Manual review & approval
+- Manual review & approval for Receipts and Bills
+- Association of Receipts with Bills
 - Payment record management (one-off & recurring)
 - Attachments & comments
 - Reporting & exports (CSV/Excel)
@@ -31,28 +32,32 @@ Enable individuals and families to digitize, review, and manage household (and o
 | Family Head                | Oversees family finances                         | Ensure all recurring bills are paid on time       |
 
 ## 6. User Scenarios & Stories
-1. **Ingest Bill**
-    - *As a user*, I want to drop my receipt into a watched folder or upload via UI so that I don’t have to manually enter data.
+1. **Ingest Receipt/Bill**
+    - *As a user*, I want to drop my receipt or bill into a watched folder or upload via UI so that I don’t have to manually enter data.
 2. **Review Extraction**
-    - *As a user*, I want to edit or approve OCR-extracted data to ensure accuracy before payment.
-3. **Record a Payment**
-    - *As a user*, I want approved receipts to appear in a payments panel where I can mark them as paid later.
-4. **Manage Recurring Bills**
+    - *As a user*, I want to edit or approve OCR-extracted data from receipts or bills to ensure accuracy before payment.
+3. **Associate Receipt with Bill**
+    - *As a user*, I want to associate one or more receipts with a specific bill, or create a new bill from a receipt.
+4. **Record a Payment**
+    - *As a user*, I want approved bills (which may be composed of one or more receipts) to appear in a payments panel where I can mark them as paid later.
+5. **Manage Recurring Bills**
     - *As a user*, I want to create “tabs” per provider so I can see months with missing payments.
-5. **Attach Documents**
+6. **Attach Documents**
     - *As a user*, I want to upload PDFs or images to an existing payment and add comments for context.
-6. **Generate Reports**
+7. **Generate Reports**
     - *As a user*, I want to export monthly and yearly spend by provider to Excel for my records.
 
 ## 7. Functional Requirements
 
-### 7.1 Bill Ingestion & Inbox
+### 7.1 Receipt and Bill Ingestion & Inbox
 - **Folder Watcher**
     - Poll a configurable path (e.g. `/data/inbox`) every 30 s
     - Supported file types: `.jpg`, `.png`, `.pdf`
+    - Ingested files type should be guessed by ocr
 - **Web UI Upload**
     - Drag-and-drop area + “Browse…” button
     - Progress indicator and success/failure toast
+    - Ingested files type should be guessed by ocr
 
 ### 7.2 OCR Processing & Settings
 - **Engines**: OPENAI, CLAUDE, GOOGLE_AI
@@ -65,16 +70,29 @@ Enable individuals and families to digitize, review, and manage household (and o
     2. Response JSON parsed into fields
     3. Guess `serviceProvider`; flag ambiguous
 
-### 7.3 Bill Review & Approval
+### 7.3 Receipt and Bill Review & Approval
 - **Inbox List View**
     - Columns: Thumbnail, Filename, UploadedAt, Provider (if guessed), Status
-    - Click row opens Detail View
-- **Detail View**
+    - Click row opens Detail View for either a Receipt or a Bill.
+- **Receipt Detail View**
     - **Left Pane**: Full-size receipt image (zoomable)
-    - **Right Pane**: Form with fields:
+    - **Right Pane**: Form with OCR-populated fields:
         - Service Provider (autocomplete + icon)
         - Payment Method (dropdown)
         - Amount, Currency
+        - Invoice Date, Payment Date
+        - Recurrent (checkbox)
+        - Custom Provider Fields
+    - Actions:
+        - **Associate with Bill**: Link this receipt to an existing bill or create a new bill.
+        - **Accept as Payment**: Approve and move to Payments (for standalone receipts).
+        - **Save Draft**: Persist edits, remain in Inbox.
+- **Bill Detail View**
+    - **Left Pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
+    - **Right Pane**: Aggregated form fields for the Bill:
+        - Service Provider (autocomplete + icon)
+        - Payment Method (dropdown)
+        - Amount, Currency (aggregated from receipts or manually entered)
         - Invoice Date, Payment Date
         - Recurrent (checkbox)
         - Custom Provider Fields
@@ -128,22 +146,23 @@ Enable individuals and families to digitize, review, and manage household (and o
 
 ## 8. Non-Functional Requirements
 
-| Category        | Requirement                                                      |
-|-----------------|------------------------------------------------------------------|
-| Performance     | Inbox listing ≤ 200 ms; 95th-percentile page load ≤ 1 s           |
-| Scalability     | Support up to 1 M receipts and 100 K payments                    |
-| Security        | OAuth2 via Google; encrypt API keys at rest; soft-delete only     |
-| Reliability     | 99.5% uptime; daily backups of DB & filesystem                   |
-| Maintainability | 80% unit test coverage; modular Spring beans for OCR engines     |
-| Usability       | WCAG AA accessibility; responsive to desktop/tablet              |
+| Category        | Requirement                                                   |
+|-----------------|---------------------------------------------------------------|
+| Performance     | Inbox listing ≤ 200 ms; 95th-percentile page load ≤ 1 s       |
+| Scalability     | Support up to 1 M receipts and bills and 100 K payments       |
+| Security        | OAuth2 via Google; encrypt API keys at rest; soft-delete only |
+| Reliability     | 99.5% uptime; daily backups of DB & filesystem                |
+| Maintainability | 80% unit test coverage; modular Spring beans for OCR engines  |
+| Usability       | WCAG AA accessibility; responsive to desktop/tablet           |
 
 ## 9. Data Model
 
-\`\`\`mermaid
+```mermaid
 erDiagram
 SERVICE_PROVIDER ||--o{ PAYMENT : provides
 PAYMENT_METHOD    ||--o{ PAYMENT : used_by
-RECEIPT           ||--|| PAYMENT : generates
+BILL           ||--o{ PAYMENT : generates
+RECEIPT        ||--o{ BILL : aggregates
 PAYMENT ||--o{ ATTACHMENT : has
 SERVICE_PROVIDER {
 UUID id PK
@@ -162,6 +181,7 @@ Text comments
 }
 RECEIPT {
 UUID id PK
+UUID billId FK
 String filePath
 Timestamp uploadedAt
 Enum ocrEngine
@@ -169,6 +189,9 @@ JSON ocrResult
 Boolean approved
 Timestamp approvedAt
 JSON correctedFields
+}
+BILL {
+UUID id PK
 }
 PAYMENT {
 UUID id PK
@@ -188,7 +211,7 @@ String filePath
 Text comment
 Timestamp uploadedAt
 }
-\`\`\`
+```
 
 ## 10. System Architecture
 
