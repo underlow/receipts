@@ -21,7 +21,7 @@ all docs MUST be updated after each new feature implementation.
   being tested and how
 - do not fake tests
 - do not disable tests
-- to check run both tests commands
+- do not write trivial tests. for example do not test constructors
 
 ## Planning
 
