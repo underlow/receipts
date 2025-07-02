@@ -40,6 +40,7 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 	implementation("org.liquibase:liquibase-core")
 	implementation("org.postgresql:postgresql")
+	implementation("org.apache.pdfbox:pdfbox:3.0.3")
 }
 
 kotlin {
