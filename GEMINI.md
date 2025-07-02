@@ -39,4 +39,11 @@ If you are asked to implement a plan:
    - ask user to check if everything is implemented and if yes mark item as complete in file
    - move to the next item
 
-after implementing a feature update all necessary documentation.
+after implementing a feature update all necessary documentation in ./docs folder.
+
+after implementing a feature update ./docs/changelod.md 
+
+
+## Documentation update. 
+
+if there is a change in plan, feature requirements or anything else always update docs in ./docs folder 

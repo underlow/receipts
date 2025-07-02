@@ -6,17 +6,17 @@
     - Define package structure: `config`, `controller`, `service`, `repository`, `model`, `security`.
 
 2. **Configure Docker environment**
-    - Write a `Dockerfile` to containerize the Spring Boot app.
-    - Create `docker-compose.yml` with services:
+    - ✅Write a `Dockerfile` to containerize the Spring Boot app.
+    - ✅Create `docker-compose.yml` with services:
         - `app` (Kotlin/Spring Boot)
         - `db` (PostgreSQL or SQLite)
-        - Volume mounts for `/data/inbox` and `/data/attachments`.
-    - Pass OAuth client IDs, OCR API keys, folder paths via environment variables.
+        - ✅Volume mounts for `/data/inbox` and `/data/attachments`.
+    - ✅Pass OAuth client IDs, OCR API keys, folder paths via environment variables.
 
 3. **Establish application settings mechanism**
-    - Implement a settings loader that reads from environment variables and encrypted properties.
-    - Define properties for inbox path, attachment path, OCR engines, API keys, and database type.
-    - Bind properties into Spring via `@ConfigurationProperties`.
+    - ✅Implement a settings loader that reads from environment variables and encrypted properties.
+    - ✅Define properties for inbox path, attachment path, OCR engines, API keys, and database type.
+    - ✅Bind properties into Spring via `@ConfigurationProperties`.
 
 ---
 
