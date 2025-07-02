@@ -23,8 +23,9 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
                 oauth2Login
                     .loginPage("/login")
                     .userInfoEndpoint { userInfo ->
-                        userInfo.userService(customOAuth2UserService)
+                        userInfo.oidcUserService(customOAuth2UserService)
                     }
+                    .defaultSuccessUrl("/dashboard", true)
             }
             .logout { logout ->
                 logout

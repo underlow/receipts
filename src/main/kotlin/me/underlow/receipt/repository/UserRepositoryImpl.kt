@@ -25,20 +25,22 @@ class UserRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : UserRepositor
 
     override fun save(user: User): User {
         return if (user.id == null) {
+            // Insert new user - let database handle created_at, only set last_login_at
             val keyHolder = GeneratedKeyHolder()
             jdbcTemplate.update({
                 connection ->
-                val ps = connection.prepareStatement("INSERT INTO users (email, name, created_at, last_login_at) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)
+                val ps = connection.prepareStatement("INSERT INTO users (email, name, last_login_at) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS)
                 ps.setString(1, user.email)
                 ps.setString(2, user.name)
-                ps.setTimestamp(3, java.sql.Timestamp.valueOf(user.createdAt))
-                ps.setTimestamp(4, java.sql.Timestamp.valueOf(user.lastLoginAt))
+                ps.setTimestamp(3, java.sql.Timestamp.valueOf(user.lastLoginAt))
                 ps
             }, keyHolder)
-            user.copy(id = keyHolder.key?.toLong())
+            val generatedId = keyHolder.keyList.firstOrNull()?.get("id") as? Number
+            user.copy(id = generatedId?.toLong())
         } else {
-            jdbcTemplate.update("UPDATE users SET email = ?, name = ?, created_at = ?, last_login_at = ? WHERE id = ?",
-                user.email, user.name, java.sql.Timestamp.valueOf(user.createdAt), java.sql.Timestamp.valueOf(user.lastLoginAt), user.id)
+            // Update existing user - only update last_login_at
+            jdbcTemplate.update("UPDATE users SET last_login_at = ? WHERE id = ?",
+                java.sql.Timestamp.valueOf(user.lastLoginAt), user.id)
             user
         }
     }
