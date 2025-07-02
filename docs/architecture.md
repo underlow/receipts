@@ -34,9 +34,10 @@ This document provides a high-level overview of the system architecture for the 
     4. Web Server processes JSON, persists preliminary data
 
 ### 2.4 Database
-- **Primary**: PostgreSQL (Production), SQLite (Development)
-- **Schema**: Entities for ServiceProvider, PaymentMethod, Receipt, Payment, Attachment
-- **Access Layer**: Spring Data JPA repositories
+- **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
+- **Schema**: Entities for User, LoginEvent, ServiceProvider, PaymentMethod, Receipt, Payment, Attachment
+- **Access Layer**: JdbcTemplate with custom repository implementations
+- **Migration**: Liquibase for schema versioning and database migrations
 - **Backup**: Scheduled SQL dumps
 
 ### 2.5 File Storage
@@ -105,7 +106,9 @@ flowchart LR
 - **Backups**: Automated daily DB dumps and filesystem snapshots
 
 ## 7. Security Considerations
-- **Auth**: OAuth2 via Google; no passwords stored
+- **Auth**: OAuth2/OIDC via Google; no passwords stored
+- **User Management**: Automatic user provisioning on first login
+- **Session Tracking**: Login events logged with timestamps and IP addresses
 - **Encryption**: API keys encrypted at rest
 - **Auditing**: Soft-deletes and action logging for all entities
 - **Network**: TLS termination at ingress/load balancer
@@ -120,7 +123,7 @@ flowchart LR
 |-------------------|------------------------------------|
 | Language          | Kotlin                             |
 | Framework         | Spring Boot + Thymeleaf SSR        |
-| Database          | PostgreSQL (prod), SQLite (dev)    |
+| Database          | PostgreSQL (prod), H2 (dev/test)   |
 | OCR Engines       | OpenAI, Claude, Google AI          |
 | Containerization  | Docker Compose / Kubernetes        |
 | CI/CD             | GitHub Actions                     |
