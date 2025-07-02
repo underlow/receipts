@@ -1,6 +1,6 @@
 # Detailed Development Plan
 
-## 1. Project Initialization
+## Project Initialization
 1. **Set up project skeleton**
     - ✅Generate a Kotlin/Spring Boot project (Web, Thymeleaf, Spring Data JDBC, OAuth2 Client).
     - Define package structure: `config`, `controller`, `service`, `repository`, `model`, `security`.
@@ -20,7 +20,7 @@
 
 ---
 
-## 2. Authentication & Security
+## Authentication & Security
 4. **Implement OAuth2 login flow**
     - Configure Spring Security for Google OAuth2.
     - Define public routes (login, static) and secured routes (all others).
@@ -33,7 +33,7 @@
 
 ---
 
-## 3. Core Domain Model
+## Core Domain Model
 6. **Define domain entities**
     - Create model classes for `ServiceProvider`, `PaymentMethod`, `Receipt`, `Payment`, `Attachment`.
     - Annotate JPA relationships (e.g. `@OneToMany`, `@ManyToOne`).
@@ -44,7 +44,7 @@
 
 ---
 
-## 4. File Ingestion & Inbox
+## File Ingestion & Inbox
 8. **Folder-watcher service**
     - Develop a scheduled task that polls the inbox directory every 30 seconds.
     - Detect new files (by filename or checksum) and move to app storage.
@@ -57,7 +57,7 @@
 
 ---
 
-## 5. OCR Integration
+## OCR Integration
 10. **Define OCR abstraction**
     - Create an `OcrEngine` interface with a method to accept a file and return standardized JSON.
 
@@ -72,7 +72,7 @@
 
 ---
 
-## 6. Inbox Review & Approval UI
+## Inbox Review & Approval UI
 13. **Inbox list page**
     - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge.
 
@@ -84,7 +84,7 @@
 
 ---
 
-## 7. Payments Module
+## Payments Module
 15. **Approve-to-Payment flow**
     - In controller, map approved `Receipt` data into a new `Payment` entity, linking back to the original receipt.
 
@@ -100,7 +100,7 @@
 
 ---
 
-## 8. Recurring Payments & Tabs
+## Recurring Payments & Tabs
 19. **Sidebar tabs component**
     - Develop a dynamic left sidebar listing user-created tabs and a “Create Tab” button.
 
@@ -116,7 +116,7 @@
 
 ---
 
-## 9. Attachments Feature
+## Attachments Feature
 23. **Attachment upload UI**
     - In Payment detail, add “Add Attachment” to open a file picker for PDFs/images.
     - On upload, store file in attachments folder and create an `Attachment` record with a comment field.
@@ -127,7 +127,7 @@
 
 ---
 
-## 10. Reporting & Export
+## Reporting & Export
 25. **Reporting service**
     - Implement a service to aggregate monthly and yearly spend by provider, returning tabular data.
 
@@ -139,7 +139,7 @@
 
 ---
 
-## 11. Settings & Configuration UI
+## Settings & Configuration UI
 28. **General settings page**
     - Build a form for configuring inbox/attachment paths, selecting the active OCR engine, and updating API keys.
 
@@ -148,7 +148,7 @@
 
 ---
 
-## 12. Testing & Validation
+## Testing & Validation
 30. **Unit tests**
     - Write tests for services, controllers, and repositories, mocking external dependencies (OCR APIs, file system).
 
@@ -160,7 +160,7 @@
 
 ---
 
-## 13. CI/CD Pipeline Development
+## CI/CD Pipeline Development
 33. **Build & test workflow**
     - Configure GitHub Actions to compile the project, run tests, and build Docker images on each push to `main`.
 
