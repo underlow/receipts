@@ -13,5 +13,4 @@ data class ReceiptsProperties(
     val googleAiApiKey: String? = null,
     val googleClientId: String? = null,
     val googleClientSecret: String? = null,
-    val databaseType: String = "sqlite" // Default to SQLite for development
-)
+    )

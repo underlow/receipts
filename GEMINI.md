@@ -1,6 +1,7 @@
-- use ./gradlew desktopTest command to run tests
+- use ./gradlew test command to run tests
 - when you implement a new function first write a comment of what it is supposed to do
 - split code into small functions
+- read documentation in ./docs before planning o writing code
 
 ## Writing tests
 

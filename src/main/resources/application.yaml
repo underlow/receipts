@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: receipt
+
+receipts:
+  inboxPath: "inboxPath"
+  attachmentsPath: "attachmentsPath"
+  openaiApiKey: "openaiApiKey"
+  claudeApiKey: "claudeApiKey"
+  googleAiApiKey: "googleAiApiKey"
+  googleClientId: "googleClientId"
+  googleClientSecret: "googleClientSecret"
+  
