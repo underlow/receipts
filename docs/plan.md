@@ -91,7 +91,7 @@
         - **Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
     - Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
 
----8
+---
 
 ## OCR Integration
 10. **Define OCR abstraction**
