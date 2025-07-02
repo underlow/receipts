@@ -2,6 +2,39 @@
 
 ## 2025-07-02
 
+### Folder-Watcher Service Implementation (Item 8)
+- **Automatic File Ingestion**: Implemented background service for seamless receipt/bill file processing
+  - `FileWatcherService`: Scheduled task polling inbox directory every 30 seconds with `@Scheduled` annotation
+  - `FileProcessingService`: Core file operations including checksum calculation, duplicate detection, file movement
+  - `IncomingFile` entity: New data model for files detected in inbox with PENDING status for OCR workflow
+  - `SchedulingConfig`: Spring configuration enabling scheduled task support
+
+- **Smart File Management**:
+  - **Duplicate Detection**: SHA-256 checksum-based duplicate prevention to avoid processing same files
+  - **Organized Storage**: Files stored in format `/attachments/yyyy-MM-dd-filename` with date prefixes
+  - **Automatic Conflict Resolution**: Incremental suffixes (-1, -2, etc.) for filename duplicates
+  - **File Validation**: Support for PDF, JPG, JPEG, PNG, GIF, BMP, TIFF with readability checks
+  - **Error Handling**: Comprehensive logging and graceful handling of locked files, permissions, corrupted files
+
+- **Database Integration**:
+  - Created `IncomingFile` entity with validation annotations and Spring Data JDBC compatibility
+  - Added `IncomingFileRepository` interface and JdbcTemplate implementation following existing patterns
+  - Database migration (003-incoming-files.sql) with proper constraints, indexes, and foreign keys
+  - Updated `JdbcConfig` to register new repository bean
+
+- **Comprehensive Testing**:
+  - Unit tests for `IncomingFile` entity creation and validation
+  - Service tests for `FileProcessingService` functionality including checksum calculation and path generation
+  - Integration tests for `FileWatcherService` workflow including duplicate handling and file processing
+  - Full test coverage with TDD approach ensuring reliability
+
+- **Technical Features**:
+  - **Path Format**: Changed from hierarchical `/yyyy/MM/dd/` to flat `/yyyy-MM-dd-filename` structure
+  - **Concurrent Safety**: Thread-safe file operations with proper locking and atomic operations
+  - **Configuration Driven**: Uses `ReceiptsProperties` for configurable inbox and attachments paths
+  - **Spring Integration**: Proper bean lifecycle management and dependency injection
+  - **Production Ready**: Robust error handling, logging, and monitoring capabilities
+
 ### Domain Entities Implementation (Item 6)
 - **Core Domain Model Complete**: Implemented comprehensive entity model for receipt processing application
   - `ServiceProvider`: Manage companies/services with name, category, default payment method, active status, comments

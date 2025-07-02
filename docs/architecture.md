@@ -17,7 +17,7 @@ This document provides a high-level overview of the system architecture for the 
 - **Rendering**: Thymeleaf for server-side rendering
 - **Responsibilities**:
     - Authentication (OAuth2 with Google)
-    - Receipt and Bill ingestion API (watch folder + file upload endpoints)
+    - Receipt and Bill ingestion API (folder-watcher service + file upload endpoints)
     - OCR orchestration (dispatch to selected AI engine)
     - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
     - Settings management (OCR keys, folder paths)
@@ -37,6 +37,7 @@ This document provides a high-level overview of the system architecture for the 
 - **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
 - **Schema**: Comprehensive domain model with the following entities:
   - **User Management**: User, LoginEvent
+  - **File Ingestion**: IncomingFile (for folder-watcher detected files)
   - **Core Domain**: ServiceProvider, PaymentMethod, Bill, Receipt, Payment
   - **Future**: Attachment (planned)
 - **Access Layer**: Spring Data JDBC with JdbcTemplate custom repository implementations
@@ -46,6 +47,7 @@ This document provides a high-level overview of the system architecture for the 
 
 #### 2.4.1 Entity Relationships
 - **Users** → LoginEvents (one-to-many)
+- **Users** → IncomingFiles (one-to-many)
 - **Users** → Bills (one-to-many) 
 - **Users** → Receipts (one-to-many)
 - **Users** → Payments (one-to-many)
@@ -57,15 +59,28 @@ This document provides a high-level overview of the system architecture for the 
 ### 2.5 File Storage
 - **Location**: Host filesystem within Docker volume
 - **Structure**:
-    - `/data/inbox` for incoming receipts
-    - `/data/attachments` for payment documents
+    - `/data/inbox` for incoming receipts (monitored by folder-watcher service)
+    - `/data/attachments` for processed documents in format `yyyy-MM-dd-filename`
+- **Features**:
+    - **Automatic duplicate detection** via SHA-256 checksums
+    - **Conflict resolution** with incremental suffixes (-1, -2, etc.)
+    - **Date-organized naming** for easy file management
 - **Backup**: Filesystem snapshots alongside DB dumps
 
-### 2.6 Background Worker (Optional)
+### 2.6 Folder-Watcher Service
+- **Implementation**: Spring Boot scheduled tasks with `@Scheduled` annotation
 - **Responsibilities**:
-    - Polling watched folder if not using in-app watcher
-    - Scheduled tasks for recurring payment reminders or data cleanup
-- **Implementation**: Spring Boot scheduled tasks or separate worker container
+    - **Automated File Detection**: Polls `/data/inbox` directory every 30 seconds
+    - **File Processing**: Moves files to storage and creates `IncomingFile` entities
+    - **Duplicate Prevention**: SHA-256 checksum-based duplicate detection
+    - **Error Handling**: Comprehensive logging and graceful error recovery
+- **Workflow**:
+    1. Scan inbox directory for new files
+    2. Validate file format and readability
+    3. Calculate SHA-256 checksum for duplicate detection
+    4. Move file to attachments with date-prefixed naming
+    5. Create `IncomingFile` entity in PENDING status
+    6. Files ready for OCR processing and user review
 
 ## 3. Data Flow
 

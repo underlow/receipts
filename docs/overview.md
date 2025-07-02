@@ -25,11 +25,20 @@ The Household Expense Tracker is a web-based application designed to streamline 
 - **Fields**: name, type, comments
 - **Integration**: Links to payments for expense tracking
 
-#### 2.3 Bills & Document Management
-- **Purpose**: Store and process uploaded receipt/bill documents
+#### 2.3 File Ingestion & Management
+
+##### 2.3.1 IncomingFiles ✅ **IMPLEMENTED**
+- **Purpose**: Track files detected by the folder-watcher service before OCR processing
+- **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED
+- **Duplicate Prevention**: SHA-256 checksum-based duplicate detection
+- **File Storage**: Organized storage with date-prefixed naming (`yyyy-MM-dd-filename`)
+- **Fields**: filename, file path, upload date, status, checksum, user association
+
+##### 2.3.2 Bills & Document Management
+- **Purpose**: Store and process uploaded receipt/bill documents after OCR processing
 - **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED
 - **OCR Integration**: Automatic extraction of amount, date, and provider information
-- **File Storage**: Secure storage with organized file paths
+- **File Storage**: Links to processed files from IncomingFiles
 - **Fields**: filename, file path, upload date, status, OCR data, extracted information, user association
 
 #### 2.4 Receipts
@@ -48,10 +57,14 @@ The Household Expense Tracker is a web-based application designed to streamline 
 ### 3. Workflow & Processing
 
 #### 3.1 Receipt Ingestion
-1. **File Upload**: Users can upload receipt images/PDFs through web interface
-2. **Folder Watching**: Automated detection of files dropped into watched directories
-3. **Bill Creation**: Each uploaded file creates a Bill entity in PENDING status
-4. **OCR Processing**: Automatic extraction of key information using AI engines
+1. **Folder-Watcher Service**: ✅ **IMPLEMENTED** - Automated detection of files dropped into inbox directory
+   - Polls `/data/inbox` directory every 30 seconds
+   - SHA-256 checksum-based duplicate detection
+   - Creates `IncomingFile` entities in PENDING status
+   - Organized storage with date-prefixed naming (`yyyy-MM-dd-filename`)
+   - Automatic conflict resolution for duplicate filenames
+2. **File Upload**: Users can upload receipt images/PDFs through web interface (planned)
+3. **OCR Processing**: Automatic extraction of key information using AI engines (planned)
 
 #### 3.2 OCR & Data Extraction
 - **Multi-Engine Support**: OpenAI, Claude, and Google AI integration

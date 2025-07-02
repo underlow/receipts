@@ -67,10 +67,10 @@
 ---
 
 ## File Ingestion & Inbox
-8. **Folder-watcher service**
-    - Develop a scheduled task that polls the inbox directory every 30 seconds.
-    - Detect new files (by filename or checksum) and move to app storage.
-    - Create a `IncomingFile` entity in “Pending” status with file metadata. It will become either bill or receipt after ocr/accept
+8. **Folder-watcher service** ✅
+    - ✅Develop a scheduled task that polls the inbox directory every 30 seconds.
+    - ✅Detect new files (by filename or checksum) and move to app storage.
+    - ✅Create a `IncomingFile` entity in “Pending” status with file metadata. It will become either bill or receipt after ocr/accept
 
 9. **Web-UI upload endpoint**
     - Build a multipart upload REST endpoint.
