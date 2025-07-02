@@ -65,8 +65,10 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - Automatic conflict resolution for duplicate filenames
 2. **File Upload**: ✅ **IMPLEMENTED** - Users can upload receipt images/PDFs through web interface
    - Multi-part file upload with drag-and-drop support
+   - Modern web UI with drag-and-drop file upload at `/upload`
+   - Real-time upload progress and status feedback
    - File type validation (PDF, JPG, PNG, GIF, BMP, TIFF)
-   - File size limits and validation
+   - File size limits and validation (10MB maximum)
    - Duplicate detection and prevention
 3. **OCR Processing**: Automatic extraction of key information using AI engines (planned)
 

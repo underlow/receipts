@@ -76,6 +76,8 @@
     - ✅Build a multipart upload REST endpoint.
     - ✅On upload, save file to the same storage area and create a matching `IncomingFile` record.
     - ✅Return success/failure feedback to the user.
+    - ✅Create upload page template with drag-and-drop functionality.
+    - ✅Add controller mapping for upload page (/upload).
 
 ## Inbox Review & Approval UI
 13. **Inbox list page** ✅

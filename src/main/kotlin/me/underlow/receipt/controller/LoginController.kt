@@ -28,4 +28,9 @@ class LoginController {
         }
         return "dashboard"
     }
+
+    @GetMapping("/upload")
+    fun upload(): String {
+        return "upload"
+    }
 }
