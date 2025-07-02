@@ -49,12 +49,11 @@
 ## Core Domain Model
 
 6. **Define domain entities**
-    - Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive
-    - Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER)
-    - Create `Receipt` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId, billId (nullable FK to Bill)
-    - Create `Bill` entity with fields: id, userId (representing the aggregated expense, potentially composed of one or more Receipts)
-    - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, isRecurrent, billId, userId, notes
-    - Create `Attachment` entity with fields: id, paymentId, filename, filePath, uploadDate, comment, userId
+    - Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive, comment
+    - Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER), comment
+    - Create `Bill` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
+    - Create `Receipt` entity with fields: id, userId (representing the aggregated expense, potentially composed of one or more Receipts), billId (nullable FK to Bill)
+    - Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, billId, userId, comment
     - Define relationships: Receipt -> Bill (one-to-many), Bill -> User, Payment -> ServiceProvider/PaymentMethod/Bill/User, Attachment -> Payment/User
     - Add validation annotations for required fields and constraints
     - Ensure all entities are compatible with Spring Data JDBC (no JPA annotations)
