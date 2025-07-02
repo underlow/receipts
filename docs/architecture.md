@@ -18,6 +18,8 @@ This document provides a high-level overview of the system architecture for the 
 - **Responsibilities**:
     - Authentication (OAuth2 with Google)
     - Receipt and Bill ingestion API (folder-watcher service + file upload endpoints)
+    - ✅ **Inbox Management**: File review interface with thumbnails, status management, and operations
+    - ✅ **File Serving**: Secure file access with thumbnail generation and MIME type handling
     - OCR orchestration (dispatch to selected AI engine)
     - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
     - Settings management (OCR keys, folder paths)
@@ -81,6 +83,27 @@ This document provides a high-level overview of the system architecture for the 
     4. Move file to attachments with date-prefixed naming
     5. Create `IncomingFile` entity in PENDING status
     6. Files ready for OCR processing and user review
+
+### 2.7 Inbox Management System ✅ **IMPLEMENTED**
+- **Architecture**: Comprehensive file review and management interface
+- **Components**:
+    - **InboxController**: Web and API controller for inbox functionality
+    - **IncomingFileService**: Business logic layer with pagination and filtering
+    - **FileServingController**: Secure file access with user authentication
+    - **ThumbnailService**: On-demand thumbnail generation for images and PDFs
+- **Features**:
+    - **Responsive UI**: Grid layout with thumbnail previews and file information
+    - **Status Management**: Visual badges with filtering (PENDING, PROCESSING, APPROVED, REJECTED)
+    - **Real-time Operations**: AJAX-powered approve/reject/delete actions
+    - **Pagination & Sorting**: Efficient browsing of large file collections
+    - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
+    - **Security**: User-scoped access with OAuth2 authentication verification
+- **Data Flow**:
+    1. Users access inbox via `/inbox` endpoint
+    2. Controller fetches user's files with pagination/filtering
+    3. Thumbnails generated on-demand for visual preview
+    4. AJAX operations update file status without page reload
+    5. All operations verify user ownership for security
 
 ## 3. Data Flow
 

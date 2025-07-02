@@ -63,7 +63,11 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - Creates `IncomingFile` entities in PENDING status
    - Organized storage with date-prefixed naming (`yyyy-MM-dd-filename`)
    - Automatic conflict resolution for duplicate filenames
-2. **File Upload**: Users can upload receipt images/PDFs through web interface (planned)
+2. **File Upload**: ✅ **IMPLEMENTED** - Users can upload receipt images/PDFs through web interface
+   - Multi-part file upload with drag-and-drop support
+   - File type validation (PDF, JPG, PNG, GIF, BMP, TIFF)
+   - File size limits and validation
+   - Duplicate detection and prevention
 3. **OCR Processing**: Automatic extraction of key information using AI engines (planned)
 
 #### 3.2 OCR & Data Extraction
@@ -73,12 +77,18 @@ The Household Expense Tracker is a web-based application designed to streamline 
 - **Raw Data Preservation**: Original OCR JSON stored for reference
 - **Status Tracking**: Processing status updates throughout workflow
 
-#### 3.3 Review & Approval Process
-1. **Manual Review**: Users can edit and correct OCR-extracted data
-2. **Provider Matching**: Associate bills with existing service providers
-3. **Payment Method Selection**: Choose how the bill was/will be paid
-4. **Receipt Association**: Link multiple receipts to a single bill if needed
-5. **Approval**: Convert approved bills into payment records
+#### 3.3 Review & Approval Process ✅ **IMPLEMENTED**
+1. **Inbox Management**: ✅ Comprehensive inbox interface for file review and management
+   - Paginated grid view with thumbnails for uploaded files
+   - Status filtering (PENDING, PROCESSING, APPROVED, REJECTED) with counts
+   - Sorting capabilities by filename, upload date, and status
+   - File operations: approve, reject, delete with AJAX support
+   - Modal image viewer for detailed file inspection
+2. **Manual Review**: Users can edit and correct OCR-extracted data (planned)
+3. **Provider Matching**: Associate bills with existing service providers (planned)
+4. **Payment Method Selection**: Choose how the bill was/will be paid (planned)
+5. **Receipt Association**: Link multiple receipts to a single bill if needed (planned)
+6. **Approval**: Convert approved bills into payment records (planned)
 
 ### 4. Data Architecture
 
@@ -104,18 +114,44 @@ Users ──┬── LoginEvents
 - **Referential Integrity**: Foreign key constraints ensure data consistency
 - **Type Safety**: Enums for status and payment method types
 
-### 5. File Management
+### 5. User Interface & Experience ✅ **IMPLEMENTED**
+
+#### 5.1 Dashboard
+- **Welcome Page**: Clean, modern interface with user authentication display
+- **Navigation**: Quick access to key features (Inbox, Upload)
+- **Feature Cards**: Intuitive layout for accessing main functionality
+
+#### 5.2 Inbox Management Interface
+- **Grid Layout**: Responsive file grid with thumbnail previews
+- **Smart Thumbnails**: Automatic thumbnail generation for images and PDF placeholders
+- **Status Management**: Visual status badges with color coding
+- **Real-time Operations**: AJAX-powered approve/reject/delete actions
+- **Filtering & Search**: Status-based filtering with live count updates
+- **Sorting**: Multi-column sorting (filename, date, status) with direction control
+- **Pagination**: Efficient pagination for large file collections
+- **Modal Viewer**: Full-screen file preview with keyboard shortcuts
+
+#### 5.3 File Operations
+- **Secure Access**: User-scoped file access with authentication verification
+- **Thumbnail Service**: On-demand thumbnail generation with caching
+- **File Serving**: Direct file access with proper MIME type handling
+- **Error Handling**: Comprehensive error feedback and validation
+
+### 6. File Management
 - **Storage Location**: `/data/inbox` for incoming receipts, `/data/attachments` for processed files
 - **Security**: Files stored outside web root for security
 - **Organization**: Structured file paths for easy management
 - **Backup**: Volume-mounted storage for data persistence
+- **Thumbnail Cache**: Generated thumbnails for improved performance
 
-### 6. Technology Stack
+### 7. Technology Stack
 - **Backend**: Kotlin + Spring Boot
-- **Frontend**: Thymeleaf server-side rendering
+- **Frontend**: Thymeleaf server-side rendering with modern CSS and JavaScript
 - **Database**: PostgreSQL (production), H2 (development)
 - **Authentication**: OAuth2 with Google
-- **OCR**: OpenAI, Claude, Google AI APIs
+- **File Processing**: Apache PDFBox for PDF handling, Java AWT for image processing
+- **OCR**: OpenAI, Claude, Google AI APIs (planned)
+- **Testing**: JUnit 5, Mockito, Selenide for E2E testing
 - **Deployment**: Docker containers with volume mounts
 
 ## Future Enhancements

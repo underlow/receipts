@@ -78,8 +78,14 @@
     - ✅Return success/failure feedback to the user.
 
 ## Inbox Review & Approval UI
-13. **Inbox list page**
-    - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge. This view will primarily display `Receipt`s.
+13. **Inbox list page** ✅
+    - ✅Create a Thymeleaf template showing a paginated grid with: thumbnail, filename, upload date, status badge for `IncomingFile`s
+    - ✅Implement file serving controller with secure access and thumbnail generation
+    - ✅Add status filtering (PENDING, PROCESSING, APPROVED, REJECTED) with live counts
+    - ✅Implement sorting by filename, upload date, and status
+    - ✅Add AJAX file operations (approve, reject, delete) with user feedback
+    - ✅Create modal image viewer with keyboard shortcuts
+    - ✅Fix critical bug with null status counts causing dashboard crashes
 
 14. **Receipt/Bill detail view**
     - Design a split-pane template for `Receipt` detail view:
