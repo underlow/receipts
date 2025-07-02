@@ -16,7 +16,7 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
         http
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/login", "/static/**").permitAll()
+                    .requestMatchers("/login", "/static/**", "/error").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2Login ->
@@ -28,7 +28,7 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
             }
             .logout { logout ->
                 logout
-                    .logoutSuccessUrl("/")
+                    .logoutSuccessUrl("/login?logout")
                     .permitAll()
             }
         return http.build()

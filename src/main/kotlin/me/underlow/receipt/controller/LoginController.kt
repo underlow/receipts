@@ -6,14 +6,18 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class LoginController {
 
+    @GetMapping("/")
+    fun home(): String {
+        return "redirect:/dashboard"
+    }
+
     @GetMapping("/login")
     fun login(): String {
         return "login"
     }
 
-    @GetMapping("/login/oauth2/code/google")
-    fun oauth2Callback(): String {
-        println("Manual OAuth2 Callback endpoint reached!")
-        return "redirect:/"
+    @GetMapping("/dashboard")
+    fun dashboard(): String {
+        return "dashboard"
     }
 }
