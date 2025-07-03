@@ -10,14 +10,17 @@ spring:
           google:
             client-id: test-client-id
             client-secret: test-client-secret
-            scope:
-              - openid
-              - profile
-              - email
-            redirect-uri: "http://localhost:{server.port}/login/oauth2/code/google"
+            scope: openid,profile,email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            authorization-grant-type: authorization_code
+            client-name: Google
         provider:
           google:
-            # Will be dynamically configured to point to WireMock
+            issuer-uri: http://localhost:8888
+            authorization-uri: http://localhost:8888/o/oauth2/auth
+            token-uri: http://localhost:8888/token
+            user-info-uri: http://localhost:8888/oauth2/v2/userinfo
+            jwk-set-uri: http://localhost:8888/oauth2/v3/certs
             user-name-attribute: email
 
 logging:
