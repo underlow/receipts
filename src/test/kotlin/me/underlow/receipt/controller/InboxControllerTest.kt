@@ -8,8 +8,12 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -27,7 +31,7 @@ class InboxControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    @MockBean
+    @MockitoBean
     private lateinit var incomingFileService: IncomingFileService
 
     /**
@@ -53,21 +57,21 @@ class InboxControllerTest {
         whenever(incomingFileService.getFileStatistics(userEmail))
             .thenReturn(emptyStatusCounts)
 
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to "nofiles@example.com",
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+
         // When: Making request to inbox page
         val result = mockMvc.perform(
             get("/inbox")
-                .with { request ->
-                    // Mock OAuth2 authentication
-                    val oauth2User = org.mockito.kotlin.mock<OAuth2User>()
-                    whenever(oauth2User.getAttribute<String>("email")).thenReturn(userEmail)
-                    whenever(oauth2User.getAttribute<String>("name")).thenReturn("No Files User")
-
-                    val authentication = org.mockito.kotlin.mock<OAuth2AuthenticationToken>()
-                    whenever(authentication.principal).thenReturn(oauth2User)
-
-                    request.userPrincipal = authentication
-                    request
-                }
+                .with(authentication(auth))
         )
 
         // Then: Should return successful response and render inbox template
@@ -110,20 +114,21 @@ class InboxControllerTest {
         whenever(incomingFileService.getFileStatistics(userEmail))
             .thenReturn(emptyStatusCounts)
 
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to "nofiles@example.com",
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+
         // When: Making API request
         val result = mockMvc.perform(
             get("/inbox/api/list")
-                .with { request ->
-                    // Mock OAuth2 authentication
-                    val oauth2User = org.mockito.kotlin.mock<OAuth2User>()
-                    whenever(oauth2User.getAttribute<String>("email")).thenReturn(userEmail)
-
-                    val authentication = org.mockito.kotlin.mock<OAuth2AuthenticationToken>()
-                    whenever(authentication.principal).thenReturn(oauth2User)
-
-                    request.userPrincipal = authentication
-                    request
-                }
+                .with(authentication(auth))
         )
 
         // Then: Should return successful JSON response
