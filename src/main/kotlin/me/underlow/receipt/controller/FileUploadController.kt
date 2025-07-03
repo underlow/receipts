@@ -12,8 +12,16 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.FileVisitResult
 import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.security.Principal
+
+/**
+ * Holds information about a temporary file and its parent directory for cleanup purposes.
+ */
+data class TempFileInfo(val file: File, val directory: Path)
 
 /**
  * REST controller for handling file uploads via web interface.
@@ -38,25 +46,25 @@ class FileUploadController(
     ): ResponseEntity<Any> {
         return try {
             logger.info("Received file upload request: ${file.originalFilename}")
-            
+
             // Validate authentication
             val userId = extractUserIdFromPrincipal(principal)
                 ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ErrorResponse(message = "User not authenticated"))
-            
+
             // Validate file
             val validationError = validateUploadedFile(file)
             if (validationError != null) {
                 return ResponseEntity.badRequest().body(validationError)
             }
-            
+
             // Save file to temporary location for processing
-            val tempFile = saveToTempFile(file)
-            
+            val tempFileInfo = saveToTempFile(file)
+
             try {
                 // Process file using existing service
-                val incomingFile = fileProcessingService.processFile(tempFile, userId)
-                
+                val incomingFile = fileProcessingService.processFile(tempFileInfo.file, userId)
+
                 if (incomingFile != null) {
                     val response = FileUploadResponse(
                         id = incomingFile.id!!,
@@ -66,7 +74,7 @@ class FileUploadController(
                         checksum = incomingFile.checksum,
                         message = "File uploaded successfully"
                     )
-                    
+
                     logger.info("Successfully processed uploaded file: ${file.originalFilename} for user: $userId")
                     ResponseEntity.ok(response)
                 } else {
@@ -77,12 +85,12 @@ class FileUploadController(
                             code = "DUPLICATE_FILE"
                         ))
                 }
-                
+
             } finally {
-                // Clean up temporary file
-                tempFile.delete()
+                // Clean up temporary file and directory
+                cleanupTempFile(tempFileInfo)
             }
-            
+
         } catch (e: Exception) {
             logger.error("Error processing file upload: ${file.originalFilename}", e)
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -117,7 +125,7 @@ class FileUploadController(
                 code = "EMPTY_FILE"
             )
         }
-        
+
         // Check file size (10MB limit by default)
         val maxSize = 10 * 1024 * 1024L // 10MB
         if (file.size > maxSize) {
@@ -127,12 +135,12 @@ class FileUploadController(
                 details = mapOf("maxSize" to maxSize, "actualSize" to file.size)
             )
         }
-        
+
         // Check file extension
         val originalFilename = file.originalFilename ?: ""
         val supportedExtensions = listOf("pdf", "jpg", "jpeg", "png", "gif", "bmp", "tiff")
         val fileExtension = originalFilename.substringAfterLast(".", "").lowercase()
-        
+
         if (fileExtension.isBlank() || fileExtension !in supportedExtensions) {
             return ErrorResponse(
                 message = "Unsupported file type. Supported types: ${supportedExtensions.joinToString(", ")}",
@@ -140,20 +148,49 @@ class FileUploadController(
                 details = mapOf("supportedTypes" to supportedExtensions, "actualType" to fileExtension)
             )
         }
-        
+
         return null
     }
 
     /**
      * Saves multipart file to temporary location for processing.
      */
-    private fun saveToTempFile(file: MultipartFile): File {
+    private fun saveToTempFile(file: MultipartFile): TempFileInfo {
         val tempDir = Files.createTempDirectory("upload-")
         val tempFile = tempDir.resolve(file.originalFilename ?: "uploaded-file").toFile()
-        
+
         file.transferTo(tempFile)
-        
+
         logger.debug("Saved uploaded file to temporary location: ${tempFile.absolutePath}")
-        return tempFile
+        return TempFileInfo(tempFile, tempDir)
+    }
+
+    /**
+     * Cleans up temporary file and its parent directory.
+     */
+    private fun cleanupTempFile(tempFileInfo: TempFileInfo) {
+        try {
+            // Delete the file first
+            if (tempFileInfo.file.exists()) {
+                tempFileInfo.file.delete()
+            }
+
+            // Then delete the directory and all its contents recursively
+            Files.walkFileTree(tempFileInfo.directory, object : SimpleFileVisitor<Path>() {
+                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    Files.delete(file)
+                    return FileVisitResult.CONTINUE
+                }
+
+                override fun postVisitDirectory(dir: Path, exc: java.io.IOException?): FileVisitResult {
+                    Files.delete(dir)
+                    return FileVisitResult.CONTINUE
+                }
+            })
+
+            logger.debug("Cleaned up temporary file and directory: ${tempFileInfo.directory}")
+        } catch (e: Exception) {
+            logger.warn("Failed to cleanup temporary file and directory: ${tempFileInfo.directory}", e)
+        }
     }
 }

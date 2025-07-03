@@ -47,7 +47,7 @@ class InboxControllerTest {
             BillStatus.APPROVED to 0,
             BillStatus.REJECTED to 0
         )
-        
+
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
             .thenReturn(Pair(emptyList(), 0L))
         whenever(incomingFileService.getFileStatistics(userEmail))
@@ -61,10 +61,10 @@ class InboxControllerTest {
                     val oauth2User = org.mockito.kotlin.mock<OAuth2User>()
                     whenever(oauth2User.getAttribute<String>("email")).thenReturn(userEmail)
                     whenever(oauth2User.getAttribute<String>("name")).thenReturn("No Files User")
-                    
+
                     val authentication = org.mockito.kotlin.mock<OAuth2AuthenticationToken>()
                     whenever(authentication.principal).thenReturn(oauth2User)
-                    
+
                     request.userPrincipal = authentication
                     request
                 }
@@ -77,7 +77,7 @@ class InboxControllerTest {
             .andExpect(model().attribute("totalFiles", 0L))
             .andExpect(model().attribute("files", emptyList<Any>()))
             .andExpect(model().attributeExists("statusCounts"))
-        
+
         // And: Status counts should be available in model to prevent SpEL errors
         val model = result.andReturn().modelAndView?.model
         val statusCounts = model?.get("statusCounts") as? Map<*, *>
@@ -104,7 +104,7 @@ class InboxControllerTest {
             BillStatus.APPROVED to 0,
             BillStatus.REJECTED to 0
         )
-        
+
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
             .thenReturn(Pair(emptyList(), 0L))
         whenever(incomingFileService.getFileStatistics(userEmail))
@@ -117,10 +117,10 @@ class InboxControllerTest {
                     // Mock OAuth2 authentication
                     val oauth2User = org.mockito.kotlin.mock<OAuth2User>()
                     whenever(oauth2User.getAttribute<String>("email")).thenReturn(userEmail)
-                    
+
                     val authentication = org.mockito.kotlin.mock<OAuth2AuthenticationToken>()
                     whenever(authentication.principal).thenReturn(oauth2User)
-                    
+
                     request.userPrincipal = authentication
                     request
                 }

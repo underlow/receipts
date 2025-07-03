@@ -32,21 +32,21 @@ class FileProcessingService(
     fun processFile(file: File, userId: Long): IncomingFile? {
         return try {
             logger.info("Processing file: ${file.name}")
-            
+
             // Calculate file checksum first to detect duplicates
             val checksum = calculateFileChecksum(file)
-            
+
             // Check if file already exists by checksum
             val existingFile = incomingFileRepository.findByChecksum(checksum)
             if (existingFile != null) {
                 logger.warn("File ${file.name} already exists with checksum $checksum, skipping")
                 return null
             }
-            
+
             // Generate storage path and move file
             val storagePath = generateStoragePath(file.name)
             val movedFile = moveFileToStorage(file, storagePath)
-            
+
             // Create IncomingFile entity
             val incomingFile = IncomingFile(
                 filename = file.name,
@@ -56,11 +56,11 @@ class FileProcessingService(
                 checksum = checksum,
                 userId = userId
             )
-            
+
             val savedFile = incomingFileRepository.save(incomingFile)
             logger.info("Successfully processed file: ${file.name}, created IncomingFile with ID: ${savedFile.id}")
             savedFile
-            
+
         } catch (e: Exception) {
             logger.error("Error processing file: ${file.name}", e)
             null
@@ -86,15 +86,15 @@ class FileProcessingService(
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val datePath = now.format(dateFormatter)
-        
+
         val attachmentsPath = Path.of(receiptsProperties.attachmentsPath)
-        
+
         // Create attachments directory if it doesn't exist
         Files.createDirectories(attachmentsPath)
-        
+
         // Generate unique filename with date prefix
         val uniqueFilename = generateUniqueFilename(attachmentsPath, datePath, filename)
-        
+
         return attachmentsPath.resolve(uniqueFilename)
     }
 
@@ -109,10 +109,10 @@ class FileProcessingService(
         } else {
             ""
         }
-        
+
         var counter = 0
         var candidateFilename: String
-        
+
         do {
             candidateFilename = if (counter == 0) {
                 "$datePath-$fileNameWithoutExtension$fileExtension"
@@ -121,7 +121,7 @@ class FileProcessingService(
             }
             counter++
         } while (Files.exists(basePath.resolve(candidateFilename)))
-        
+
         return candidateFilename
     }
 
@@ -130,13 +130,13 @@ class FileProcessingService(
      */
     fun moveFileToStorage(sourceFile: File, targetPath: Path): File {
         logger.debug("Moving file from ${sourceFile.absolutePath} to $targetPath")
-        
+
         // Ensure target directory exists
         Files.createDirectories(targetPath.parent)
-        
+
         // Move file to target location
         Files.move(sourceFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING)
-        
+
         logger.debug("Successfully moved file to $targetPath")
         return targetPath.toFile()
     }
@@ -150,16 +150,16 @@ class FileProcessingService(
             logger.warn("File ${file.name} is not readable or empty")
             return false
         }
-        
+
         // Check for supported file extensions (images, PDFs)
         val supportedExtensions = listOf("pdf", "jpg", "jpeg", "png", "gif", "bmp", "tiff")
         val fileExtension = file.extension.lowercase()
-        
+
         if (fileExtension !in supportedExtensions) {
             logger.warn("File ${file.name} has unsupported extension: $fileExtension")
             return false
         }
-        
+
         // Try to check if file is locked by another process
         return try {
             file.renameTo(file) // This will fail if file is locked

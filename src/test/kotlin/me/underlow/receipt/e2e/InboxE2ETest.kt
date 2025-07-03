@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestConstructor
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.event
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -67,7 +68,7 @@ class InboxE2ETest(
         Configuration.timeout = 10000
         Configuration.headless = true
         Configuration.baseUrl = "http://localhost:$port"
-        
+
         // Clean database before each test
         cleanDatabase()
     }
@@ -94,14 +95,14 @@ class InboxE2ETest(
 
         // Then: Page should load successfully
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: All status badges should show count 0
         `$`(".status-badge.all").shouldHave(text("All (0)"))
         `$`(".status-badge.pending").shouldHave(text("Pending (0)"))
         `$`(".status-badge.processing").shouldHave(text("Processing (0)"))
         `$`(".status-badge.approved").shouldHave(text("Approved (0)"))
         `$`(".status-badge.rejected").shouldHave(text("Rejected (0)"))
-        
+
         // And: Empty state should be displayed
         `$`(".empty-state").shouldBe(visible)
         `$`(".empty-state h3").shouldHave(text("No files found"))
@@ -126,14 +127,14 @@ class InboxE2ETest(
 
         // Then: Page should load successfully
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: Status badges should show correct counts
         `$`(".status-badge.all").shouldHave(text("All (2)"))
         `$`(".status-badge.pending").shouldHave(text("Pending (2)"))
         `$`(".status-badge.processing").shouldHave(text("Processing (0)"))
         `$`(".status-badge.approved").shouldHave(text("Approved (0)"))
         `$`(".status-badge.rejected").shouldHave(text("Rejected (0)"))
-        
+
         // And: Files should be displayed
         `$$`(".file-card").shouldHave(CollectionCondition.size(2))
         `$`(".empty-state").shouldNot(exist)
@@ -142,7 +143,7 @@ class InboxE2ETest(
     /**
      * Test with mixed status files to ensure all counts work correctly
      * Given: User has files with various statuses
-     * When: User navigates to inbox page  
+     * When: User navigates to inbox page
      * Then: Page loads successfully with correct counts for each status
      */
     @Test
@@ -161,14 +162,14 @@ class InboxE2ETest(
 
         // Then: Page should load successfully
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: Status badges should show correct counts
         `$`(".status-badge.all").shouldHave(text("All (5)"))
         `$`(".status-badge.pending").shouldHave(text("Pending (1)"))
         `$`(".status-badge.processing").shouldHave(text("Processing (1)"))
         `$`(".status-badge.approved").shouldHave(text("Approved (2)"))
         `$`(".status-badge.rejected").shouldHave(text("Rejected (1)"))
-        
+
         // And: All files should be displayed
         `$$`(".file-card").shouldHave(CollectionCondition.size(5))
         `$`(".empty-state").shouldNot(exist)
@@ -196,21 +197,21 @@ class InboxE2ETest(
 
         // When: Click on pending filter
         `$`(".status-badge.pending").click()
-        
+
         // Then: Should show only pending files
         `$$`(".file-card").shouldHave(CollectionCondition.size(1))
         `$`(".file-card .file-status.pending").shouldBe(visible)
-        
+
         // When: Click on approved filter
         `$`(".status-badge.approved").click()
-        
+
         // Then: Should show only approved files
         `$$`(".file-card").shouldHave(CollectionCondition.size(1))
         `$`(".file-card .file-status.approved").shouldBe(visible)
-        
+
         // When: Click on all filter
         `$`(".status-badge.all").click()
-        
+
         // Then: Should show all files again
         `$$`(".file-card").shouldHave(CollectionCondition.size(2))
     }
@@ -221,7 +222,7 @@ class InboxE2ETest(
             VALUES (?, ?) 
             RETURNING id
         """.trimIndent()
-        
+
         val userId = jdbcTemplate.queryForObject(insertSql, Long::class.java, email, name)
         return User(id = userId, email = email, name = name)
     }
@@ -230,24 +231,24 @@ class InboxE2ETest(
         // Create a temporary file for testing
         val tempFile = Files.createTempFile("test", ".${filename.substringAfterLast('.')}")
         Files.write(tempFile, "test content".toByteArray())
-        
+
         val insertSql = """
             INSERT INTO incoming_files (filename, file_path, upload_date, status, checksum, user_id) 
             VALUES (?, ?, ?, ?, ?, ?) 
             RETURNING id
         """.trimIndent()
-        
+
         val fileId = jdbcTemplate.queryForObject(
-            insertSql, 
-            Long::class.java, 
-            filename, 
-            tempFile.toString(), 
-            java.sql.Timestamp.valueOf(LocalDateTime.now()), 
-            status.name, 
-            "checksum-$filename", 
+            insertSql,
+            Long::class.java,
+            filename,
+            tempFile.toString(),
+            java.sql.Timestamp.valueOf(LocalDateTime.now()),
+            status.name,
+            "checksum-$filename",
             userId
         )
-        
+
         return IncomingFile(
             id = fileId,
             filename = filename,
@@ -262,8 +263,7 @@ class InboxE2ETest(
     private fun simulateLogin(user: User) {
         // Simulate OAuth2 login by setting session attributes
         open("/")
-        executeJavaScript<String>("document.cookie = 'JSESSIONID=test-session-${user.email}; path=/'")
-        
+
         // Insert login event to track the login
         jdbcTemplate.update(
             "INSERT INTO login_events (user_id, timestamp) VALUES (?, ?)",
@@ -275,7 +275,7 @@ class InboxE2ETest(
         jdbcTemplate.execute("DELETE FROM login_events")
         jdbcTemplate.execute("DELETE FROM incoming_files")
         jdbcTemplate.execute("DELETE FROM users")
-        
+
         // Reset sequences
         jdbcTemplate.execute("ALTER SEQUENCE users_id_seq RESTART WITH 1")
         jdbcTemplate.execute("ALTER SEQUENCE incoming_files_id_seq RESTART WITH 1")

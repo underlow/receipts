@@ -259,6 +259,12 @@ class FileUploadControllerIntegrationTest {
         val user = User(id = 5L, email = "error@example.com", name = "Error Test User")
         val principal = createMockPrincipal(user.email)
         
+        // Record existing temp files before test
+        val tempDirPath = File(System.getProperty("java.io.tmpdir"))
+        val existingTempFiles = tempDirPath.listFiles()?.filter { 
+            it.name.contains("upload-") 
+        }?.map { it.name }?.toSet() ?: emptySet()
+        
         whenever(userRepository.findByEmail(user.email)).thenReturn(user)
         whenever(incomingFileRepository.findByChecksum(any())).thenThrow(RuntimeException("Database error"))
 
@@ -272,13 +278,14 @@ class FileUploadControllerIntegrationTest {
         val errorResponse = response.body as ErrorResponse
         assertEquals("Internal server error during file upload", errorResponse.message)
         
-        // Verify no temporary files are left behind (check temp directory is clean)
-        val tempFiles = File(System.getProperty("java.io.tmpdir")).listFiles()?.filter { 
+        // Verify no NEW temporary files are left behind
+        val currentTempFiles = tempDirPath.listFiles()?.filter { 
             it.name.contains("upload-") 
-        } ?: emptyList()
+        }?.map { it.name }?.toSet() ?: emptySet()
         
-        // Should not have accumulated temp directories from failed uploads
-        assertTrue(tempFiles.isEmpty() || tempFiles.all { !it.isDirectory || it.listFiles()?.isEmpty() == true })
+        // Should not have any new temp files or directories from this failed upload
+        val newTempFiles = currentTempFiles - existingTempFiles
+        assertTrue(newTempFiles.isEmpty(), "New temporary files should be cleaned up: $newTempFiles")
     }
 
     /**

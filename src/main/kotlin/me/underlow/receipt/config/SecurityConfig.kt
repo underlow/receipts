@@ -1,6 +1,7 @@
 package me.underlow.receipt.config
 
 import me.underlow.receipt.service.CustomOAuth2UserService
+import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -9,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
+//@Profile("!e2e")
 class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserService) {
 
     @Bean
