@@ -219,13 +219,14 @@ class UploadPageE2ETest(
     @Test
     fun `Given user on upload page, when uploading multiple files, then should handle all files independently`() {
         // Given: Multiple test files (authentication handled by TestSecurityConfig)
+        val testUser = createTestUser("test@example.com", "Test User")
 
         val file1 = createTestFile("receipt1.pdf", "Receipt 1 content")
         val file2 = createTestFile("receipt2.jpg", "Receipt 2 content")
         val file3 = createTestFile("receipt3.png", "Receipt 3 content")
 
         // When: Navigate to upload page
-        open("/upload")
+        open("/upload?userEmail=${testUser.email}")
 
         // And: Upload multiple files
         `$`("#fileInput").uploadFile(file1, file2, file3)
@@ -239,7 +240,6 @@ class UploadPageE2ETest(
         }
 
         // And: All files should be stored in database
-        val testUser = createTestUser("test@example.com", "Test User")
         val fileCount = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM incoming_files WHERE user_id = ?",
             Int::class.java,

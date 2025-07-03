@@ -29,7 +29,7 @@ import java.time.LocalDateTime
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-@ActiveProfiles("wiremock-oauth2")
+@ActiveProfiles("e2e")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class WireMockOAuth2E2ETest(
     private val jdbcTemplate: JdbcTemplate,
@@ -53,13 +53,13 @@ class WireMockOAuth2E2ETest(
             registry.add("spring.datasource.url", postgres::getJdbcUrl)
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
-            
+
             // Configure OAuth2 to use WireMock server
             registry.add("spring.security.oauth2.client.registration.google.client-id") { "test-client-id" }
             registry.add("spring.security.oauth2.client.registration.google.client-secret") { "test-client-secret" }
             registry.add("spring.security.oauth2.client.registration.google.scope") { "openid,profile,email" }
             registry.add("spring.security.oauth2.client.registration.google.redirect-uri") { "http://localhost:8080/login/oauth2/code/google" }
-            
+
             // Point to WireMock OAuth2 endpoints
             registry.add("spring.security.oauth2.client.provider.google.issuer-uri") { "http://localhost:8888" }
             registry.add("spring.security.oauth2.client.provider.google.authorization-uri") { "http://localhost:8888/o/oauth2/auth" }
@@ -67,7 +67,7 @@ class WireMockOAuth2E2ETest(
             registry.add("spring.security.oauth2.client.provider.google.user-info-uri") { "http://localhost:8888/oauth2/v2/userinfo" }
             registry.add("spring.security.oauth2.client.provider.google.jwk-set-uri") { "http://localhost:8888/oauth2/v3/certs" }
             registry.add("spring.security.oauth2.client.provider.google.user-name-attribute") { "email" }
-            
+
             registry.add("receipts.inbox-path") { Files.createTempDirectory("inbox").toString() }
             registry.add("receipts.attachment-path") { Files.createTempDirectory("attachments").toString() }
         }
@@ -114,11 +114,11 @@ class WireMockOAuth2E2ETest(
         // And: User should be authenticated and able to access inbox
         open("/inbox")
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: User should be created in database
         val userCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM users WHERE email = ?", 
-            Int::class.java, 
+            "SELECT COUNT(*) FROM users WHERE email = ?",
+            Int::class.java,
             "test@example.com"
         )
         Assertions.assertEquals(1, userCount)
@@ -134,7 +134,7 @@ class WireMockOAuth2E2ETest(
     fun `Given existing user, when completing OAuth2 login, then should update existing user record`() {
         // Given: User already exists in database
         val existingUser = createTestUser("test@example.com", "Old Name")
-        
+
         // When: User completes OAuth2 login flow
         open("/inbox")
         `$`("h1").shouldHave(text("Login"))
@@ -142,19 +142,19 @@ class WireMockOAuth2E2ETest(
 
         // Then: Should successfully authenticate and access inbox
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: User count should remain 1 (no duplicate)
         val userCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM users WHERE email = ?", 
-            Int::class.java, 
+            "SELECT COUNT(*) FROM users WHERE email = ?",
+            Int::class.java,
             "test@example.com"
         )
         Assertions.assertEquals(1, userCount)
-        
+
         // And: User name should be updated to OAuth2 provided name
         val updatedName = jdbcTemplate.queryForObject(
-            "SELECT name FROM users WHERE email = ?", 
-            String::class.java, 
+            "SELECT name FROM users WHERE email = ?",
+            String::class.java,
             "test@example.com"
         )
         Assertions.assertEquals("Test User", updatedName)
@@ -174,11 +174,11 @@ class WireMockOAuth2E2ETest(
 
         // Then: Should be authenticated
         `$`("h1").shouldHave(text("Inbox"))
-        
+
         // And: Login event should be recorded
         val loginEventCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM login_events WHERE user_email = ?", 
-            Int::class.java, 
+            "SELECT COUNT(*) FROM login_events WHERE user_email = ?",
+            Int::class.java,
             "test@example.com"
         )
         Assertions.assertEquals(1, loginEventCount)
@@ -202,7 +202,7 @@ class WireMockOAuth2E2ETest(
 
         // Then: Should be redirected to login page
         `$`("h1").shouldHave(text("Login"))
-        
+
         // And: Accessing protected resource should require authentication again
         open("/inbox")
         `$`("h1").shouldHave(text("Login"))

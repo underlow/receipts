@@ -55,11 +55,11 @@ class FileUploadE2ETest(
             registry.add("spring.datasource.url", postgres::getJdbcUrl)
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
-            
+
             // Mock OAuth2 configuration
             registry.add("spring.security.oauth2.client.registration.google.client-id") { "test-client-id" }
             registry.add("spring.security.oauth2.client.registration.google.client-secret") { "test-client-secret" }
-            
+
             // Configure temp directories for file testing
             val tempInbox = Files.createTempDirectory("e2e-inbox").toString()
             val tempAttachments = Files.createTempDirectory("e2e-attachments").toString()
@@ -93,7 +93,7 @@ class FileUploadE2ETest(
 
         // Clean test data
         cleanupTestData()
-        
+
         // Setup test user for authenticated operations
         setupTestUser()
     }
@@ -109,14 +109,14 @@ class FileUploadE2ETest(
     fun testApiFileUploadSuccess() {
         // Given: Create a test PDF file
         val testFile = createTestFile("test-receipt.pdf", "PDF content for e2e test")
-        
+
         // And: User is authenticated (we'll simulate this through direct API call)
         val testUser = getTestUser()
-        
+
         // When: Making authenticated API request to upload file
         val response = executeRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(testFile),
                 String::class.java
             )
@@ -144,7 +144,7 @@ class FileUploadE2ETest(
             testUser.id
         )
         assertTrue(File(storedFile).exists(), "File should exist in storage: $storedFile")
-        
+
         // Cleanup
         testFile.delete()
     }
@@ -158,7 +158,7 @@ class FileUploadE2ETest(
         // When: Making unauthenticated API request
         val response = executeRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(testFile),
                 String::class.java
             )
@@ -173,7 +173,7 @@ class FileUploadE2ETest(
             "unauthorized-test.pdf"
         )
         assertEquals(0, incomingFileCount)
-        
+
         // Cleanup
         testFile.delete()
     }
@@ -189,7 +189,7 @@ class FileUploadE2ETest(
         // When: Uploading oversized file with authentication
         val response = executeAuthenticatedRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(oversizedFile),
                 String::class.java
             )
@@ -206,7 +206,7 @@ class FileUploadE2ETest(
             oversizedFile.name
         )
         assertEquals(0, incomingFileCount)
-        
+
         // Cleanup
         oversizedFile.delete()
     }
@@ -220,7 +220,7 @@ class FileUploadE2ETest(
         // When: Uploading unsupported file type
         val response = executeAuthenticatedRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(textFile),
                 String::class.java
             )
@@ -236,7 +236,7 @@ class FileUploadE2ETest(
             Int::class.java
         )
         assertEquals(0, incomingFileCount)
-        
+
         // Cleanup
         textFile.delete()
     }
@@ -251,7 +251,7 @@ class FileUploadE2ETest(
         // When: Upload original file
         val firstResponse = executeAuthenticatedRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(originalFile),
                 String::class.java
             )
@@ -262,7 +262,7 @@ class FileUploadE2ETest(
         // When: Upload duplicate file with same content
         val duplicateResponse = executeAuthenticatedRestTemplate()
             .postForEntity(
-                "http://localhost:$port/api/files/upload",
+                "http://localhost:$port/api/files/upload?userEmail=e2e-test@example.com",
                 createMultipartRequest(duplicateFile),
                 String::class.java
             )
@@ -277,7 +277,7 @@ class FileUploadE2ETest(
             Int::class.java
         )
         assertEquals(1, incomingFileCount)
-        
+
         // Cleanup
         originalFile.delete()
         duplicateFile.delete()
@@ -288,7 +288,7 @@ class FileUploadE2ETest(
     fun testFileUploadDatabaseSchema() {
         // Given: Database is initialized
         // When: Checking schema for file upload functionality
-        
+
         // Then: incoming_files table should exist
         val incomingFilesTableExists = jdbcTemplate.queryForObject(
             """
@@ -332,8 +332,8 @@ class FileUploadE2ETest(
     private fun createTestFile(filename: String, content: String): File {
         val tempFile = Files.createTempFile("e2e-test", filename.substringAfterLast(".")).toFile()
         tempFile.writeText(content)
-        return File(tempFile.parent, filename).also { 
-            tempFile.renameTo(it) 
+        return File(tempFile.parent, filename).also {
+            tempFile.renameTo(it)
         }
     }
 

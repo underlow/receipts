@@ -20,7 +20,7 @@ import jakarta.annotation.PreDestroy
  */
 @TestConfiguration
 @EnableWebSecurity
-@Profile("wiremock-oauth2")
+@Profile("e2e")
 class WireMockOAuth2Config {
 
     private lateinit var wireMockServer: WireMockServer
@@ -53,7 +53,7 @@ class WireMockOAuth2Config {
                 )
         )
 
-        // OAuth2 Token endpoint  
+        // OAuth2 Token endpoint
         wireMockServer.stubFor(
             post(urlPathEqualTo("/token"))
                 .willReturn(

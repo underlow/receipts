@@ -202,3 +202,7 @@ Tests can be executed using the Gradle wrapper from the command line.
 *   **Fast:** Unit tests should execute quickly to provide rapid feedback.
 *   **Clear:** Assertions should be specific and test names should be descriptive.
 *   **Clean:** Always clean up resources (database state, files) after a test to ensure isolation.
+
+
+## 10. Notes
+* do not put  spring.security.oauth2.provider.google.issuer-uri into properties - app will try to connect to wiremock before it is initialized

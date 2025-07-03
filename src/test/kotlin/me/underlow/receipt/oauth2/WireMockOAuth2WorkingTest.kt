@@ -42,10 +42,10 @@ class WireMockOAuth2WorkingTest {
             "http://localhost:8888/.well-known/openid_configuration",
             String::class.java
         )
-        
-        assertTrue(configResponse!!.contains("\"issuer\":\"http://localhost:8888\""))
-        assertTrue(configResponse.contains("\"token_endpoint\":\"http://localhost:8888/token\""))
-        assertTrue(configResponse.contains("\"userinfo_endpoint\":\"http://localhost:8888/oauth2/v2/userinfo\""))
+
+        assertTrue(configResponse!!.contains("\"issuer\": \"http://localhost:8888\""))
+        assertTrue(configResponse.contains("\"token_endpoint\": \"http://localhost:8888/token\""))
+        assertTrue(configResponse.contains("\"userinfo_endpoint\": \"http://localhost:8888/oauth2/v2/userinfo\""))
 
         // Test token endpoint
         val tokenResponse = restTemplate.postForObject(
@@ -56,9 +56,9 @@ class WireMockOAuth2WorkingTest {
             ),
             String::class.java
         )
-        
-        assertTrue(tokenResponse!!.contains("\"access_token\":\"test_access_token\""))
-        assertTrue(tokenResponse.contains("\"token_type\":\"Bearer\""))
+
+        assertTrue(tokenResponse!!.contains("\"access_token\": \"test_access_token\""))
+        assertTrue(tokenResponse.contains("\"token_type\": \"Bearer\""))
 
         // Test userinfo endpoint
         val headers = org.springframework.http.HttpHeaders()
@@ -72,8 +72,8 @@ class WireMockOAuth2WorkingTest {
         )
 
         assertEquals(200, userinfoResponse.statusCode.value())
-        assertTrue(userinfoResponse.body!!.contains("\"email\":\"test@example.com\""))
-        assertTrue(userinfoResponse.body!!.contains("\"name\":\"Test User\""))
+        assertTrue(userinfoResponse.body!!.contains("\"email\": \"test@example.com\""))
+        assertTrue(userinfoResponse.body!!.contains("\"name\": \"Test User\""))
     }
 
     /**
@@ -117,8 +117,8 @@ class WireMockOAuth2WorkingTest {
         )
 
         assertEquals(200, response.statusCode.value())
-        assertTrue(response.body!!.contains("\"email\":\"custom@example.com\""))
-        assertTrue(response.body!!.contains("\"name\":\"Custom User\""))
+        assertTrue(response.body!!.contains("\"email\": \"custom@example.com\""))
+        assertTrue(response.body!!.contains("\"name\": \"Custom User\""))
     }
 
     /**
@@ -150,7 +150,7 @@ class WireMockOAuth2WorkingTest {
         val headers = org.springframework.http.HttpHeaders()
         headers.set("Authorization", "Bearer invalid_token")
         val entity = org.springframework.http.HttpEntity<String>(headers)
-        
+
         try {
             val response = restTemplate.exchange(
                 "http://localhost:8888/oauth2/v2/userinfo",
@@ -158,13 +158,13 @@ class WireMockOAuth2WorkingTest {
                 entity,
                 String::class.java
             )
-            
+
             assertEquals(401, response.statusCode.value())
             assertTrue(response.body!!.contains("\"error\":\"invalid_token\""))
         } catch (e: org.springframework.web.client.HttpClientErrorException) {
             // RestTemplate throws exception for 4xx status
             assertEquals(401, e.statusCode.value())
-            assertTrue(e.responseBodyAsString.contains("\"error\":\"invalid_token\""))
+            assertTrue(e.responseBodyAsString.contains("\"error\": \"invalid_token\""))
         }
     }
 

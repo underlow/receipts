@@ -76,32 +76,32 @@ class InboxDebugTest(
     @Test
     fun `Debug database operations and user file lookup`() {
         println("=== Starting debug test ===")
-        
+
         // Step 1: Create test user
         val testUser = createTestUser("debug@example.com", "Debug User")
         println("Created user: id=${testUser.id}, email=${testUser.email}")
-        
+
         // Step 2: Verify user was created
         val userCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM users WHERE email = ?", 
-            Int::class.java, 
+            "SELECT COUNT(*) FROM users WHERE email = ?",
+            Int::class.java,
             "debug@example.com"
         )
         println("User count in database: $userCount")
-        
+
         // Step 3: Create test files
         val file1 = createTestIncomingFile(testUser.id!!, "test-file-1.pdf", BillStatus.PENDING)
         val file2 = createTestIncomingFile(testUser.id!!, "test-file-2.jpg", BillStatus.APPROVED)
         println("Created files: file1.id=${file1.id}, file2.id=${file2.id}")
-        
+
         // Step 4: Verify files were created
         val fileCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM incoming_files WHERE user_id = ?", 
-            Int::class.java, 
+            "SELECT COUNT(*) FROM incoming_files WHERE user_id = ?",
+            Int::class.java,
             testUser.id
         )
         println("File count in database for user ${testUser.id}: $fileCount")
-        
+
         // Step 5: Query files directly by email (simulate service call)
         val filesForUser = jdbcTemplate.query(
             """
@@ -116,19 +116,19 @@ class InboxDebugTest(
             "debug@example.com"
         )
         println("Files found for user debug@example.com: $filesForUser")
-        
+
         // Step 6: Test authentication and page load
         println("Navigating to inbox with authentication...")
         open("/inbox?userEmail=${testUser.email}")
-        
+
         // Verify page loads
         val pageTitle = `$`("h1").text()
         println("Page title: $pageTitle")
-        
+
         // Check what's actually displayed
         val statusBadgeText = `$`(".status-badge.all").text()
         println("Status badge text: $statusBadgeText")
-        
+
         println("=== Debug test completed ===")
     }
 
