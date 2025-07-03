@@ -254,6 +254,7 @@
                 <div class="file-actions">
                     <button th:if="${file.status.name() == 'PENDING'}" class="btn btn-approve" th:onclick="'approveFile(' + ${file.id} + ')'">Approve</button>
                     <button th:if="${file.status.name() == 'PENDING'}" class="btn btn-reject" th:onclick="'rejectFile(' + ${file.id} + ')'">Reject</button>
+                    <a th:if="${file.status.name() == 'APPROVED'}" th:href="'/bills/' + ${file.id}" class="btn" style="background-color: #28a745; color: white;">Detail</a>
                     <button class="btn btn-delete" th:onclick="'deleteFile(' + ${file.id} + ')'">Delete</button>
                     <a th:href="${file.fileUrl}" class="btn" style="background-color: #007bff; color: white;" target="_blank">View</a>
                 </div>
