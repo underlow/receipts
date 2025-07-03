@@ -22,6 +22,7 @@ This document provides a high-level overview of the system architecture for the 
     - ✅ **File Serving**: Secure file access with thumbnail generation and MIME type handling
     - OCR orchestration (dispatch to selected AI engine)
     - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
+    - ✅ **Detail Views**: Split-pane interfaces for bill and receipt processing
     - Settings management (OCR keys, folder paths)
     - API endpoints for table data and exports
 
@@ -104,6 +105,38 @@ This document provides a high-level overview of the system architecture for the 
     3. Thumbnails generated on-demand for visual preview
     4. AJAX operations update file status without page reload
     5. All operations verify user ownership for security
+
+### 2.8 Bill/Receipt Detail View System ✅ **IMPLEMENTED**
+- **Architecture**: Split-pane detail processing interfaces for bills and receipts
+- **Components**:
+    - **BillController**: Web and API endpoints for bill detail operations
+    - **ReceiptController**: Web and API endpoints for receipt detail operations  
+    - **BillService**: Business logic for bill operations, OCR data handling, and approval workflow
+    - **ReceiptService**: Business logic for receipt operations and bill associations
+    - **PaymentService**: Payment creation from approved bills and receipts
+    - **ServiceProviderService**: Management of service provider entities
+    - **PaymentMethodService**: Management of payment method entities
+- **Features**:
+    - **Split-Pane UI**: Image viewer (left) + form interface (right)
+    - **Zoomable Image Viewer**: Pan, zoom, rotate controls with responsive design
+    - **OCR Data Integration**: Pre-populated forms with extracted provider, amount, and date information
+    - **Bill Processing**: Approve/reject workflow with payment creation
+    - **Receipt Association**: Link receipts to existing bills or create standalone payments
+    - **Draft Saving**: Persist intermediate edits without approval
+    - **User Security**: All operations verify user ownership and authentication
+- **Data Transfer Objects**:
+    - **BillDetailDto**: Complete bill information with associated receipts
+    - **ReceiptDetailDto**: Receipt information with available bill associations
+    - **PaymentDetailDto**: Payment information with provider/method details
+    - **ServiceProviderDto**: Service provider dropdown options
+    - **PaymentMethodDto**: Payment method dropdown options
+- **Workflow**:
+    1. Users navigate from inbox to detail views via "Detail" button
+    2. Controllers load entity data and related information 
+    3. Services provide business logic for associations and operations
+    4. Templates render split-pane interface with image viewer and forms
+    5. AJAX operations handle approve, reject, associate, and save actions
+    6. Payment entities created from approved bills/receipts
 
 ## 3. Data Flow
 

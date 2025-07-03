@@ -99,6 +99,14 @@
         - **Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
     - Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
 
+36. **IncomingFile detail view**
+    - Design a split-pane template for `IncomingFile` detail view:
+        - **Left pane**: zoomable receipt image viewer with rotate and crop options with undo functionality
+        - **Right pane**:
+          - Two tabs Bill and Reciept each has each entity possible fields for manual edit
+          - Button "Send to OCR"
+          - Button "Accept". Shouldn't work if some mandatory fields aren't filled 
+    - Should open on click on Approve button or on image preview
 ---
 
 ## OCR Integration

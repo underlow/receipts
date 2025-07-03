@@ -86,11 +86,17 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - Sorting capabilities by filename, upload date, and status
    - File operations: approve, reject, delete with AJAX support
    - Modal image viewer for detailed file inspection
-2. **Manual Review**: Users can edit and correct OCR-extracted data (planned)
-3. **Provider Matching**: Associate bills with existing service providers (planned)
-4. **Payment Method Selection**: Choose how the bill was/will be paid (planned)
-5. **Receipt Association**: Link multiple receipts to a single bill if needed (planned)
-6. **Approval**: Convert approved bills into payment records (planned)
+   - Navigation to detail views via "Detail" buttons
+2. **Detail Views**: ✅ **IMPLEMENTED** - Split-pane interfaces for bill and receipt processing
+   - **Bill Detail View**: Zoomable image viewer with OCR data editing and payment creation
+   - **Receipt Detail View**: Receipt association management and standalone payment processing
+   - **Interactive Forms**: Pre-populated with OCR data, service provider/method selection
+   - **Workflow Actions**: Save draft, approve/reject, associate/dissociate operations
+3. **Manual Review**: ✅ Users can edit and correct OCR-extracted data in detail views
+4. **Provider Matching**: ✅ Associate bills with existing service providers via dropdown selection
+5. **Payment Method Selection**: ✅ Choose how the bill was/will be paid via dropdown selection
+6. **Receipt Association**: ✅ Link multiple receipts to a single bill or process as standalone
+7. **Approval**: ✅ Convert approved bills into payment records with comprehensive data
 
 ### 4. Data Architecture
 
@@ -138,6 +144,15 @@ Users ──┬── LoginEvents
 - **Thumbnail Service**: On-demand thumbnail generation with caching
 - **File Serving**: Direct file access with proper MIME type handling
 - **Error Handling**: Comprehensive error feedback and validation
+
+#### 5.4 Detail View Interfaces ✅ **IMPLEMENTED**
+- **Split-Pane Design**: Image viewer (left) and form interface (right)
+- **Interactive Image Viewer**: Zoom, pan, rotate controls with responsive design
+- **Modern UI**: Professional styling with responsive layout and loading states
+- **Form Integration**: Auto-population from OCR data with manual edit capabilities
+- **AJAX Operations**: Seamless approve, reject, save, and association actions
+- **User Feedback**: Success/error notifications with auto-dismiss functionality
+- **Navigation**: Integrated navigation between inbox and detail views
 
 ### 6. File Management
 - **Storage Location**: `/data/inbox` for incoming receipts, `/data/attachments` for processed files
