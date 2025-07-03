@@ -2,6 +2,35 @@
 
 ## 2025-07-03
 
+### IncomingFile Detail View Implementation (Item 36) ✅ **COMPLETED**
+- **Comprehensive File Detail Interface**: Complete implementation of dedicated detail view for IncomingFile entities
+  - `IncomingFileDetailDto`: Rich data transfer object with computed fields for file size formatting, type detection, and action permissions
+  - Controller endpoints: `GET /inbox/files/{fileId}` for HTML view and `GET /inbox/api/files/{fileId}/detail` for JSON API
+  - `inbox-detail.html`: Modern split-pane template with large file viewer and comprehensive metadata display
+  - Enhanced inbox template with corrected Detail button linking to new endpoint
+
+- **Advanced File Viewer & Metadata Display**:
+  - **Large File Viewer**: Left pane with support for images (JPG, PNG, GIF, BMP, TIFF) and PDF documents
+  - **Interactive Preview**: Proper MIME type handling with fallback for unsupported file types
+  - **Comprehensive Metadata**: Right pane with organized sections for file information, actions, and technical details
+  - **File Information Section**: Filename, upload date (formatted), file size (human-readable), status badge, SHA-256 checksum
+  - **Action Section**: Status-appropriate buttons (approve/reject for PENDING files, delete for all files)
+  - **Technical Details**: File ID, full path, computed file type classification
+
+- **User Experience & Security**:
+  - **Responsive Design**: Professional layout with breadcrumb navigation and back-to-inbox functionality
+  - **User Security**: All operations verify file ownership via authenticated user email
+  - **Error Handling**: Proper handling of file not found scenarios with redirect to inbox
+  - **AJAX Operations**: Seamless approve/reject/delete actions with user feedback and automatic status updates
+  - **Status-Based Permissions**: Action buttons shown/hidden based on current file status and user permissions
+
+- **Technical Implementation & Testing**:
+  - **Comprehensive Test Coverage**: 6 new test methods covering all scenarios (success cases, error handling, API endpoints, authentication)
+  - **Security Integration**: OAuth2 authentication verification with proper 401 responses for unauthenticated users
+  - **Data Transfer Objects**: Factory methods for entity-to-DTO conversion with computed fields
+  - **File System Integration**: File existence checking and size calculation with graceful error handling
+  - **RESTful API Design**: Consistent endpoint structure following project conventions
+
 ### Bill/Receipt Detail Views Implementation (Item 14) ✅ **COMPLETED**
 - **Split-Pane Detail Interfaces**: Complete implementation of professional detail views for bill and receipt processing
   - `BillController`: Web controller with endpoints for bill detail views, approval workflow, and payment creation

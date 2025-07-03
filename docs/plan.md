@@ -99,14 +99,20 @@
         - ✅**Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
     - ✅Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
 
-36. **IncomingFile detail view**
-    - Design a split-pane template for `IncomingFile` detail view:
-        - **Left pane**: zoomable receipt image viewer with rotate and crop options with undo functionality
-        - **Right pane**:
-          - Two tabs Bill and Reciept each has each entity possible fields for manual edit
-          - Button "Send to OCR"
-          - Button "Accept". Shouldn't work if some mandatory fields aren't filled 
-    - Should open on click on Approve button or on image preview
+36. **IncomingFile detail view** ✅
+    - ✅Design a comprehensive detail view template for `IncomingFile`:
+        - ✅**Left pane**: Large file viewer with support for images and PDFs
+        - ✅**Right pane**: Complete file metadata display with sections for:
+          - ✅File Information (filename, upload date, file size, status, checksum)
+          - ✅File Actions (approve, reject, delete) with proper status-based permissions
+          - ✅Technical Details (file ID, path, type detection)
+    - ✅Implement controller endpoints:
+        - ✅`GET /inbox/files/{fileId}` - HTML detail view page
+        - ✅`GET /inbox/api/files/{fileId}/detail` - JSON API endpoint
+    - ✅Add comprehensive test coverage for all detail view functionality
+    - ✅Update inbox template to link Detail button to new endpoint
+    - ✅Create `IncomingFileDetailDto` with computed fields and action permissions
+    - ✅Ensure proper user authentication and file ownership verification
 ---
 
 ## OCR Integration
