@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Tracker - File Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+        .breadcrumb {
+            background-color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb span {
+            color: #666;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            min-height: 600px;
+        }
+        .file-viewer {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .file-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            position: relative;
+        }
+        .file-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .file-display iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 4px;
+        }
+        .file-not-found {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+        }
+        .file-not-found .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .file-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .file-metadata {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .metadata-section {
+            margin-bottom: 25px;
+        }
+        .metadata-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .metadata-item {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .metadata-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        .metadata-value {
+            color: #333;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-badge.pending { background-color: #fff3cd; color: #856404; }
+        .status-badge.processing { background-color: #d1ecf1; color: #0c5460; }
+        .status-badge.approved { background-color: #d4edda; color: #155724; }
+        .status-badge.rejected { background-color: #f8d7da; color: #721c24; }
+        .file-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .checksum {
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .file-metadata {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>File Details</h1>
+            <p th:text="${file.filename}">filename.pdf</p>
+        </div>
+        <div class="nav-links">
+            <a href="/inbox">← Back to Inbox</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/dashboard">Dashboard</a> &gt; 
+        <a href="/inbox">Inbox</a> &gt; 
+        <span th:text="${file.filename}">filename.pdf</span>
+    </div>
+
+    <!-- Display error message if file not found -->
+    <div th:if="${param.error != null and param.error[0] == 'file_not_found'}" class="alert alert-danger">
+        The requested file was not found or you don't have permission to access it.
+    </div>
+
+    <div class="content">
+        <!-- File Viewer -->
+        <div class="file-viewer">
+            <div class="file-display">
+                <div th:if="${!file.fileExists}" class="file-not-found">
+                    <div class="icon">📄</div>
+                    <p>File not found on disk</p>
+                </div>
+                
+                <div th:if="${file.fileExists and file.isImage}">
+                    <img th:src="${file.fileUrl}" th:alt="${file.filename}" />
+                </div>
+                
+                <div th:if="${file.fileExists and file.isPdf}">
+                    <iframe th:src="${file.fileUrl}" type="application/pdf">
+                        Your browser does not support viewing PDFs. 
+                        <a th:href="${file.fileUrl}" target="_blank">Download PDF</a>
+                    </iframe>
+                </div>
+                
+                <div th:if="${file.fileExists and !file.isImage and !file.isPdf}" class="file-not-found">
+                    <div class="icon">📄</div>
+                    <p>File preview not available</p>
+                    <p>Use the download button to view the file</p>
+                </div>
+            </div>
+            
+            <div class="file-controls">
+                <a th:href="${file.fileUrl}" class="btn btn-primary" target="_blank">Download File</a>
+            </div>
+        </div>
+
+        <!-- File Metadata -->
+        <div class="file-metadata">
+            <!-- File Information -->
+            <div class="metadata-section">
+                <h3>File Information</h3>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Filename</div>
+                    <div class="metadata-value" th:text="${file.filename}">filename.pdf</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Upload Date</div>
+                    <div class="metadata-value" th:text="${file.uploadDateFormatted}">Jan 01, 2024 at 12:00</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">File Size</div>
+                    <div class="metadata-value" th:text="${file.fileSizeFormatted}">1.2 MB</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Status</div>
+                    <div class="metadata-value">
+                        <span class="status-badge" th:class="'status-badge ' + ${file.status.name().toLowerCase()}" th:text="${file.statusDisplayName}">Pending</span>
+                    </div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Checksum (SHA-256)</div>
+                    <div class="metadata-value checksum" th:text="${file.checksum}">abc123def456...</div>
+                </div>
+            </div>
+
+            <!-- File Actions -->
+            <div class="metadata-section">
+                <h3>Actions</h3>
+                
+                <div class="file-actions">
+                    <button th:if="${file.canApprove}" class="btn btn-success" th:onclick="'approveFile(' + ${file.id} + ')'">
+                        ✓ Approve File
+                    </button>
+                    
+                    <button th:if="${file.canReject}" class="btn btn-danger" th:onclick="'rejectFile(' + ${file.id} + ')'">
+                        ✗ Reject File
+                    </button>
+                    
+                    <button th:if="${file.canDelete}" class="btn btn-secondary" th:onclick="'deleteFile(' + ${file.id} + ')'">
+                        🗑 Delete File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Technical Details -->
+            <div class="metadata-section">
+                <h3>Technical Details</h3>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">File ID</div>
+                    <div class="metadata-value" th:text="${file.id}">123</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">File Path</div>
+                    <div class="metadata-value" th:text="${file.filePath}">/path/to/file.pdf</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">File Type</div>
+                    <div class="metadata-value">
+                        <span th:if="${file.isImage}">Image</span>
+                        <span th:if="${file.isPdf}">PDF Document</span>
+                        <span th:if="${!file.isImage and !file.isPdf}">Other</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function approveFile(fileId) {
+            if (!confirm('Are you sure you want to approve this file?')) return;
+            
+            fetch(`/inbox/api/files/${fileId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('File approved successfully!', 'success');
+                    // Refresh the page to update the status
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error approving file: ' + error, 'danger');
+            });
+        }
+
+        function rejectFile(fileId) {
+            if (!confirm('Are you sure you want to reject this file?')) return;
+            
+            fetch(`/inbox/api/files/${fileId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('File rejected successfully!', 'success');
+                    // Refresh the page to update the status
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error rejecting file: ' + error, 'danger');
+            });
+        }
+
+        function deleteFile(fileId) {
+            if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
+            
+            fetch(`/inbox/api/files/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('File deleted successfully!', 'success');
+                    // Redirect to inbox after deletion
+                    setTimeout(() => window.location.href = '/inbox', 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error deleting file: ' + error, 'danger');
+            });
+        }
+
+        function showAlert(message, type) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create new alert
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            // Insert at top of content
+            const content = document.querySelector('.content');
+            content.parentNode.insertBefore(alert, content);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
