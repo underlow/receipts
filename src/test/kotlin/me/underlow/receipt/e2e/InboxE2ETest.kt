@@ -114,7 +114,6 @@ class InboxE2ETest(
      * Then: Page loads successfully with correct counts for each status
      */
     @Test
-    @Disabled
     fun `Given user with only pending files, when opening inbox, then should display correct counts without error`() {
         // Given: Create a user with only pending files
         val testUser = createTestUser("pendingonly@example.com", "Pending Only User")
@@ -146,7 +145,6 @@ class InboxE2ETest(
      * Then: Page loads successfully with correct counts for each status
      */
     @Test
-    @Disabled
     fun `Given user with mixed status files, when opening inbox, then should display correct status counts`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("mixed@example.com", "Mixed Status User")
@@ -181,7 +179,6 @@ class InboxE2ETest(
      * Then: Only files with selected status are displayed
      */
     @Test
-    @Disabled
     fun `Given user with mixed files, when filtering by status, then should show only files with selected status`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("filter@example.com", "Filter Test User")
@@ -213,6 +210,89 @@ class InboxE2ETest(
 
         // Then: Should show all files again
         `$$`(".file-card").shouldHave(CollectionCondition.size(2))
+    }
+
+    /**
+     * Test that sort and filter parameters are preserved when switching between them
+     * Given: User has mixed files and sets sort parameters
+     * When: User changes filters
+     * Then: Sort parameters should be preserved
+     */
+    @Test
+    fun `Given user with sorted files, when changing filter, then should preserve sort parameters`() {
+        // Given: Create a user with files in various statuses
+        val testUser = createTestUser("sortfilter@example.com", "Sort Filter Test User")
+        createTestIncomingFile(testUser.id!!, "alpha-pending.pdf", BillStatus.PENDING)
+        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", BillStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "gamma-pending.png", BillStatus.PENDING)
+
+        // When: Navigate to inbox page
+        simulateLogin(testUser)
+
+        // Then: Initially should show all files
+        `$$`(".file-card").shouldHave(CollectionCondition.size(3))
+
+        // When: Change sort to filename ascending
+        `$`("#sortBy").selectOptionByValue("filename")
+        `$`("#sortDirection").selectOptionByValue("asc")
+
+        // Wait for page to reload with new sort
+        `$`("h1").shouldHave(text("Inbox"))
+
+        // When: Filter by pending status
+        `$`(".status-badge.pending").click()
+
+        // Then: Should show only pending files
+        `$$`(".file-card").shouldHave(CollectionCondition.size(2))
+
+        // And: Sort parameters should be preserved in URL
+        val currentUrl = WebDriverRunner.getWebDriver().currentUrl
+        assertTrue(currentUrl?.contains("sortBy=filename") == true, "Sort by parameter should be preserved")
+        assertTrue(currentUrl?.contains("sortDirection=asc") == true, "Sort direction should be preserved")
+        assertTrue(currentUrl?.contains("status=pending") == true, "Status filter should be applied")
+    }
+
+    /**
+     * Test that filter parameters are preserved when changing sort
+     * Given: User has filtered files and changes sort parameters
+     * When: User changes sort options
+     * Then: Filter parameters should be preserved
+     */
+    @Test
+    fun `Given user with filtered files, when changing sort, then should preserve filter parameters`() {
+        // Given: Create a user with files in various statuses
+        val testUser = createTestUser("filtersort@example.com", "Filter Sort Test User")
+        createTestIncomingFile(testUser.id!!, "alpha-approved.pdf", BillStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", BillStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "gamma-pending.png", BillStatus.PENDING)
+
+        // When: Navigate to inbox page
+        simulateLogin(testUser)
+
+        // Then: Initially should show all files
+        `$$`(".file-card").shouldHave(CollectionCondition.size(3))
+
+        // When: Filter by approved status
+        `$`(".status-badge.approved").click()
+
+        // Then: Should show only approved files
+        `$$`(".file-card").shouldHave(CollectionCondition.size(2))
+
+        // When: Change sort to filename ascending
+        `$`("#sortBy").selectOptionByValue("filename")
+        `$`("#sortDirection").selectOptionByValue("asc")
+
+        // Wait for page to reload
+        `$`("h1").shouldHave(text("Inbox"))
+
+        // Then: Should still show only approved files
+        `$$`(".file-card").shouldHave(CollectionCondition.size(2))
+
+        // And: Both filter and sort parameters should be preserved in URL
+        val currentUrl = WebDriverRunner.getWebDriver().currentUrl
+        assertTrue(currentUrl?.contains("status=approved") == true, "Status filter should be preserved")
+        assertTrue(currentUrl?.contains("sortBy=filename") == true, "Sort by parameter should be applied")
+        assertTrue(currentUrl?.contains("sortDirection=asc") == true, "Sort direction should be applied")
     }
 
     private fun createTestUser(email: String, name: String): User {

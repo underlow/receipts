@@ -144,4 +144,100 @@ class InboxControllerTest {
             .andExpect(jsonPath("$.statusCounts.approved").value(0))
             .andExpect(jsonPath("$.statusCounts.rejected").value(0))
     }
+
+    /**
+     * Test that filter and sort parameters are properly handled
+     * Given: User with filter and sort parameters
+     * When: GET /inbox with status=pending&sortBy=filename&sortDirection=asc
+     * Then: Should pass correct parameters to service and display in model
+     */
+    @Test
+    fun `Given filter and sort parameters, when getting inbox page, then should pass correct parameters to service`() {
+        // Given: User with filter and sort parameters
+        val userEmail = "test@example.com"
+        val statusCounts = mapOf(
+            BillStatus.PENDING to 5,
+            BillStatus.PROCESSING to 2,
+            BillStatus.APPROVED to 3,
+            BillStatus.REJECTED to 1
+        )
+
+        whenever(incomingFileService.findByUserEmailWithPagination(userEmail, BillStatus.PENDING, 0, 20, "filename", "asc"))
+            .thenReturn(Pair(emptyList(), 5L))
+        whenever(incomingFileService.getFileStatistics(userEmail))
+            .thenReturn(statusCounts)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request with filter and sort parameters
+        val result = mockMvc.perform(
+            get("/inbox")
+                .param("status", "pending")
+                .param("sortBy", "filename")
+                .param("sortDirection", "asc")
+                .with(authentication(auth))
+        )
+
+        // Then: Should return successful response with correct model attributes
+        result.andExpect(status().isOk)
+            .andExpect(view().name("inbox"))
+            .andExpect(model().attribute("selectedStatus", "pending"))
+            .andExpect(model().attribute("sortBy", "filename"))
+            .andExpect(model().attribute("sortDirection", "asc"))
+            .andExpect(model().attributeExists("statusCounts"))
+    }
+
+    /**
+     * Test that invalid status filter defaults to showing all files
+     * Given: User with invalid status parameter
+     * When: GET /inbox with status=invalid
+     * Then: Should treat as no filter and show all files
+     */
+    @Test
+    fun `Given invalid status filter, when getting inbox page, then should show all files`() {
+        // Given: User with invalid status parameter
+        val userEmail = "test@example.com"
+        val statusCounts = mapOf(
+            BillStatus.PENDING to 5,
+            BillStatus.PROCESSING to 2,
+            BillStatus.APPROVED to 3,
+            BillStatus.REJECTED to 1
+        )
+
+        whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
+            .thenReturn(Pair(emptyList(), 11L))
+        whenever(incomingFileService.getFileStatistics(userEmail))
+            .thenReturn(statusCounts)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request with invalid status parameter
+        val result = mockMvc.perform(
+            get("/inbox")
+                .param("status", "invalid")
+                .with(authentication(auth))
+        )
+
+        // Then: Should return successful response showing all files
+        result.andExpect(status().isOk)
+            .andExpect(view().name("inbox"))
+            .andExpect(model().attribute("selectedStatus", "invalid"))
+            .andExpect(model().attribute("totalFiles", 11L))
+    }
 }

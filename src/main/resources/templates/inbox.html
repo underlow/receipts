@@ -200,20 +200,20 @@
             <div class="filter-group">
                 <label>Filter by Status:</label>
                 <div class="status-badges">
-                    <a href="?status=" class="status-badge all" th:classappend="${selectedStatus == '' ? 'active' : ''}">
-                        All (<span th:text="${(statusCounts.get('PENDING') ?: 0) + (statusCounts.get('PROCESSING') ?: 0) + (statusCounts.get('APPROVED') ?: 0) + (statusCounts.get('REJECTED') ?: 0)}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('')" class="status-badge all" th:classappend="${selectedStatus == '' ? 'active' : ''}">
+                        All (<span th:text="${(statusCounts.get(T(me.underlow.receipt.model.BillStatus).PENDING) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).PROCESSING) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).APPROVED) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).REJECTED) ?: 0)}">0</span>)
                     </a>
-                    <a href="?status=pending" class="status-badge pending" th:classappend="${selectedStatus == 'pending' ? 'active' : ''}">
-                        Pending (<span th:text="${statusCounts.get('PENDING') ?: 0}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('pending')" class="status-badge pending" th:classappend="${selectedStatus == 'pending' ? 'active' : ''}">
+                        Pending (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).PENDING) ?: 0}">0</span>)
                     </a>
-                    <a href="?status=processing" class="status-badge processing" th:classappend="${selectedStatus == 'processing' ? 'active' : ''}">
-                        Processing (<span th:text="${statusCounts.get('PROCESSING') ?: 0}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('processing')" class="status-badge processing" th:classappend="${selectedStatus == 'processing' ? 'active' : ''}">
+                        Processing (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).PROCESSING) ?: 0}">0</span>)
                     </a>
-                    <a href="?status=approved" class="status-badge approved" th:classappend="${selectedStatus == 'approved' ? 'active' : ''}">
-                        Approved (<span th:text="${statusCounts.get('APPROVED') ?: 0}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('approved')" class="status-badge approved" th:classappend="${selectedStatus == 'approved' ? 'active' : ''}">
+                        Approved (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).APPROVED) ?: 0}">0</span>)
                     </a>
-                    <a href="?status=rejected" class="status-badge rejected" th:classappend="${selectedStatus == 'rejected' ? 'active' : ''}">
-                        Rejected (<span th:text="${statusCounts.get('REJECTED') ?: 0}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('rejected')" class="status-badge rejected" th:classappend="${selectedStatus == 'rejected' ? 'active' : ''}">
+                        Rejected (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).REJECTED) ?: 0}">0</span>)
                     </a>
                 </div>
             </div>
@@ -363,6 +363,20 @@
             url.searchParams.set('sortBy', sortBy);
             url.searchParams.set('sortDirection', sortDirection);
             url.searchParams.set('page', '0'); // Reset to first page when sorting changes
+            window.location.href = url.toString();
+        }
+
+        function updateFilter(status) {
+            const url = new URL(window.location);
+            url.searchParams.set('status', status);
+            url.searchParams.set('page', '0'); // Reset to first page when filter changes
+            // Preserve existing sort parameters
+            if (!url.searchParams.has('sortBy')) {
+                url.searchParams.set('sortBy', 'uploadDate');
+            }
+            if (!url.searchParams.has('sortDirection')) {
+                url.searchParams.set('sortDirection', 'desc');
+            }
             window.location.href = url.toString();
         }
 
