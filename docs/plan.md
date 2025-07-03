@@ -89,15 +89,15 @@
     - ✅Create modal image viewer with keyboard shortcuts
     - ✅Fix critical bug with null status counts causing dashboard crashes
 
-14. **Receipt/Bill detail view**
-    - Design a split-pane template for `Receipt` detail view:
-        - **Left pane**: zoomable receipt image viewer
-        - **Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
-    - Add “Associate with Bill” (link this receipt to an existing bill or create a new bill), “Accept as Payment” (approve & convert to Payment for standalone receipts), and “Save Draft” (persist edits) buttons.
-    - Design a split-pane template for `Bill` detail view:
-        - **Left pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
-        - **Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
-    - Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
+14. **Receipt/Bill detail view** ✅
+    - ✅Design a split-pane template for `Receipt` detail view:
+        - ✅**Left pane**: zoomable receipt image viewer
+        - ✅**Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
+    - ✅Add “Associate with Bill” (link this receipt to an existing bill or create a new bill), “Accept as Payment” (approve & convert to Payment for standalone receipts), and “Save Draft” (persist edits) buttons.
+    - ✅Design a split-pane template for `Bill` detail view:
+        - ✅**Left pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
+        - ✅**Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
+    - ✅Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
 
 36. **IncomingFile detail view**
     - Design a split-pane template for `IncomingFile` detail view:

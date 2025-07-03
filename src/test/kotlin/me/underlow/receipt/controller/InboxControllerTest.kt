@@ -2,7 +2,9 @@ package me.underlow.receipt.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.service.IncomingFileService
+import java.time.LocalDateTime
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import kotlin.test.assertTrue
+import java.io.File
 
 /**
  * Integration tests for InboxController specifically testing the status counts bug fix
@@ -239,5 +242,206 @@ class InboxControllerTest {
             .andExpect(view().name("inbox"))
             .andExpect(model().attribute("selectedStatus", "invalid"))
             .andExpect(model().attribute("totalFiles", 11L))
+    }
+
+    /**
+     * Test that file detail view loads correctly for existing file
+     * Given: User owns a file with ID 123
+     * When: GET /inbox/files/123
+     * Then: Should render detail view with file information
+     */
+    @Test
+    fun `Given user owns file, when getting file detail page, then should render detail view`() {
+        // Given: User owns a file
+        val userEmail = "test@example.com"
+        val fileId = 123L
+        val testFile = IncomingFile(
+            id = fileId,
+            filename = "test-document.pdf",
+            filePath = "/tmp/test-document.pdf",
+            uploadDate = LocalDateTime.now(),
+            status = BillStatus.PENDING,
+            checksum = "abc123def456",
+            userId = 1L
+        )
+
+        whenever(incomingFileService.findByIdAndUserEmail(fileId, userEmail))
+            .thenReturn(testFile)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request to file detail page
+        val result = mockMvc.perform(
+            get("/inbox/files/$fileId")
+                .with(authentication(auth))
+        )
+
+        // Then: Should return successful response and render detail template
+        result.andExpect(status().isOk)
+            .andExpect(view().name("inbox-detail"))
+            .andExpect(model().attribute("userEmail", userEmail))
+            .andExpect(model().attribute("userName", "Test User"))
+            .andExpect(model().attributeExists("file"))
+
+        // And: File data should be properly converted to DTO
+        val model = result.andReturn().modelAndView?.model
+        val fileDto = model?.get("file")
+        assertTrue(fileDto != null, "File DTO should not be null")
+    }
+
+    /**
+     * Test that file detail view redirects for non-existent file
+     * Given: User requests a file that doesn't exist
+     * When: GET /inbox/files/999
+     * Then: Should redirect to inbox with error
+     */
+    @Test
+    fun `Given file does not exist, when getting file detail page, then should redirect to inbox with error`() {
+        // Given: File doesn't exist
+        val userEmail = "test@example.com"
+        val fileId = 999L
+
+        whenever(incomingFileService.findByIdAndUserEmail(fileId, userEmail))
+            .thenReturn(null)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request to non-existent file
+        val result = mockMvc.perform(
+            get("/inbox/files/$fileId")
+                .with(authentication(auth))
+        )
+
+        // Then: Should redirect to inbox with error parameter
+        result.andExpect(status().is3xxRedirection)
+            .andExpect(redirectedUrl("/inbox?error=file_not_found"))
+    }
+
+    /**
+     * Test that file detail API returns correct JSON for existing file
+     * Given: User owns a file with ID 123
+     * When: GET /inbox/api/files/123/detail
+     * Then: Should return detailed file information as JSON
+     */
+    @Test
+    fun `Given user owns file, when getting file detail API, then should return detailed file information`() {
+        // Given: User owns a file
+        val userEmail = "test@example.com"
+        val fileId = 123L
+        val testFile = IncomingFile(
+            id = fileId,
+            filename = "test-document.pdf",
+            filePath = "/tmp/test-document.pdf",
+            uploadDate = LocalDateTime.of(2024, 1, 15, 10, 30, 0),
+            status = BillStatus.PENDING,
+            checksum = "abc123def456",
+            userId = 1L
+        )
+
+        whenever(incomingFileService.findByIdAndUserEmail(fileId, userEmail))
+            .thenReturn(testFile)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making API request for file detail
+        val result = mockMvc.perform(
+            get("/inbox/api/files/$fileId/detail")
+                .with(authentication(auth))
+        )
+
+        // Then: Should return successful JSON response with file details
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.id").value(fileId))
+            .andExpect(jsonPath("$.filename").value("test-document.pdf"))
+            .andExpect(jsonPath("$.status").value("PENDING"))
+            .andExpect(jsonPath("$.statusDisplayName").value("Pending Review"))
+            .andExpect(jsonPath("$.checksum").value("abc123def456"))
+            .andExpect(jsonPath("$.fileUrl").value("/api/files/$fileId"))
+            .andExpect(jsonPath("$.thumbnailUrl").value("/api/files/$fileId/thumbnail"))
+            .andExpect(jsonPath("$.canApprove").value(true))
+            .andExpect(jsonPath("$.canReject").value(true))
+            .andExpect(jsonPath("$.canDelete").value(true))
+            .andExpect(jsonPath("$.isPdf").value(true))
+            .andExpect(jsonPath("$.isImage").value(false))
+    }
+
+    /**
+     * Test that file detail API returns 404 for non-existent file
+     * Given: User requests a file that doesn't exist
+     * When: GET /inbox/api/files/999/detail
+     * Then: Should return 404 Not Found
+     */
+    @Test
+    fun `Given file does not exist, when getting file detail API, then should return 404`() {
+        // Given: File doesn't exist
+        val userEmail = "test@example.com"
+        val fileId = 999L
+
+        whenever(incomingFileService.findByIdAndUserEmail(fileId, userEmail))
+            .thenReturn(null)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making API request for non-existent file
+        val result = mockMvc.perform(
+            get("/inbox/api/files/$fileId/detail")
+                .with(authentication(auth))
+        )
+
+        // Then: Should return 404 Not Found
+        result.andExpect(status().isNotFound)
+    }
+
+    /**
+     * Test that unauthenticated user cannot access file detail
+     * Given: User is not authenticated
+     * When: GET /inbox/files/123
+     * Then: Should return 401 Unauthorized
+     */
+    @Test
+    fun `Given user is not authenticated, when getting file detail page, then should return 401`() {
+        // Given: User is not authenticated
+        val fileId = 123L
+
+        // When: Making request without authentication
+        val result = mockMvc.perform(
+            get("/inbox/files/$fileId")
+        )
+
+        // Then: Should return 401 Unauthorized (handled by Spring Security)
+        result.andExpect(status().isUnauthorized)
     }
 }

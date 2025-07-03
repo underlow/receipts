@@ -98,13 +98,32 @@ This document provides a high-level overview of the system architecture for the 
     - **Real-time Operations**: AJAX-powered approve/reject/delete actions
     - **Pagination & Sorting**: Efficient browsing of large file collections
     - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
+    - **Detail View**: Comprehensive file detail page with metadata and actions
     - **Security**: User-scoped access with OAuth2 authentication verification
 - **Data Flow**:
     1. Users access inbox via `/inbox` endpoint
     2. Controller fetches user's files with pagination/filtering
     3. Thumbnails generated on-demand for visual preview
     4. AJAX operations update file status without page reload
-    5. All operations verify user ownership for security
+    5. Detail view accessible via `/inbox/files/{fileId}` for comprehensive file information
+    6. All operations verify user ownership for security
+
+#### 2.7.1 Inbox Endpoints
+- **Web Endpoints**:
+    - `GET /inbox` - Main inbox list page with grid layout
+    - `GET /inbox/files/{fileId}` - Detailed file view with metadata and preview
+- **API Endpoints**:
+    - `GET /inbox/api/list` - Paginated file list for AJAX requests
+    - `GET /inbox/api/files/{fileId}/detail` - Detailed file information as JSON
+    - `POST /inbox/api/files/{fileId}/approve` - Approve file status change
+    - `POST /inbox/api/files/{fileId}/reject` - Reject file status change
+    - `DELETE /inbox/api/files/{fileId}` - Delete file permanently
+
+#### 2.7.2 Data Transfer Objects
+- **InboxFileDto**: List view file information with status and thumbnail URLs
+- **InboxListResponse**: Paginated response with files and status counts
+- **IncomingFileDetailDto**: Comprehensive file details with computed fields (file size, type detection, action permissions)
+- **FileOperationResponse**: Standard response for file operations (approve/reject/delete)
 
 ### 2.8 Bill/Receipt Detail View System ✅ **IMPLEMENTED**
 - **Architecture**: Split-pane detail processing interfaces for bills and receipts

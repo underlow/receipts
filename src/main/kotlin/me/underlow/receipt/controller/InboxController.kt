@@ -3,6 +3,7 @@ package me.underlow.receipt.controller
 import me.underlow.receipt.dto.FileOperationResponse
 import me.underlow.receipt.dto.InboxFileDto
 import me.underlow.receipt.dto.InboxListResponse
+import me.underlow.receipt.dto.IncomingFileDetailDto
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.service.IncomingFileService
 import org.springframework.http.ResponseEntity
@@ -185,5 +186,48 @@ class InboxController(
         }
 
         return ResponseEntity.ok(response)
+    }
+
+    /**
+     * Shows the detailed view for a specific file
+     */
+    @GetMapping("/files/{fileId}")
+    fun showFileDetail(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken,
+        model: Model
+    ): String {
+        val userEmail = authentication.principal.getAttribute<String>("email") ?: return "redirect:/login"
+        val userName = authentication.principal.getAttribute<String>("name") ?: "Unknown User"
+
+        val incomingFile = incomingFileService.findByIdAndUserEmail(fileId, userEmail)
+            ?: return "redirect:/inbox?error=file_not_found"
+
+        val fileDetailDto = IncomingFileDetailDto.fromIncomingFile(incomingFile)
+
+        model.addAttribute("userEmail", userEmail)
+        model.addAttribute("userName", userName)
+        model.addAttribute("file", fileDetailDto)
+
+        return "inbox-detail"
+    }
+
+    /**
+     * API endpoint to get detailed file information
+     */
+    @GetMapping("/api/files/{fileId}/detail")
+    @ResponseBody
+    fun getFileDetail(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<IncomingFileDetailDto> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().build()
+
+        val incomingFile = incomingFileService.findByIdAndUserEmail(fileId, userEmail)
+            ?: return ResponseEntity.notFound().build()
+
+        val fileDetailDto = IncomingFileDetailDto.fromIncomingFile(incomingFile)
+        return ResponseEntity.ok(fileDetailDto)
     }
 }
