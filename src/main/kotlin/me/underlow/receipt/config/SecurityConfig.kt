@@ -10,7 +10,7 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
-//@Profile("!e2e")
+@Profile("!e2e")
 class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserService) {
 
     @Bean

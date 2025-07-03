@@ -89,9 +89,8 @@ class InboxE2ETest(
         // Given: Create a user with no files
         val testUser = createTestUser("nofiles@example.com", "No Files User")
 
-        // When: Navigate to inbox page as authenticated user
-        simulateLogin(testUser)
-        open("/inbox")
+        // When: Navigate directly to inbox with userEmail parameter (bypassing login)
+        open("/inbox?userEmail=${testUser.email}")
 
         // Then: Page should load successfully
         `$`("h1").shouldHave(text("Inbox"))
@@ -260,15 +259,17 @@ class InboxE2ETest(
         )
     }
 
+    /**
+     * Simulates OAuth2 login by navigating to a page with the user email parameter
+     * The TestSecurityConfig mock filter will automatically set up authentication
+     */
     private fun simulateLogin(user: User) {
-        // Simulate OAuth2 login by setting session attributes
-        open("/")
-
-        // Insert login event to track the login
-        jdbcTemplate.update(
-            "INSERT INTO login_events (user_id, timestamp) VALUES (?, ?)",
-            user.id, java.sql.Timestamp.valueOf(LocalDateTime.now())
-        )
+        // Navigate directly to inbox with userEmail parameter
+        // The MockOAuth2AuthenticationFilter will set up authentication automatically
+        open("/inbox?userEmail=${user.email}")
+        
+        // The page should load with proper authentication
+        `$`("h1").shouldHave(text("Inbox"))
     }
 
     private fun cleanDatabase() {

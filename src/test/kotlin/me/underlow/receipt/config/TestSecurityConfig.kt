@@ -1,40 +1,73 @@
-import org.springframework.boot.test.context.TestConfiguration
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
-import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.filter.OncePerRequestFilter
 
-// In src/test/kotlin/me/underlow/receipt/config/TestSecurityConfig.kt
-//@TestConfiguration
-//@EnableWebSecurity
-//@Profile("e2e")
-//class TestSecurityConfig(private val mockOAuth2UserService: OAuth2UserService<OAuth2UserRequest, OAuth2User>) {
-//
-//    @Bean
-//    @Primary
-//    fun testSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
-//        http
-//            .authorizeHttpRequests { requests ->
-//                // Secure all endpoints, except for the login page and static assets
-//                requests
-//                    .requestMatchers("/login", "/static/**", "/error").permitAll()
-//                    .anyRequest().authenticated()
-//            }
-//            .oauth2Login { oauth2Login ->
-//                // Enable the login flow but use the mock user service
-//                oauth2Login
-//                    .loginPage("/login")
-//                    .userInfoEndpoint { userInfo ->
-//                        userInfo.userService(mockOAuth2UserService) // Use the mock service from MockOAuth2Config
-//                    }
-//                    .defaultSuccessUrl("/dashboard", true)
-//            }
-//            .csrf { it.disable() } // CSRF can be disabled for simplicity in tests
-//        return http.build()
-//    }
-//}
+@Configuration
+@EnableWebSecurity
+@Profile("e2e")
+class TestSecurityConfig {
+
+    @Bean
+    @Primary
+    fun testSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .authorizeHttpRequests { requests ->
+                requests.anyRequest().permitAll()
+            }
+            .oauth2Login { it.disable() }  // Disable OAuth2 login entirely
+            .addFilterBefore(MockOAuth2AuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            .csrf { it.disable() }
+        return http.build()
+    }
+
+    /**
+     * Filter that sets up mock OAuth2 authentication for all requests in e2e tests
+     */
+    class MockOAuth2AuthenticationFilter : OncePerRequestFilter() {
+        override fun doFilterInternal(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            filterChain: FilterChain
+        ) {
+            // Extract email from request parameter or use default
+            val email = request.getParameter("userEmail") ?: "testuser@example.com"
+            val name = email.substringBefore("@").replaceFirstChar { it.uppercase() }
+
+            // Create mock OAuth2 user
+            val mockUser = DefaultOAuth2User(
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
+                mapOf(
+                    "sub" to "test-user-id",
+                    "email" to email,
+                    "name" to name
+                ),
+                "sub"
+            )
+
+            // Create OAuth2 authentication token
+            val authToken = OAuth2AuthenticationToken(
+                mockUser,
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
+                "google"
+            )
+
+            // Set authentication in security context
+            SecurityContextHolder.getContext().authentication = authToken
+
+            filterChain.doFilter(request, response)
+        }
+    }
+}
