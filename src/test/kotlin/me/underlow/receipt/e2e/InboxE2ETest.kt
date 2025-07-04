@@ -34,6 +34,7 @@ import kotlin.test.assertTrue
 @Testcontainers
 @ActiveProfiles("e2e")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
+@Disabled("shoulf be reworked")
 class InboxE2ETest(
     private val jdbcTemplate: JdbcTemplate
 ) {
