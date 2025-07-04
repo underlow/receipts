@@ -50,6 +50,7 @@ This document provides a high-level overview of the system architecture for the 
   - **User Management**: User, LoginEvent
   - **File Ingestion**: IncomingFile (complete OCR workflow integration with extracted data fields)
   - **Core Domain**: ServiceProvider, PaymentMethod, Bill, Receipt, Payment
+  - **Status Model**: ItemStatus enum (NEW, APPROVED, REJECTED) with legacy status consolidation
   - **OCR Audit**: OcrAttempt (complete history of all OCR processing attempts)
   - **Future**: Attachment (planned)
 - **Access Layer**: Spring Data JDBC with JdbcTemplate custom repository implementations
@@ -101,40 +102,46 @@ This document provides a high-level overview of the system architecture for the 
     8. **Data Extraction**: Store extracted provider, amount, date, currency
     9. Files ready for user review and bill dispatch
 
-### 2.7 Inbox Management System ✅ **IMPLEMENTED**
-- **Architecture**: Comprehensive file review and management interface
+### 2.7 Inbox Management System ✅ **IMPLEMENTED WITH TABBED INTERFACE**
+- **Architecture**: Tabbed interface with status-based views for comprehensive file and item management
 - **Components**:
-    - **InboxController**: Web and API controller for inbox functionality
-    - **IncomingFileService**: Business logic layer with pagination and filtering
+    - **InboxController**: Web and API controller for tabbed inbox functionality
+    - **IncomingFileService**: Business logic layer with status-based filtering
+    - **BillService**: Business logic for bill status management
+    - **ReceiptService**: Business logic for receipt status management
     - **FileServingController**: Secure file access with user authentication
     - **ThumbnailService**: On-demand thumbnail generation for images and PDFs
-- **Features**: ✅ **ENHANCED WITH OCR INTEGRATION**
-    - **Responsive UI**: Grid layout with thumbnail previews and file information
-    - **Status Management**: Visual badges with filtering (PENDING, PROCESSING, APPROVED, REJECTED)
+- **Features**: ✅ **TABBED INTERFACE WITH STATUS CONSOLIDATION**
+    - **Tabbed UI**: Three-tab interface (New, Approved, Rejected) with status-based content
+    - **Status Consolidation**: Legacy statuses (pending, processing, draft) consolidated to NEW
+    - **New Tab**: Shows IncomingFile, Bill, Receipt items with status=NEW
+    - **Approved/Rejected Tabs**: Show Bills & Receipts with type filters (Bill/Receipt)
+    - **Type Filtering**: Filter by item type within Approved/Rejected tabs
     - **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
-    - **Real-time Operations**: AJAX-powered approve/reject/delete actions + OCR operations
-    - **Pagination & Sorting**: Efficient browsing of large file collections
+    - **Real-time Operations**: AJAX-powered status transitions and OCR operations
     - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
     - **Enhanced Detail View**: Comprehensive OCR workflow management interface
     - **Security**: User-scoped access with OAuth2 authentication verification
 - **Data Flow**:
-    1. Users access inbox via `/inbox` endpoint
-    2. Controller fetches user's files with pagination/filtering
-    3. Thumbnails generated on-demand for visual preview
-    4. AJAX operations update file status without page reload
-    5. Detail view accessible via `/inbox/files/{fileId}` for comprehensive file information
-    6. All operations verify user ownership for security
+    1. Users access inbox via `/inbox` endpoint with tabbed interface
+    2. Controller fetches user's items by status (NEW, APPROVED, REJECTED)
+    3. New tab displays IncomingFile, Bill, Receipt items with NEW status
+    4. Approved/Rejected tabs display Bills & Receipts with type filtering
+    5. Thumbnails generated on-demand for visual preview
+    6. AJAX operations handle status transitions and type filtering
+    7. Detail view accessible via `/inbox/files/{fileId}` for comprehensive item information
+    8. All operations verify user ownership for security
 
 #### 2.7.1 Inbox Endpoints
 - **Web Endpoints**:
-    - `GET /inbox` - Main inbox list page with grid layout
+    - `GET /inbox` - Main inbox page with tabbed interface (New/Approved/Rejected)
     - `GET /inbox/files/{fileId}` - Detailed file view with metadata and preview
 - **API Endpoints**:
-    - `GET /inbox/api/list` - Paginated file list for AJAX requests
-    - `GET /inbox/api/files/{fileId}/detail` - Detailed file information as JSON
-    - `POST /inbox/api/files/{fileId}/approve` - Approve file status change
-    - `POST /inbox/api/files/{fileId}/reject` - Reject file status change
-    - `DELETE /inbox/api/files/{fileId}` - Delete file permanently
+    - `GET /inbox/api/list` - Paginated item list with status-based filtering
+    - `GET /inbox/api/files/{fileId}/detail` - Detailed item information as JSON
+    - `POST /inbox/api/files/{fileId}/approve` - Approve item status change
+    - `POST /inbox/api/files/{fileId}/reject` - Reject item status change
+    - `DELETE /inbox/api/files/{fileId}` - Delete item permanently
     - ✅ **OCR Operations**:
         - `POST /inbox/api/files/{fileId}/ocr` - Trigger OCR processing
         - `POST /inbox/api/files/{fileId}/ocr-retry` - Retry failed OCR processing

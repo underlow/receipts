@@ -27,25 +27,32 @@ The Household Expense Tracker is a web-based application designed to streamline 
 
 #### 2.3 File Ingestion & Management
 
-##### 2.3.1 IncomingFiles ✅ **IMPLEMENTED**
+##### 2.3.1 IncomingFiles ✅ **IMPLEMENTED WITH STATUS CONSOLIDATION**
 - **Purpose**: Track files detected by the folder-watcher service through complete OCR processing workflow
-- **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED with automatic transitions
+- **Processing States**: NEW (consolidated from pending, processing, draft) → APPROVED/REJECTED with automatic transitions
+- **Status Consolidation**: Legacy statuses (pending, processing, draft) are consolidated to NEW for simplified UX
 - **OCR Integration**: Stores OCR results, extracted data, and error information
 - **Duplicate Prevention**: SHA-256 checksum-based duplicate detection
 - **File Storage**: Organized storage with date-prefixed naming (`yyyy-MM-dd-filename`)
+- **Tab Visibility**: IncomingFile items only appear in the New tab
 - **Fields**: filename, file path, upload date, status, checksum, user association, OCR raw JSON, extracted amount/date/provider, processing timestamps, error messages
 
-##### 2.3.2 Bills & Document Management
+##### 2.3.2 Bills & Document Management ✅ **IMPLEMENTED WITH STATUS-BASED TABS**
 - **Purpose**: Store and process uploaded receipt/bill documents after OCR processing
-- **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED
+- **Processing States**: NEW (consolidated from pending, processing, draft) → APPROVED/REJECTED
+- **Status Consolidation**: Legacy statuses (pending, processing, draft) are consolidated to NEW for simplified UX
 - **OCR Integration**: Automatic extraction of amount, date, and provider information
 - **File Storage**: Links to processed files from IncomingFiles
+- **Tab Visibility**: Bills can appear in all tabs (New, Approved, Rejected) based on status
 - **Fields**: filename, file path, upload date, status, OCR data, extracted information, user association
 
-#### 2.4 Receipts
+#### 2.4 Receipts ✅ **IMPLEMENTED WITH STATUS-BASED TABS**
 - **Purpose**: Represent individual expense items that may be associated with bills
+- **Processing States**: NEW (consolidated from pending, processing, draft) → APPROVED/REJECTED
+- **Status Consolidation**: Legacy statuses (pending, processing, draft) are consolidated to NEW for simplified UX
 - **Flexibility**: Can exist independently or be linked to bills
 - **Organization**: Allows for grouping multiple receipts under a single bill
+- **Tab Visibility**: Receipts can appear in all tabs (New, Approved, Rejected) based on status
 - **User Association**: Each receipt is tied to a specific user
 
 #### 2.5 Payments
@@ -178,6 +185,13 @@ Users ──┬── LoginEvents
         └── OcrAttempts ──┬── IncomingFiles (entity tracking)
                           ├── Bills (entity tracking)
                           └── Receipts (entity tracking)
+
+Status Model:
+- ItemStatus enum: NEW, APPROVED, REJECTED
+- Status consolidation: pending + processing + draft → NEW
+- Tab visibility: 
+  - New tab: IncomingFile, Bill, Receipt with status=NEW
+  - Approved/Rejected tabs: Bills & Receipts with type filters
 ```
 
 #### 4.3 Data Validation
@@ -193,19 +207,21 @@ Users ──┬── LoginEvents
 - **Navigation**: Quick access to key features (Inbox, Upload)
 - **Feature Cards**: Intuitive layout for accessing main functionality
 
-#### 5.2 Inbox Management Interface ✅ **ENHANCED WITH OCR**
-- **Grid Layout**: Responsive file grid with thumbnail previews
+#### 5.2 Inbox Management Interface ✅ **TABBED INTERFACE WITH STATUS-BASED VIEWS**
+- **Tabbed Layout**: Three-tab interface (New, Approved, Rejected) with status-based content
+- **New Tab**: Shows IncomingFile, Bill, Receipt items with NEW status (consolidated from pending, processing, draft)
+- **Approved/Rejected Tabs**: Show Bills & Receipts with type filters (Bill/Receipt)
+- **Type Filtering**: Filter by item type within Approved/Rejected tabs
 - **Smart Thumbnails**: Automatic thumbnail generation for images and PDF placeholders
-- **Status Management**: Visual status badges with color coding
+- **Status Consolidation**: Legacy statuses (pending, processing, draft) consolidated to NEW
 - **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
   - ⏳ Pending OCR for unprocessed files
   - 🔍 Processing status during OCR execution
   - 🔍 Extracted data display (amount, provider) for completed processing
   - ❌ Error indicators for failed OCR processing
-- **Real-time Operations**: AJAX-powered approve/reject/delete actions
-- **Filtering & Search**: Status-based filtering with live count updates
+- **Real-time Operations**: AJAX-powered status transitions and type filtering
 - **Sorting**: Multi-column sorting (filename, date, status) with direction control
-- **Pagination**: Efficient pagination for large file collections
+- **Pagination**: Efficient pagination for large item collections
 - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
 
 #### 5.3 File Operations
