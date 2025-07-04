@@ -106,14 +106,16 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - File operations: manual type selection (Bill/Receipt), OCR processing, delete with AJAX support
    - Modal image viewer for detailed file inspection
    - Navigation to detail views via "Detail" buttons
-   - **New Panel Actions**: 
-     - "Send to OCR" - processes file with automatic type detection
-     - "Bill" - converts file to Bill entity in pending state
-     - "Receipt" - converts file to Receipt entity in pending state
+   - **Enhanced Panel Actions**: 
+     - "Send to OCR" - processes file with automatic type detection (moved to actions panel)
+     - "Bill" - converts file to Bill entity with OCR data for editing
+     - "Receipt" - converts file to Receipt entity with OCR data for editing
+     - Removed "Approve File" button for simplified workflow
    - **Flexible Workflows**:
      - Automatic OCR on upload with type detection
      - Manual type selection then OCR for info extraction only
      - User can accept, reject (revert to IncomingFile), or retry OCR anytime
+   - **Entity Conversion System**: Seamless conversion between IncomingFile ↔ Bill ↔ Receipt with complete data preservation
 2. **Detail Views**: ✅ **IMPLEMENTED** - Split-pane interfaces for bill and receipt processing
    - **Bill Detail View**: Zoomable image viewer with OCR data editing and payment creation
    - **Receipt Detail View**: Receipt association management and standalone payment processing
@@ -122,7 +124,9 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - **Two-Tab Interface**: When IncomingFile is converted to Bill/Receipt:
      - **Bill/Receipt Tab**: Editable entity fields prefilled with OCR values, Accept/Revert buttons (available anytime)
      - **Information Tab**: Technical file details, metadata, and complete OCR attempts history
-   - **Navigation**: Breadcrumbs removed for simplified interface
+   - **Navigation**: Breadcrumbs removed for simplified interface with direct navigation
+   - **OCR History Tracking**: Complete audit trail of all OCR processing attempts preserved across entity conversions
+   - **Revert Functionality**: Users can revert Bill/Receipt back to IncomingFile anytime with full data preservation
 3. **OCR Processing Management**: ✅ Complete OCR workflow control through intuitive interface
    - Manual OCR trigger via "Send to OCR" button for unprocessed files
    - Automatic OCR processing for newly uploaded files
@@ -166,10 +170,14 @@ The Household Expense Tracker is a web-based application designed to streamline 
 #### 4.2 Entity Relationships
 ```
 Users ──┬── LoginEvents
-        ├── Bills ──┬── Receipts (optional)
+        ├── IncomingFiles ──┬── Bills (via conversion)
+        ├── Bills ──┬── Receipts (optional)    └── Receipts (via conversion)
         ├── Receipts    └── Payments (optional)
-        └── Payments ──┬── ServiceProviders
-                       └── PaymentMethods
+        ├── Payments ──┬── ServiceProviders
+        │              └── PaymentMethods
+        └── OcrAttempts ──┬── IncomingFiles (entity tracking)
+                          ├── Bills (entity tracking)
+                          └── Receipts (entity tracking)
 ```
 
 #### 4.3 Data Validation

@@ -23,7 +23,10 @@ This document provides a high-level overview of the system architecture for the 
     - ✅ **OCR Orchestration**: Complete workflow automation with multi-engine support
     - ✅ **OCR Interface**: Comprehensive UI for managing OCR processing, retries, and dispatch
     - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
-    - ✅ **Detail Views**: Split-pane interfaces for file processing with OCR integration
+    - ✅ **Detail Views**: Split-pane interfaces with two-tab design for file processing with OCR integration
+    - ✅ **Enhanced Panel Actions**: Manual type selection workflow with Bill/Receipt conversion buttons
+    - ✅ **Entity Conversion System**: Seamless conversion between IncomingFile ↔ Bill ↔ Receipt with revert functionality
+    - ✅ **OCR History Tracking**: Complete audit trail of all OCR processing attempts across entity transitions
     - Settings management (OCR keys, folder paths)
     - API endpoints for table data and exports
 
@@ -47,6 +50,7 @@ This document provides a high-level overview of the system architecture for the 
   - **User Management**: User, LoginEvent
   - **File Ingestion**: IncomingFile (complete OCR workflow integration with extracted data fields)
   - **Core Domain**: ServiceProvider, PaymentMethod, Bill, Receipt, Payment
+  - **OCR Audit**: OcrAttempt (complete history of all OCR processing attempts)
   - **Future**: Attachment (planned)
 - **Access Layer**: Spring Data JDBC with JdbcTemplate custom repository implementations
 - **Migration**: Liquibase for schema versioning and database migrations
@@ -59,10 +63,14 @@ This document provides a high-level overview of the system architecture for the 
 - **Users** → Bills (one-to-many) 
 - **Users** → Receipts (one-to-many)
 - **Users** → Payments (one-to-many)
+- **Users** → OcrAttempts (one-to-many)
 - **Bills** → Receipts (one-to-many, optional)
 - **Bills** → Payments (one-to-one, optional)
+- **Bills** → IncomingFiles (via originalIncomingFileId)
+- **Receipts** → IncomingFiles (via originalIncomingFileId)
 - **ServiceProviders** → Payments (one-to-many)
 - **PaymentMethods** → Payments (one-to-many)
+- **OcrAttempts** → IncomingFiles/Bills/Receipts (polymorphic via entityType/entityId)
 
 ### 2.5 File Storage
 - **Location**: Host filesystem within Docker volume

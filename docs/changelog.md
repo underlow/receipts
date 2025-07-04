@@ -2,6 +2,67 @@
 
 ## 2025-07-04
 
+### Enhanced Panel Actions and Two-Tab Interface Implementation (Items 38-42) ✅ **COMPLETED**
+- **Enhanced Panel Actions for IncomingFile (Item 38)**: Complete workflow transformation for improved user experience
+  - **UI Changes**: Removed "Approve File" button from actions panel to simplify interface
+  - **Manual Type Selection**: Added "Bill" and "Receipt" conversion buttons for manual type selection workflow
+  - **Action Panel Reorganization**: Moved "Send to OCR" button to actions panel for better visibility
+  - **Flexible Workflows**: 
+    - Automatic OCR with type detection: Upload → OCR → Accept/Reject/Retry
+    - Manual type selection: Upload → Select Type (Bill/Receipt) → OCR for info extraction → Accept/Revert
+  - **User Control**: Users can switch between automatic and manual workflows based on preference
+
+- **Two-Tab Interface for Bill/Receipt Detail Views (Item 39)**: Modern tabbed interface design
+  - **Bill Detail View**: Implemented two-tab interface with "📄 Bill" and "ℹ️ Information" tabs
+  - **Receipt Detail View**: Implemented two-tab interface with "🧾 Receipt" and "ℹ️ Information" tabs
+  - **Tab Functionality**: 
+    - **Entity Tab**: Editable form fields pre-populated with OCR data, save/accept/revert actions
+    - **Information Tab**: Read-only metadata including file information, OCR processing details, technical details
+  - **Interactive Design**: Click-to-switch tabs with visual active state indicators
+  - **Responsive Layout**: Tabs maintain proper layout across different screen sizes
+
+- **Enhanced User Stories Implementation (Item 40)**: Complete manual type selection and entity state management
+  - **Manual Workflow**: Users can pre-select Bill or Receipt type before OCR processing
+  - **Entity Conversion Service**: New `EntityConversionService` for converting between IncomingFile ↔ Bill ↔ Receipt
+  - **State Transitions**: Seamless conversion between entity types with data preservation
+  - **OCR History Transfer**: Complete OCR attempts history preserved during entity conversions
+  - **Revert Functionality**: Users can revert Bill/Receipt back to IncomingFile anytime
+  - **Data Integrity**: All file metadata, checksums, and OCR data maintained during conversions
+
+- **OCR Attempts History System (Item 41)**: Comprehensive audit trail for OCR processing
+  - **OcrAttempt Model**: New entity tracking all OCR processing attempts with engine, status, timestamp
+  - **OcrAttemptService**: Service layer for managing OCR history across entity transitions
+  - **OcrAttemptRepository**: Database operations for OCR attempts with user-scoped queries
+  - **Enhanced OCR Service**: Updated to track attempts with `processEntityWithOcrTracking()` method
+  - **History Preservation**: OCR attempts history transferred during entity conversions
+  - **Audit Capability**: Complete visibility into all OCR processing attempts for debugging and analytics
+
+- **UI Navigation Improvements (Item 42)**: Simplified and modern navigation
+  - **Breadcrumb Removal**: Removed breadcrumb navigation from all templates for cleaner interface
+  - **Direct Navigation**: Simplified navigation with prominent back buttons and clear hierarchy
+  - **Consistent Header**: Standardized header navigation across all pages
+  - **Tab Navigation**: New tab-based navigation within detail views for better organization
+
+- **Database Schema Enhancements**: 
+  - **Enhanced Bill/Receipt Models**: Extended with file metadata fields (filename, filePath, uploadDate, checksum, status, originalIncomingFileId)
+  - **OCR History Table**: New `ocr_attempts` table with complete audit trail functionality
+  - **Foreign Key Relationships**: Proper relationships between entities with cascade handling
+  - **Migration Script**: Database migration `005-enhanced-workflow.sql` with all necessary schema changes
+
+- **Enhanced Controller Endpoints**:
+  - **InboxController**: New conversion endpoints `/api/files/{fileId}/convert-to-bill` and `/api/files/{fileId}/convert-to-receipt`
+  - **BillController**: New revert endpoint `/api/{billId}/revert` for Bill → IncomingFile conversion
+  - **ReceiptController**: New revert endpoint `/api/{receiptId}/revert` for Receipt → IncomingFile conversion
+  - **Response DTOs**: Consistent API responses with entity IDs for navigation
+
+- **Technical Improvements**:
+  - **UserRepository Enhancement**: Added `findById()` method for user lookup by ID
+  - **FileProcessingService Fix**: Fixed compilation error with OCR service integration and userEmail parameter
+  - **Test Coverage**: Updated all test files to support new service dependencies and method signatures
+  - **Error Handling**: Comprehensive error handling and validation throughout new workflows
+
+## 2025-07-04
+
 ### OCR Integration and Dispatch Logic Implementation (Item 12) ✅ **COMPLETED**
 - **Complete OCR Workflow Integration**: Implemented end-to-end OCR processing from file upload to Bill creation
   - Extended `IncomingFile` entity with OCR result fields: `ocrRawJson`, `extractedAmount`, `extractedDate`, `extractedProvider`, `ocrProcessedAt`, `ocrErrorMessage`
