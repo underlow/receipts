@@ -19,7 +19,9 @@ class IncomingFileServiceTest {
 
     private val incomingFileRepository = mock<IncomingFileRepository>()
     private val userRepository = mock<UserRepository>()
-    private val incomingFileService = IncomingFileService(incomingFileRepository, userRepository)
+    private val incomingFileOcrService = mock<IncomingFileOcrService>()
+    private val fileDispatchService = mock<FileDispatchService>()
+    private val incomingFileService = IncomingFileService(incomingFileRepository, userRepository, incomingFileOcrService, fileDispatchService)
 
     /**
      * Test that reproduces the original bug where missing status counts would cause null pointer issues

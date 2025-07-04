@@ -2,6 +2,7 @@ package me.underlow.receipt.model
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -28,5 +29,18 @@ data class IncomingFile(
     val checksum: String,
     
     @field:NotNull(message = "User ID cannot be null")
-    val userId: Long
+    val userId: Long,
+    
+    // OCR processing fields
+    val ocrRawJson: String? = null,
+    
+    val extractedAmount: Double? = null,
+    
+    val extractedDate: LocalDate? = null,
+    
+    val extractedProvider: String? = null,
+    
+    val ocrProcessedAt: LocalDateTime? = null,
+    
+    val ocrErrorMessage: String? = null
 )

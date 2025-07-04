@@ -250,6 +250,16 @@
                     <div class="file-name" th:text="${file.filename}">filename.pdf</div>
                     <div class="file-date" th:text="${#temporals.format(file.uploadDate, 'MMM dd, yyyy HH:mm')}">Jan 01, 2024 12:00</div>
                     <div class="file-status" th:class="'file-status ' + ${file.status.name().toLowerCase()}" th:text="${file.statusDisplayName}">Pending</div>
+                    <!-- OCR Status Indicator -->
+                    <div class="ocr-info" style="font-size: 11px; color: #666; margin-top: 3px;">
+                        <span th:if="${file.hasOcrResults}">🔍 OCR: 
+                            <span th:if="${file.extractedAmount != null}" th:text="'$' + ${file.extractedAmount}">$25.99</span>
+                            <span th:if="${file.extractedProvider != null}" th:text="' - ' + ${file.extractedProvider}"> - Store Name</span>
+                        </span>
+                        <span th:if="${!file.hasOcrResults and file.status.name() == 'PROCESSING'}">🔍 Processing...</span>
+                        <span th:if="${file.ocrErrorMessage != null}">❌ OCR Failed</span>
+                        <span th:if="${!file.hasOcrResults and file.status.name() == 'PENDING'}">⏳ Pending OCR</span>
+                    </div>
                 </div>
                 <div class="file-actions">
                     <button th:if="${file.status.name() == 'PENDING'}" class="btn btn-approve" th:onclick="'approveFile(' + ${file.id} + ')'">Approve</button>

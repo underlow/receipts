@@ -21,6 +21,7 @@ class FileProcessingServiceTest {
 
     private lateinit var incomingFileRepository: IncomingFileRepository
     private lateinit var receiptsProperties: ReceiptsProperties
+    private lateinit var incomingFileOcrService: IncomingFileOcrService
     private lateinit var fileProcessingService: FileProcessingService
 
     @TempDir
@@ -29,11 +30,12 @@ class FileProcessingServiceTest {
     @BeforeEach
     fun setup() {
         incomingFileRepository = mock()
+        incomingFileOcrService = mock()
         receiptsProperties = ReceiptsProperties(
             inboxPath = tempDir.resolve("inbox").toString(),
             attachmentsPath = tempDir.resolve("attachments").toString()
         )
-        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties)
+        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService)
     }
 
     @Test

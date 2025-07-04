@@ -28,11 +28,12 @@ The Household Expense Tracker is a web-based application designed to streamline 
 #### 2.3 File Ingestion & Management
 
 ##### 2.3.1 IncomingFiles ✅ **IMPLEMENTED**
-- **Purpose**: Track files detected by the folder-watcher service before OCR processing
-- **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED
+- **Purpose**: Track files detected by the folder-watcher service through complete OCR processing workflow
+- **Processing States**: PENDING → PROCESSING → APPROVED/REJECTED with automatic transitions
+- **OCR Integration**: Stores OCR results, extracted data, and error information
 - **Duplicate Prevention**: SHA-256 checksum-based duplicate detection
 - **File Storage**: Organized storage with date-prefixed naming (`yyyy-MM-dd-filename`)
-- **Fields**: filename, file path, upload date, status, checksum, user association
+- **Fields**: filename, file path, upload date, status, checksum, user association, OCR raw JSON, extracted amount/date/provider, processing timestamps, error messages
 
 ##### 2.3.2 Bills & Document Management
 - **Purpose**: Store and process uploaded receipt/bill documents after OCR processing
@@ -70,14 +71,23 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - File type validation (PDF, JPG, PNG, GIF, BMP, TIFF)
    - File size limits and validation (10MB maximum)
    - Duplicate detection and prevention
-3. **OCR Processing**: Automatic extraction of key information using AI engines (planned)
+3. **OCR Processing**: ✅ **IMPLEMENTED** - Automatic extraction of key information using AI engines
+   - Multi-engine support (OpenAI, Claude, Google AI) with fallback mechanisms
+   - Automatic processing of uploaded files immediately after storage
+   - Intelligent extraction of provider, amount, date, and currency information
+   - Status management through PENDING → PROCESSING → APPROVED/REJECTED workflow
+   - Error handling and retry mechanisms for failed OCR processing
+   - Raw OCR data preservation for audit and debugging purposes
 
-#### 3.2 OCR & Data Extraction
-- **Multi-Engine Support**: OpenAI, Claude, and Google AI integration
-- **Configurable**: Users can select preferred OCR engine
-- **Smart Extraction**: Automatically identifies provider, amount, dates
-- **Raw Data Preservation**: Original OCR JSON stored for reference
-- **Status Tracking**: Processing status updates throughout workflow
+#### 3.2 OCR & Data Extraction ✅ **IMPLEMENTED**
+- **Multi-Engine Support**: OpenAI GPT-4 Vision, Claude Vision, and Google Gemini integration
+- **Fallback Mechanisms**: Automatic retry with different engines if one fails
+- **Smart Extraction**: Automatically identifies provider, amount, dates, and currency
+- **Raw Data Preservation**: Original OCR JSON stored in database for reference
+- **Status Tracking**: Real-time processing status updates throughout workflow
+- **Error Handling**: Comprehensive error capture and retry mechanisms
+- **Performance Monitoring**: Processing time tracking and confidence scoring
+- **Integration Points**: Seamless integration with ServiceProvider and PaymentMethod entities
 
 #### 3.3 Review & Approval Process ✅ **IMPLEMENTED**
 1. **Inbox Management**: ✅ Comprehensive inbox interface for file review and management
@@ -92,11 +102,36 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - **Receipt Detail View**: Receipt association management and standalone payment processing
    - **Interactive Forms**: Pre-populated with OCR data, service provider/method selection
    - **Workflow Actions**: Save draft, approve/reject, associate/dissociate operations
-3. **Manual Review**: ✅ Users can edit and correct OCR-extracted data in detail views
-4. **Provider Matching**: ✅ Associate bills with existing service providers via dropdown selection
-5. **Payment Method Selection**: ✅ Choose how the bill was/will be paid via dropdown selection
-6. **Receipt Association**: ✅ Link multiple receipts to a single bill or process as standalone
-7. **Approval**: ✅ Convert approved bills into payment records with comprehensive data
+3. **OCR Processing Management**: ✅ Complete OCR workflow control through intuitive interface
+   - Manual OCR trigger via "Send to OCR" button for unprocessed files
+   - Automatic OCR processing for newly uploaded files
+   - Real-time status monitoring with visual indicators
+   - Error handling with "Retry OCR" functionality for failed processing
+   - Extracted data preview (provider, amount, date) in both inbox and detail views
+4. **Manual Review**: ✅ Users can edit and correct OCR-extracted data in detail views
+5. **Provider Matching**: ✅ Associate bills with existing service providers via dropdown selection
+6. **Payment Method Selection**: ✅ Choose how the bill was/will be paid via dropdown selection
+7. **Receipt Association**: ✅ Link multiple receipts to a single bill or process as standalone
+8. **Approval**: ✅ Convert approved bills into payment records with comprehensive data
+
+#### 3.4 OCR Dispatch & Bill Creation ✅ **IMPLEMENTED**
+1. **Automatic Processing**: Files trigger OCR processing immediately after upload/detection
+2. **Status Management**: Real-time status updates through PENDING → PROCESSING → APPROVED/REJECTED
+3. **Error Handling**: Failed OCR processing is captured with detailed error messages
+4. **Retry Mechanisms**: Users can retry failed OCR processing through the UI
+5. **Bill Dispatch**: Approved OCR results are automatically converted to Bill entities
+6. **Data Extraction**: Provider, amount, date, and currency are extracted and stored
+7. **User Interface**: Comprehensive OCR interface integration
+   - Real-time status indicators in inbox file grid
+   - Detailed OCR information panel in file detail view
+   - Interactive OCR action buttons ("Send to OCR", "Retry OCR", "Create Bill")
+   - Extracted data visualization with provider, amount, and date display
+   - Processing timestamps and error message reporting
+8. **API Endpoints**: RESTful endpoints for complete OCR workflow management
+   - `POST /api/files/{fileId}/ocr`: Trigger OCR processing
+   - `POST /api/files/{fileId}/ocr-retry`: Retry failed OCR processing  
+   - `POST /api/files/{fileId}/dispatch`: Dispatch approved files to Bills
+   - `GET /api/ocr-statistics`: Get user OCR processing statistics
 
 ### 4. Data Architecture
 
@@ -129,10 +164,15 @@ Users ──┬── LoginEvents
 - **Navigation**: Quick access to key features (Inbox, Upload)
 - **Feature Cards**: Intuitive layout for accessing main functionality
 
-#### 5.2 Inbox Management Interface
+#### 5.2 Inbox Management Interface ✅ **ENHANCED WITH OCR**
 - **Grid Layout**: Responsive file grid with thumbnail previews
 - **Smart Thumbnails**: Automatic thumbnail generation for images and PDF placeholders
 - **Status Management**: Visual status badges with color coding
+- **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
+  - ⏳ Pending OCR for unprocessed files
+  - 🔍 Processing status during OCR execution
+  - 🔍 Extracted data display (amount, provider) for completed processing
+  - ❌ Error indicators for failed OCR processing
 - **Real-time Operations**: AJAX-powered approve/reject/delete actions
 - **Filtering & Search**: Status-based filtering with live count updates
 - **Sorting**: Multi-column sorting (filename, date, status) with direction control
@@ -146,11 +186,16 @@ Users ──┬── LoginEvents
 - **Error Handling**: Comprehensive error feedback and validation
 
 #### 5.4 Detail View Interfaces ✅ **IMPLEMENTED**
-- **Split-Pane Design**: Image viewer (left) and form interface (right)
-- **Interactive Image Viewer**: Zoom, pan, rotate controls with responsive design
-- **Modern UI**: Professional styling with responsive layout and loading states
-- **Form Integration**: Auto-population from OCR data with manual edit capabilities
-- **AJAX Operations**: Seamless approve, reject, save, and association actions
+- **Split-Pane Design**: Image viewer (left) and metadata/actions interface (right)
+- **Interactive Image Viewer**: Zoom, pan controls with support for images and PDFs
+- **OCR Processing Section**: Complete OCR workflow management interface
+  - Real-time OCR status display (pending, processing, completed, failed)
+  - Extracted data visualization (provider, amount, date, currency)
+  - Processing timestamps and error message display
+  - OCR action buttons: "Send to OCR", "Retry OCR", "Create Bill"
+- **File Actions**: Status-aware approve, reject, delete operations
+- **Technical Details**: Comprehensive file metadata and system information
+- **AJAX Operations**: Seamless OCR processing, approval, and dispatch actions
 - **User Feedback**: Success/error notifications with auto-dismiss functionality
 - **Navigation**: Integrated navigation between inbox and detail views
 
@@ -162,13 +207,18 @@ Users ──┬── LoginEvents
 - **Thumbnail Cache**: Generated thumbnails for improved performance
 
 ### 7. Technology Stack
-- **Backend**: Kotlin + Spring Boot
+- **Backend**: Kotlin + Spring Boot with coroutines for async processing
 - **Frontend**: Thymeleaf server-side rendering with modern CSS and JavaScript
-- **Database**: PostgreSQL (production), H2 (development)
+- **Database**: PostgreSQL (production), H2 (development) with Liquibase migrations
 - **Authentication**: OAuth2 with Google
 - **File Processing**: Apache PDFBox for PDF handling, Java AWT for image processing
-- **OCR**: OpenAI, Claude, Google AI APIs (planned)
-- **Testing**: JUnit 5, Mockito, Selenide for E2E testing
+- **OCR Integration**: ✅ **IMPLEMENTED**
+  - OpenAI GPT-4 Vision API for receipt text extraction
+  - Claude (Anthropic) Vision API for document analysis
+  - Google Gemini Vision API for image processing
+  - Fallback mechanisms with configurable engine selection
+  - Asynchronous processing with coroutines
+- **Testing**: JUnit 5, Mockito, comprehensive OCR workflow testing
 - **Deployment**: Docker containers with volume mounts
 
 ## Future Enhancements

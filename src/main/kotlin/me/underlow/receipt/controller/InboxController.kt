@@ -230,4 +230,97 @@ class InboxController(
         val fileDetailDto = IncomingFileDetailDto.fromIncomingFile(incomingFile)
         return ResponseEntity.ok(fileDetailDto)
     }
+    
+    /**
+     * API endpoint to trigger OCR processing for a file
+     */
+    @PostMapping("/api/files/{fileId}/ocr")
+    @ResponseBody
+    fun triggerOcrProcessing(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+
+        val success = incomingFileService.triggerOcrProcessing(fileId, userEmail)
+        val response = if (success) {
+            FileOperationResponse(true, "OCR processing triggered successfully", fileId)
+        } else {
+            FileOperationResponse(false, "Failed to trigger OCR processing or file not found")
+        }
+
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to retry OCR processing for a failed file
+     */
+    @PostMapping("/api/files/{fileId}/ocr-retry")
+    @ResponseBody
+    fun retryOcrProcessing(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+
+        val success = incomingFileService.retryOcrProcessing(fileId, userEmail)
+        val response = if (success) {
+            FileOperationResponse(true, "OCR processing retry triggered successfully", fileId)
+        } else {
+            FileOperationResponse(false, "Failed to retry OCR processing or file not found")
+        }
+
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to dispatch an IncomingFile to Bill
+     */
+    @PostMapping("/api/files/{fileId}/dispatch")
+    @ResponseBody
+    fun dispatchToBill(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+
+        val success = incomingFileService.dispatchToBill(fileId, userEmail)
+        val response = if (success) {
+            FileOperationResponse(true, "File successfully dispatched to Bill", fileId)
+        } else {
+            FileOperationResponse(false, "Failed to dispatch file or file not ready")
+        }
+
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to get OCR statistics for the user
+     */
+    @GetMapping("/api/ocr-statistics")
+    @ResponseBody
+    fun getOcrStatistics(
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<Map<String, Any>> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().build()
+
+        val ocrStats = incomingFileService.getOcrStatistics(userEmail)
+        val response = mapOf(
+            "ocrStatistics" to ocrStats,
+            "ocrAvailable" to incomingFileService.isOcrProcessingAvailable(),
+            "availableEngines" to incomingFileService.getAvailableOcrEngines()
+        )
+
+        return ResponseEntity.ok(response)
+    }
 }

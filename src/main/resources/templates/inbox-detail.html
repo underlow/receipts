@@ -178,6 +178,8 @@
         .btn-success { background-color: #28a745; color: white; }
         .btn-danger { background-color: #dc3545; color: white; }
         .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-info { background-color: #17a2b8; color: white; }
         .btn:hover { opacity: 0.9; }
         .btn:disabled {
             opacity: 0.6;
@@ -314,6 +316,74 @@
                 </div>
             </div>
 
+            <!-- OCR Information -->
+            <div class="metadata-section">
+                <h3>OCR Processing</h3>
+                
+                <!-- OCR Status -->
+                <div class="metadata-item">
+                    <div class="metadata-label">OCR Status</div>
+                    <div class="metadata-value">
+                        <span th:if="${!file.hasOcrResults and file.status.name() == 'PENDING'}">Not processed</span>
+                        <span th:if="${file.status.name() == 'PROCESSING'}">Processing...</span>
+                        <span th:if="${file.hasOcrResults and file.status.name() == 'APPROVED'}">✓ Processed successfully</span>
+                        <span th:if="${file.ocrErrorMessage != null and file.status.name() == 'REJECTED'}">✗ Processing failed</span>
+                    </div>
+                </div>
+                
+                <!-- OCR Processing Date -->
+                <div th:if="${file.ocrProcessedAt != null}" class="metadata-item">
+                    <div class="metadata-label">Processed At</div>
+                    <div class="metadata-value" th:text="${file.ocrProcessedAtFormatted}">Jan 15, 2024 at 14:32</div>
+                </div>
+                
+                <!-- Extracted Information -->
+                <div th:if="${file.hasOcrResults}" class="metadata-item">
+                    <div class="metadata-label">Extracted Provider</div>
+                    <div class="metadata-value" th:text="${file.extractedProvider ?: 'Not detected'}">Provider Name</div>
+                </div>
+                
+                <div th:if="${file.hasOcrResults}" class="metadata-item">
+                    <div class="metadata-label">Extracted Amount</div>
+                    <div class="metadata-value" th:text="${file.extractedAmount != null ? '$' + file.extractedAmount : 'Not detected'}">$25.99</div>
+                </div>
+                
+                <div th:if="${file.hasOcrResults}" class="metadata-item">
+                    <div class="metadata-label">Extracted Date</div>
+                    <div class="metadata-value" th:text="${file.extractedDate != null ? file.extractedDate : 'Not detected'}">2024-01-15</div>
+                </div>
+                
+                <!-- OCR Error Message -->
+                <div th:if="${file.ocrErrorMessage != null}" class="metadata-item">
+                    <div class="metadata-label">Error Message</div>
+                    <div class="metadata-value" style="color: #dc3545;" th:text="${file.ocrErrorMessage}">Error details</div>
+                </div>
+                
+                <!-- OCR Actions -->
+                <div class="file-actions" style="margin-top: 15px;">
+                    <!-- Send to OCR button for files without OCR results -->
+                    <button th:if="${!file.hasOcrResults and file.status.name() != 'PROCESSING'}" 
+                            class="btn btn-info" 
+                            th:onclick="'sendToOcr(' + ${file.id} + ')'">
+                        🔍 Send to OCR
+                    </button>
+                    
+                    <!-- Retry OCR button for failed files -->
+                    <button th:if="${file.canRetryOcr}" 
+                            class="btn btn-warning" 
+                            th:onclick="'retryOcr(' + ${file.id} + ')'">
+                        🔄 Retry OCR
+                    </button>
+                    
+                    <!-- Dispatch to Bill button for ready files -->
+                    <button th:if="${file.readyForDispatch}" 
+                            class="btn btn-success" 
+                            th:onclick="'dispatchToBill(' + ${file.id} + ')'">
+                        📄 Create Bill
+                    </button>
+                </div>
+            </div>
+
             <!-- File Actions -->
             <div class="metadata-section">
                 <h3>Actions</h3>
@@ -429,6 +499,78 @@
             })
             .catch(error => {
                 showAlert('Error deleting file: ' + error, 'danger');
+            });
+        }
+
+        function sendToOcr(fileId) {
+            if (!confirm('Send this file to OCR processing?')) return;
+            
+            fetch(`/inbox/api/files/${fileId}/ocr`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('OCR processing started successfully!', 'success');
+                    // Refresh the page to update the status
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error starting OCR processing: ' + error, 'danger');
+            });
+        }
+
+        function retryOcr(fileId) {
+            if (!confirm('Retry OCR processing for this file?')) return;
+            
+            fetch(`/inbox/api/files/${fileId}/ocr-retry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('OCR retry started successfully!', 'success');
+                    // Refresh the page to update the status
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error retrying OCR processing: ' + error, 'danger');
+            });
+        }
+
+        function dispatchToBill(fileId) {
+            if (!confirm('Create a Bill from this processed file?')) return;
+            
+            fetch(`/inbox/api/files/${fileId}/dispatch`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Bill created successfully!', 'success');
+                    // Refresh the page to update the status
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error creating bill: ' + error, 'danger');
             });
         }
 

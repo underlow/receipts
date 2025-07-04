@@ -9,6 +9,7 @@ import me.underlow.receipt.model.User
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
 import me.underlow.receipt.service.FileProcessingService
+import me.underlow.receipt.service.IncomingFileOcrService
 import me.underlow.receipt.service.UserService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,6 +35,7 @@ class FileUploadControllerIntegrationTest {
     private lateinit var userRepository: UserRepository
     private lateinit var receiptsProperties: ReceiptsProperties
     private lateinit var fileProcessingService: FileProcessingService
+    private lateinit var incomingFileOcrService: IncomingFileOcrService
     private lateinit var userService: UserService
     private lateinit var fileUploadController: FileUploadController
 
@@ -52,8 +54,11 @@ class FileUploadControllerIntegrationTest {
             attachmentsPath = tempDir.resolve("attachments").toString()
         )
 
+        // Create mock services
+        incomingFileOcrService = mock()
+        
         // Create services with actual implementations
-        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties)
+        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService)
         userService = UserService(userRepository)
         fileUploadController = FileUploadController(fileProcessingService, userService)
     }

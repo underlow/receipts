@@ -136,12 +136,18 @@
 - ✅Added coroutines support for async processing
 - ✅Implemented standardized `OcrResult` and `OcrRequest` data classes
 
-12. **Dispatch logic**
-    - Upon `IncomingFile` creation, invoke the selected engine bean.
-    - Informatioon which should be sent to OCR: prompt, image, set of `ServiceProvider` and `PaymentMethod` as json array
-    - Persist raw JSON and extract core fields (type, provider guess, amount, dates).
-    - There should ba a fallback is no keys are set. 
-    - information about ocr(ocr provider, date, result) should be accessible in UI
+12. **Dispatch logic** ✅
+    - ✅Upon `IncomingFile` creation, invoke the selected engine bean automatically.
+    - ✅Information sent to OCR: prompt, image, set of `ServiceProvider` and `PaymentMethod` as reference data
+    - ✅Persist raw JSON and extract core fields (provider, amount, dates, currency).
+    - ✅Fallback mechanisms implemented when no API keys are configured.
+    - ✅OCR information (provider, date, result, errors) accessible in UI through inbox and detail views
+    - ✅Automatic status management through PENDING → PROCESSING → APPROVED/REJECTED workflow
+    - ✅Comprehensive error handling with retry mechanisms
+    - ✅Dispatch logic to convert approved IncomingFiles to Bill entities
+    - ✅Complete UI integration with OCR action buttons ("Send to OCR", "Retry OCR", "Create Bill")
+    - ✅Real-time status indicators in inbox grid and detailed OCR section in file detail view
+    - ✅Enhanced API endpoints for manual OCR operations and statistics
     
 
 ---

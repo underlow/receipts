@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service
 @Service
 class IncomingFileService(
     private val incomingFileRepository: IncomingFileRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val incomingFileOcrService: IncomingFileOcrService,
+    private val fileDispatchService: FileDispatchService
 ) {
 
     /**
@@ -109,5 +111,80 @@ class IncomingFileService(
         return BillStatus.values().associateWith { status ->
             groupedFiles[status] ?: 0
         }
+    }
+    
+    /**
+     * Triggers OCR processing for a specific file if user owns it
+     */
+    fun triggerOcrProcessing(fileId: Long, userEmail: String): Boolean {
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
+        
+        return try {
+            incomingFileOcrService.processIncomingFile(incomingFile)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    /**
+     * Retries OCR processing for a failed file if user owns it
+     */
+    fun retryOcrProcessing(fileId: Long, userEmail: String): Boolean {
+        findByIdAndUserEmail(fileId, userEmail) ?: return false
+        
+        return try {
+            incomingFileOcrService.retryOcrProcessing(fileId)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    /**
+     * Dispatches an IncomingFile to Bill if user owns it and file is ready
+     */
+    fun dispatchToBill(fileId: Long, userEmail: String): Boolean {
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
+        
+        return try {
+            val bill = fileDispatchService.dispatchIncomingFile(incomingFile)
+            bill != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    /**
+     * Gets OCR processing statistics for a user
+     */
+    fun getOcrStatistics(userEmail: String): Map<String, Int> {
+        val files = findByUserEmailAndStatus(userEmail)
+        
+        val withOcrResults = files.count { it.ocrRawJson != null }
+        val withoutOcrResults = files.count { it.ocrRawJson == null }
+        val ocrErrors = files.count { it.ocrErrorMessage != null }
+        val readyForDispatch = files.count { fileDispatchService.isFileReadyForDispatch(it) }
+        
+        return mapOf(
+            "withOcrResults" to withOcrResults,
+            "withoutOcrResults" to withoutOcrResults,
+            "ocrErrors" to ocrErrors,
+            "readyForDispatch" to readyForDispatch
+        )
+    }
+    
+    /**
+     * Checks if OCR processing is available
+     */
+    fun isOcrProcessingAvailable(): Boolean {
+        return incomingFileOcrService.isOcrProcessingAvailable()
+    }
+    
+    /**
+     * Gets list of available OCR engines
+     */
+    fun getAvailableOcrEngines(): List<String> {
+        return incomingFileOcrService.getAvailableOcrEngines()
     }
 }

@@ -18,29 +18,34 @@ This document provides a high-level overview of the system architecture for the 
 - **Responsibilities**:
     - Authentication (OAuth2 with Google)
     - Receipt and Bill ingestion API (folder-watcher service + file upload endpoints)
-    - ✅ **Inbox Management**: File review interface with thumbnails, status management, and operations
+    - ✅ **Inbox Management**: File review interface with thumbnails, status management, and OCR operations
     - ✅ **File Serving**: Secure file access with thumbnail generation and MIME type handling
-    - OCR orchestration (dispatch to selected AI engine)
+    - ✅ **OCR Orchestration**: Complete workflow automation with multi-engine support
+    - ✅ **OCR Interface**: Comprehensive UI for managing OCR processing, retries, and dispatch
     - CRUD operations for Bills, Receipts, Payments, Service Providers, Payment Methods
-    - ✅ **Detail Views**: Split-pane interfaces for bill and receipt processing
+    - ✅ **Detail Views**: Split-pane interfaces for file processing with OCR integration
     - Settings management (OCR keys, folder paths)
     - API endpoints for table data and exports
 
-### 2.3 OCR Engine Integration
-- **Supported Engines**: OpenAI, Claude, Google AI
-- **Configuration**: API keys stored & encrypted in Settings
-- **Dispatcher**: Pluggable Spring beans that route requests to the active engine
-- **Workflow**:
-    1. File arrives in Inbox
-    2. Web Server sends file to OCR engine via REST API
-    3. OCR engine returns JSON with extracted fields
-    4. Web Server processes JSON, persists preliminary data
+### 2.3 OCR Engine Integration ✅ **IMPLEMENTED**
+- **Supported Engines**: OpenAI GPT-4 Vision, Claude (Anthropic) Vision, Google Gemini Vision
+- **Configuration**: API keys configurable via environment variables
+- **Architecture**: Multi-engine support with fallback mechanisms and conditional bean creation
+- **Processing**: Asynchronous processing using Kotlin coroutines
+- **Workflow**: ✅ **COMPLETE END-TO-END IMPLEMENTATION**
+    1. File upload/detection triggers automatic OCR processing
+    2. IncomingFileOcrService orchestrates the processing workflow
+    3. Status transitions: PENDING → PROCESSING → APPROVED/REJECTED
+    4. OcrService selects and invokes available OCR engines with fallback
+    5. Results stored in IncomingFile entity with extracted data
+    6. FileDispatchService converts approved files to Bill entities
+    7. UI provides real-time status updates and manual controls
 
 ### 2.4 Database
 - **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
 - **Schema**: Comprehensive domain model with the following entities:
   - **User Management**: User, LoginEvent
-  - **File Ingestion**: IncomingFile (for folder-watcher detected files)
+  - **File Ingestion**: IncomingFile (complete OCR workflow integration with extracted data fields)
   - **Core Domain**: ServiceProvider, PaymentMethod, Bill, Receipt, Payment
   - **Future**: Attachment (planned)
 - **Access Layer**: Spring Data JDBC with JdbcTemplate custom repository implementations
@@ -77,13 +82,16 @@ This document provides a high-level overview of the system architecture for the 
     - **File Processing**: Moves files to storage and creates `IncomingFile` entities
     - **Duplicate Prevention**: SHA-256 checksum-based duplicate detection
     - **Error Handling**: Comprehensive logging and graceful error recovery
-- **Workflow**:
+- **Enhanced Workflow with OCR**: ✅ **IMPLEMENTED**
     1. Scan inbox directory for new files
     2. Validate file format and readability
     3. Calculate SHA-256 checksum for duplicate detection
     4. Move file to attachments with date-prefixed naming
     5. Create `IncomingFile` entity in PENDING status
-    6. Files ready for OCR processing and user review
+    6. **Automatic OCR Processing**: Trigger OCR processing immediately
+    7. **Status Management**: Update to PROCESSING → APPROVED/REJECTED
+    8. **Data Extraction**: Store extracted provider, amount, date, currency
+    9. Files ready for user review and bill dispatch
 
 ### 2.7 Inbox Management System ✅ **IMPLEMENTED**
 - **Architecture**: Comprehensive file review and management interface
@@ -92,13 +100,14 @@ This document provides a high-level overview of the system architecture for the 
     - **IncomingFileService**: Business logic layer with pagination and filtering
     - **FileServingController**: Secure file access with user authentication
     - **ThumbnailService**: On-demand thumbnail generation for images and PDFs
-- **Features**:
+- **Features**: ✅ **ENHANCED WITH OCR INTEGRATION**
     - **Responsive UI**: Grid layout with thumbnail previews and file information
     - **Status Management**: Visual badges with filtering (PENDING, PROCESSING, APPROVED, REJECTED)
-    - **Real-time Operations**: AJAX-powered approve/reject/delete actions
+    - **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
+    - **Real-time Operations**: AJAX-powered approve/reject/delete actions + OCR operations
     - **Pagination & Sorting**: Efficient browsing of large file collections
     - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
-    - **Detail View**: Comprehensive file detail page with metadata and actions
+    - **Enhanced Detail View**: Comprehensive OCR workflow management interface
     - **Security**: User-scoped access with OAuth2 authentication verification
 - **Data Flow**:
     1. Users access inbox via `/inbox` endpoint
@@ -118,12 +127,21 @@ This document provides a high-level overview of the system architecture for the 
     - `POST /inbox/api/files/{fileId}/approve` - Approve file status change
     - `POST /inbox/api/files/{fileId}/reject` - Reject file status change
     - `DELETE /inbox/api/files/{fileId}` - Delete file permanently
+    - ✅ **OCR Operations**:
+        - `POST /inbox/api/files/{fileId}/ocr` - Trigger OCR processing
+        - `POST /inbox/api/files/{fileId}/ocr-retry` - Retry failed OCR processing
+        - `POST /inbox/api/files/{fileId}/dispatch` - Dispatch approved files to Bills
+        - `GET /inbox/api/ocr-statistics` - Get user OCR processing statistics
 
-#### 2.7.2 Data Transfer Objects
-- **InboxFileDto**: List view file information with status and thumbnail URLs
+#### 2.7.2 Data Transfer Objects ✅ **ENHANCED WITH OCR DATA**
+- **InboxFileDto**: List view file information with status, thumbnail URLs, and OCR result fields
 - **InboxListResponse**: Paginated response with files and status counts
-- **IncomingFileDetailDto**: Comprehensive file details with computed fields (file size, type detection, action permissions)
-- **FileOperationResponse**: Standard response for file operations (approve/reject/delete)
+- **IncomingFileDetailDto**: Comprehensive file details with OCR data, computed fields, and action permissions
+  - OCR status and processing timestamps
+  - Extracted provider, amount, date information
+  - Error messages for failed processing
+  - Action permissions (canRetryOcr, readyForDispatch)
+- **FileOperationResponse**: Standard response for file operations (approve/reject/delete/OCR)
 
 ### 2.8 Bill/Receipt Detail View System ✅ **IMPLEMENTED**
 - **Architecture**: Split-pane detail processing interfaces for bills and receipts

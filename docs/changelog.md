@@ -1,5 +1,79 @@
 # Changelog
 
+## 2025-07-04
+
+### OCR Integration and Dispatch Logic Implementation (Item 12) ✅ **COMPLETED**
+- **Complete OCR Workflow Integration**: Implemented end-to-end OCR processing from file upload to Bill creation
+  - Extended `IncomingFile` entity with OCR result fields: `ocrRawJson`, `extractedAmount`, `extractedDate`, `extractedProvider`, `ocrProcessedAt`, `ocrErrorMessage`
+  - Created database migration `004-incoming-files-ocr.sql` adding OCR columns with proper indexing
+  - Updated `IncomingFileRepository` to handle new OCR fields in all CRUD operations
+
+- **OCR Processing Orchestration**:
+  - `IncomingFileOcrService`: Orchestrates OCR processing for IncomingFile entities with status management
+  - Automatic status transitions: PENDING → PROCESSING → APPROVED/REJECTED based on OCR results
+  - Comprehensive error handling with detailed error message capture
+  - Batch processing capabilities for multiple pending files
+  - Retry mechanisms for failed OCR processing with file reset functionality
+
+- **Seamless File Processing Integration**:
+  - Modified `FileProcessingService` to trigger OCR processing immediately after file storage
+  - Automatic OCR processing for both folder-watcher detected files and web uploads
+  - Non-blocking OCR processing with proper error isolation
+  - Graceful degradation when OCR engines are unavailable
+
+- **Intelligent File Dispatch System**:
+  - `FileDispatchService`: Converts approved IncomingFiles to Bill entities based on OCR results
+  - Automatic Bill creation with OCR-extracted data (provider, amount, date, currency)
+  - Business logic for determining dispatch readiness (APPROVED status + OCR results)
+  - Batch dispatch capabilities with statistics tracking
+  - Error handling for dispatch failures with rollback support
+
+- **Enhanced Service Layer Operations**:
+  - Extended `IncomingFileService` with OCR-related methods:
+    - `triggerOcrProcessing()`: Manual OCR processing trigger
+    - `retryOcrProcessing()`: Retry failed OCR processing
+    - `dispatchToBill()`: Convert IncomingFile to Bill
+    - `getOcrStatistics()`: OCR processing statistics by user
+    - `isOcrProcessingAvailable()`: Check OCR engine availability
+  - User-scoped operations with proper authentication verification
+
+- **Rich User Interface Integration**:
+  - Updated `InboxFileDto` and `IncomingFileDetailDto` with OCR result fields
+  - Enhanced inbox interface showing OCR processing status and extracted data
+  - New API endpoints in `InboxController`:
+    - `POST /api/files/{fileId}/ocr`: Trigger OCR processing
+    - `POST /api/files/{fileId}/ocr-retry`: Retry failed OCR processing
+    - `POST /api/files/{fileId}/dispatch`: Dispatch to Bill
+    - `GET /api/ocr-statistics`: Get OCR processing statistics
+  - Real-time OCR status display with processing timestamps and error messages
+
+- **Technical Excellence**:
+  - Comprehensive test coverage for OCR workflow components
+  - Integration with existing OCR engine infrastructure (OpenAI, Claude, Google AI)
+  - Proper error handling and logging throughout the workflow
+  - Database schema evolution with backward compatibility
+  - Performance optimizations with indexed OCR fields
+
+### OCR User Interface Enhancement ✅ **COMPLETED**
+- **Enhanced Detail View Interface**: Complete OCR integration in file detail view
+  - New "OCR Processing" section showing processing status, extracted data, and error messages
+  - OCR-specific action buttons: "Send to OCR", "Retry OCR", and "Create Bill"
+  - Real-time display of extracted provider, amount, and date information
+  - Processing timestamps and comprehensive error reporting
+  - Status-aware button visibility based on OCR processing state
+
+- **Improved Inbox Interface**: OCR status indicators in file grid
+  - Small OCR status indicators showing processing state and extracted data
+  - Visual feedback for OCR processing status (pending, processing, completed, failed)
+  - Quick preview of extracted amount and provider information
+  - Enhanced user experience with emoji-based status indicators
+
+- **JavaScript Integration**: 
+  - New AJAX functions for OCR operations (`sendToOcr`, `retryOcr`, `dispatchToBill`)
+  - User confirmation dialogs for all OCR actions
+  - Real-time feedback with success/error alerts
+  - Automatic page refresh to reflect status changes
+
 ## 2025-07-03
 
 ### IncomingFile Detail View Implementation (Item 36) ✅ **COMPLETED**

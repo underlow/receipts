@@ -21,13 +21,14 @@ import java.time.format.DateTimeFormatter
 @Service
 class FileProcessingService(
     private val incomingFileRepository: IncomingFileRepository,
-    private val receiptsProperties: ReceiptsProperties
+    private val receiptsProperties: ReceiptsProperties,
+    private val incomingFileOcrService: IncomingFileOcrService
 ) {
     private val logger = LoggerFactory.getLogger(FileProcessingService::class.java)
 
     /**
      * Processes a file from the inbox directory - calculates checksum, moves to storage,
-     * and creates an IncomingFile entity in PENDING status.
+     * creates an IncomingFile entity in PENDING status, and triggers OCR processing.
      */
     fun processFile(file: File, userId: Long): IncomingFile? {
         return try {
@@ -59,6 +60,20 @@ class FileProcessingService(
 
             val savedFile = incomingFileRepository.save(incomingFile)
             logger.info("Successfully processed file: ${file.name}, created IncomingFile with ID: ${savedFile.id}")
+            
+            // Trigger OCR processing if available
+            if (incomingFileOcrService.isOcrProcessingAvailable()) {
+                logger.info("Triggering OCR processing for file: ${file.name}")
+                try {
+                    incomingFileOcrService.processIncomingFile(savedFile)
+                } catch (e: Exception) {
+                    logger.error("Error during OCR processing for file: ${file.name}", e)
+                    // Continue execution - file is still processed even if OCR fails
+                }
+            } else {
+                logger.warn("OCR processing not available for file: ${file.name}")
+            }
+            
             savedFile
 
         } catch (e: Exception) {

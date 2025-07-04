@@ -1,6 +1,7 @@
 package me.underlow.receipt.dto
 
 import me.underlow.receipt.model.BillStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -13,7 +14,14 @@ data class InboxFileDto(
     val status: BillStatus,
     val thumbnailUrl: String,
     val fileUrl: String,
-    val statusDisplayName: String
+    val statusDisplayName: String,
+    // OCR fields
+    val hasOcrResults: Boolean,
+    val extractedAmount: Double?,
+    val extractedDate: LocalDate?,
+    val extractedProvider: String?,
+    val ocrProcessedAt: LocalDateTime?,
+    val ocrErrorMessage: String?
 ) {
     companion object {
         fun fromIncomingFile(incomingFile: me.underlow.receipt.model.IncomingFile): InboxFileDto {
@@ -24,7 +32,13 @@ data class InboxFileDto(
                 status = incomingFile.status,
                 thumbnailUrl = "/api/files/${incomingFile.id}/thumbnail",
                 fileUrl = "/api/files/${incomingFile.id}",
-                statusDisplayName = formatStatus(incomingFile.status)
+                statusDisplayName = formatStatus(incomingFile.status),
+                hasOcrResults = incomingFile.ocrRawJson != null,
+                extractedAmount = incomingFile.extractedAmount,
+                extractedDate = incomingFile.extractedDate,
+                extractedProvider = incomingFile.extractedProvider,
+                ocrProcessedAt = incomingFile.ocrProcessedAt,
+                ocrErrorMessage = incomingFile.ocrErrorMessage
             )
         }
 

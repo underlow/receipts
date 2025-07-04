@@ -3,6 +3,7 @@ package me.underlow.receipt.dto
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.model.IncomingFile
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -27,7 +28,18 @@ data class IncomingFileDetailDto(
     val canDelete: Boolean,
     val fileExists: Boolean,
     val isImage: Boolean,
-    val isPdf: Boolean
+    val isPdf: Boolean,
+    // OCR fields
+    val hasOcrResults: Boolean,
+    val ocrRawJson: String?,
+    val extractedAmount: Double?,
+    val extractedDate: LocalDate?,
+    val extractedProvider: String?,
+    val ocrProcessedAt: LocalDateTime?,
+    val ocrProcessedAtFormatted: String?,
+    val ocrErrorMessage: String?,
+    val canRetryOcr: Boolean,
+    val readyForDispatch: Boolean
 ) {
     companion object {
         private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm")
@@ -58,7 +70,18 @@ data class IncomingFileDetailDto(
                 canDelete = true, // Users can always delete their own files
                 fileExists = file.exists(),
                 isImage = isImageFile(fileExtension),
-                isPdf = fileExtension == "pdf"
+                isPdf = fileExtension == "pdf",
+                // OCR fields
+                hasOcrResults = incomingFile.ocrRawJson != null,
+                ocrRawJson = incomingFile.ocrRawJson,
+                extractedAmount = incomingFile.extractedAmount,
+                extractedDate = incomingFile.extractedDate,
+                extractedProvider = incomingFile.extractedProvider,
+                ocrProcessedAt = incomingFile.ocrProcessedAt,
+                ocrProcessedAtFormatted = incomingFile.ocrProcessedAt?.format(dateFormatter),
+                ocrErrorMessage = incomingFile.ocrErrorMessage,
+                canRetryOcr = incomingFile.status == BillStatus.REJECTED && incomingFile.ocrErrorMessage != null,
+                readyForDispatch = incomingFile.status == BillStatus.APPROVED && incomingFile.ocrRawJson != null
             )
         }
         

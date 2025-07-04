@@ -1,0 +1,139 @@
+package me.underlow.receipt.service
+
+import me.underlow.receipt.model.IncomingFile
+import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.repository.IncomingFileRepository
+import me.underlow.receipt.service.ocr.OcrResult
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+import kotlinx.coroutines.runBlocking
+
+/**
+ * Service responsible for orchestrating OCR processing for IncomingFile entities.
+ * Handles status management, result persistence, and error handling during OCR processing.
+ */
+@Service
+class IncomingFileOcrService(
+    private val incomingFileRepository: IncomingFileRepository,
+    private val ocrService: OcrService
+) {
+    
+    private val logger = LoggerFactory.getLogger(IncomingFileOcrService::class.java)
+    
+    /**
+     * Processes an IncomingFile through OCR and updates the entity with results.
+     * Updates status to PROCESSING during processing and APPROVED/REJECTED based on result.
+     */
+    fun processIncomingFile(incomingFile: IncomingFile): IncomingFile {
+        logger.info("Starting OCR processing for file: ${incomingFile.filename}")
+        
+        // Update status to PROCESSING
+        val processingFile = incomingFile.copy(status = BillStatus.PROCESSING)
+        incomingFileRepository.save(processingFile)
+        
+        return try {
+            // Process file through OCR
+            val ocrResult = runBlocking {
+                ocrService.processIncomingFile(incomingFile)
+            }
+            
+            // Update IncomingFile with OCR results
+            val updatedFile = updateIncomingFileWithOcrResult(processingFile, ocrResult)
+            
+            // Save updated file
+            val savedFile = incomingFileRepository.save(updatedFile)
+            
+            if (ocrResult.success) {
+                logger.info("Successfully processed file ${incomingFile.filename} with OCR")
+            } else {
+                logger.warn("OCR processing failed for file ${incomingFile.filename}: ${ocrResult.errorMessage}")
+            }
+            
+            savedFile
+            
+        } catch (e: Exception) {
+            logger.error("Exception during OCR processing for file ${incomingFile.filename}", e)
+            
+            // Update with error information
+            val errorFile = processingFile.copy(
+                status = BillStatus.REJECTED,
+                ocrProcessedAt = LocalDateTime.now(),
+                ocrErrorMessage = "OCR processing failed: ${e.message}"
+            )
+            
+            incomingFileRepository.save(errorFile)
+        }
+    }
+    
+    /**
+     * Processes all pending IncomingFiles through OCR.
+     * Used for batch processing of files that haven't been processed yet.
+     */
+    fun processAllPendingFiles(): List<IncomingFile> {
+        logger.info("Processing all pending IncomingFiles through OCR")
+        
+        val pendingFiles = incomingFileRepository.findByStatus(BillStatus.PENDING)
+        logger.info("Found ${pendingFiles.size} pending files to process")
+        
+        return pendingFiles.map { processIncomingFile(it) }
+    }
+    
+    /**
+     * Retries OCR processing for a failed file.
+     * Resets the file to PENDING status and processes again.
+     */
+    fun retryOcrProcessing(incomingFileId: Long): IncomingFile? {
+        val incomingFile = incomingFileRepository.findById(incomingFileId)
+        
+        return if (incomingFile != null) {
+            logger.info("Retrying OCR processing for file: ${incomingFile.filename}")
+            
+            // Reset file to PENDING status and clear previous OCR results
+            val resetFile = incomingFile.copy(
+                status = BillStatus.PENDING,
+                ocrRawJson = null,
+                extractedAmount = null,
+                extractedDate = null,
+                extractedProvider = null,
+                ocrProcessedAt = null,
+                ocrErrorMessage = null
+            )
+            
+            val savedResetFile = incomingFileRepository.save(resetFile)
+            processIncomingFile(savedResetFile)
+        } else {
+            logger.warn("Cannot retry OCR processing - file not found: $incomingFileId")
+            null
+        }
+    }
+    
+    /**
+     * Checks if OCR processing is available (at least one OCR engine is available).
+     */
+    fun isOcrProcessingAvailable(): Boolean {
+        return ocrService.hasAvailableEngines()
+    }
+    
+    /**
+     * Returns list of available OCR engine names for status/configuration purposes.
+     */
+    fun getAvailableOcrEngines(): List<String> {
+        return ocrService.getAvailableEngineNames()
+    }
+    
+    /**
+     * Updates an IncomingFile with OCR processing results.
+     */
+    private fun updateIncomingFileWithOcrResult(incomingFile: IncomingFile, ocrResult: OcrResult): IncomingFile {
+        return incomingFile.copy(
+            status = if (ocrResult.success) BillStatus.APPROVED else BillStatus.REJECTED,
+            ocrRawJson = ocrResult.rawJson,
+            extractedAmount = ocrResult.extractedAmount,
+            extractedDate = ocrResult.extractedDate,
+            extractedProvider = ocrResult.extractedProvider,
+            ocrProcessedAt = LocalDateTime.now(),
+            ocrErrorMessage = ocrResult.errorMessage
+        )
+    }
+}
