@@ -5,7 +5,7 @@ import com.codeborne.selenide.Condition.*
 import com.codeborne.selenide.Configuration
 import com.codeborne.selenide.Selenide.*
 import com.codeborne.selenide.CollectionCondition
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import org.junit.jupiter.api.*
@@ -118,8 +118,8 @@ class InboxE2ETest(
     fun `Given user with only pending files, when opening inbox, then should display correct counts without error`() {
         // Given: Create a user with only pending files
         val testUser = createTestUser("pendingonly@example.com", "Pending Only User")
-        createTestIncomingFile(testUser.id!!, "pending-file-1.pdf", BillStatus.PENDING)
-        createTestIncomingFile(testUser.id!!, "pending-file-2.jpg", BillStatus.PENDING)
+        createTestIncomingFile(testUser.id!!, "pending-file-1.pdf", ItemStatus.NEW)
+        createTestIncomingFile(testUser.id!!, "pending-file-2.jpg", ItemStatus.NEW)
 
         // When: Navigate to inbox page as authenticated user
         simulateLogin(testUser)
@@ -149,11 +149,11 @@ class InboxE2ETest(
     fun `Given user with mixed status files, when opening inbox, then should display correct status counts`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("mixed@example.com", "Mixed Status User")
-        createTestIncomingFile(testUser.id!!, "pending-file.pdf", BillStatus.PENDING)
-        createTestIncomingFile(testUser.id!!, "processing-file.jpg", BillStatus.PROCESSING)
-        createTestIncomingFile(testUser.id!!, "approved-file-1.png", BillStatus.APPROVED)
-        createTestIncomingFile(testUser.id!!, "approved-file-2.pdf", BillStatus.APPROVED)
-        createTestIncomingFile(testUser.id!!, "rejected-file.jpg", BillStatus.REJECTED)
+        createTestIncomingFile(testUser.id!!, "pending-file.pdf", ItemStatus.NEW)
+        createTestIncomingFile(testUser.id!!, "processing-file.jpg", ItemStatus.PROCESSING)
+        createTestIncomingFile(testUser.id!!, "approved-file-1.png", ItemStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "approved-file-2.pdf", ItemStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "rejected-file.jpg", ItemStatus.REJECTED)
 
         // When: Navigate to inbox page as authenticated user
         simulateLogin(testUser)
@@ -183,8 +183,8 @@ class InboxE2ETest(
     fun `Given user with mixed files, when filtering by status, then should show only files with selected status`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("filter@example.com", "Filter Test User")
-        createTestIncomingFile(testUser.id!!, "pending-file.pdf", BillStatus.PENDING)
-        createTestIncomingFile(testUser.id!!, "approved-file.jpg", BillStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "pending-file.pdf", ItemStatus.NEW)
+        createTestIncomingFile(testUser.id!!, "approved-file.jpg", ItemStatus.APPROVED)
 
         // When: Navigate to inbox page
         simulateLogin(testUser)
@@ -223,9 +223,9 @@ class InboxE2ETest(
     fun `Given user with sorted files, when changing filter, then should preserve sort parameters`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("sortfilter@example.com", "Sort Filter Test User")
-        createTestIncomingFile(testUser.id!!, "alpha-pending.pdf", BillStatus.PENDING)
-        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", BillStatus.APPROVED)
-        createTestIncomingFile(testUser.id!!, "gamma-pending.png", BillStatus.PENDING)
+        createTestIncomingFile(testUser.id!!, "alpha-pending.pdf", ItemStatus.NEW)
+        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", ItemStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "gamma-pending.png", ItemStatus.NEW)
 
         // When: Navigate to inbox page
         simulateLogin(testUser)
@@ -263,9 +263,9 @@ class InboxE2ETest(
     fun `Given user with filtered files, when changing sort, then should preserve filter parameters`() {
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("filtersort@example.com", "Filter Sort Test User")
-        createTestIncomingFile(testUser.id!!, "alpha-approved.pdf", BillStatus.APPROVED)
-        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", BillStatus.APPROVED)
-        createTestIncomingFile(testUser.id!!, "gamma-pending.png", BillStatus.PENDING)
+        createTestIncomingFile(testUser.id!!, "alpha-approved.pdf", ItemStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "beta-approved.jpg", ItemStatus.APPROVED)
+        createTestIncomingFile(testUser.id!!, "gamma-pending.png", ItemStatus.NEW)
 
         // When: Navigate to inbox page
         simulateLogin(testUser)
@@ -307,7 +307,7 @@ class InboxE2ETest(
         return User(id = userId, email = email, name = name)
     }
 
-    private fun createTestIncomingFile(userId: Long, filename: String, status: BillStatus): IncomingFile {
+    private fun createTestIncomingFile(userId: Long, filename: String, status: ItemStatus): IncomingFile {
         // Create a temporary file for testing
         val tempFile = Files.createTempFile("test", ".${filename.substringAfterLast('.')}")
         Files.write(tempFile, "test content".toByteArray())

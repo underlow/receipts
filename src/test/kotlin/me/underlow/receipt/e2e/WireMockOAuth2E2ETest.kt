@@ -3,7 +3,7 @@ package me.underlow.receipt.e2e
 import com.codeborne.selenide.Condition.*
 import com.codeborne.selenide.Configuration
 import com.codeborne.selenide.Selenide.*
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import org.junit.jupiter.api.*
@@ -216,7 +216,7 @@ class WireMockOAuth2E2ETest(
         return User(id = userId, email = email, name = name)
     }
 
-    private fun createTestIncomingFile(userId: Long, filename: String, status: BillStatus): IncomingFile {
+    private fun createTestIncomingFile(userId: Long, filename: String, status: ItemStatus): IncomingFile {
         val tempFile = Files.createTempFile("test", ".${filename.substringAfterLast('.')}")
         Files.write(tempFile, "test content".toByteArray())
 

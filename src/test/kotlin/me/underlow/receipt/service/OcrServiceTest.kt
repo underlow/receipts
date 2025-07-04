@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import kotlinx.coroutines.test.runTest
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.service.ocr.OcrEngine
 import me.underlow.receipt.service.ocr.OcrResult
@@ -89,7 +89,7 @@ class OcrServiceTest {
             filename = "receipt.jpg",
             filePath = testFile.absolutePath,
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "abc123",
             userId = 1L
         )

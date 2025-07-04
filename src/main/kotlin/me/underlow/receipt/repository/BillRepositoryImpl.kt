@@ -1,7 +1,7 @@
 package me.underlow.receipt.repository
 
 import me.underlow.receipt.model.Bill
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -15,7 +15,7 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
             filename = rs.getString("filename"),
             filePath = rs.getString("file_path"),
             uploadDate = rs.getTimestamp("upload_date").toLocalDateTime(),
-            status = BillStatus.valueOf(rs.getString("status")),
+            status = ItemStatus.valueOf(rs.getString("status")),
             ocrRawJson = rs.getString("ocr_raw_json"),
             extractedAmount = rs.getObject("extracted_amount") as? Double,
             extractedDate = rs.getDate("extracted_date")?.toLocalDate(),
@@ -77,6 +77,20 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
         return jdbcTemplate.query(
             "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills WHERE user_id = ?",
             rowMapper, userId
+        )
+    }
+
+    override fun findByStatus(status: ItemStatus): List<Bill> {
+        return jdbcTemplate.query(
+            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills WHERE status = ?",
+            rowMapper, status.name
+        )
+    }
+
+    override fun findByUserIdAndStatus(userId: Long, status: ItemStatus): List<Bill> {
+        return jdbcTemplate.query(
+            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills WHERE user_id = ? AND status = ?",
+            rowMapper, userId, status.name
         )
     }
 

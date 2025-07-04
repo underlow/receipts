@@ -1,6 +1,6 @@
 package me.underlow.receipt.dto
 
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import java.io.File
 import java.time.LocalDate
@@ -16,7 +16,7 @@ data class IncomingFileDetailDto(
     val filePath: String,
     val uploadDate: LocalDateTime,
     val uploadDateFormatted: String,
-    val status: BillStatus,
+    val status: ItemStatus,
     val statusDisplayName: String,
     val checksum: String,
     val fileSize: Long,
@@ -65,8 +65,8 @@ data class IncomingFileDetailDto(
                 fileSizeFormatted = formatFileSize(fileSize),
                 fileUrl = "/api/files/${incomingFile.id}",
                 thumbnailUrl = "/api/files/${incomingFile.id}/thumbnail",
-                canApprove = incomingFile.status == BillStatus.PENDING,
-                canReject = incomingFile.status == BillStatus.PENDING,
+                canApprove = incomingFile.status == ItemStatus.NEW,
+                canReject = incomingFile.status == ItemStatus.NEW,
                 canDelete = true, // Users can always delete their own files
                 fileExists = file.exists(),
                 isImage = isImageFile(fileExtension),
@@ -80,20 +80,20 @@ data class IncomingFileDetailDto(
                 ocrProcessedAt = incomingFile.ocrProcessedAt,
                 ocrProcessedAtFormatted = incomingFile.ocrProcessedAt?.format(dateFormatter),
                 ocrErrorMessage = incomingFile.ocrErrorMessage,
-                canRetryOcr = incomingFile.status == BillStatus.REJECTED && incomingFile.ocrErrorMessage != null,
-                readyForDispatch = incomingFile.status == BillStatus.APPROVED && incomingFile.ocrRawJson != null
+                canRetryOcr = incomingFile.status == ItemStatus.REJECTED && incomingFile.ocrErrorMessage != null,
+                readyForDispatch = incomingFile.status == ItemStatus.APPROVED && incomingFile.ocrRawJson != null
             )
         }
         
         /**
          * Formats the status for display
          */
-        private fun formatStatus(status: BillStatus): String {
+        private fun formatStatus(status: ItemStatus): String {
             return when (status) {
-                BillStatus.PENDING -> "Pending Review"
-                BillStatus.PROCESSING -> "Processing"
-                BillStatus.APPROVED -> "Approved"
-                BillStatus.REJECTED -> "Rejected"
+                ItemStatus.NEW -> "New"
+                ItemStatus.PROCESSING -> "Processing"
+                ItemStatus.APPROVED -> "Approved"
+                ItemStatus.REJECTED -> "Rejected"
             }
         }
         

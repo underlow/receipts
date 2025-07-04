@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.config.ReceiptsProperties
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
@@ -169,7 +169,7 @@ class FileProcessingServiceTest {
         assertNotNull(result)
         assertEquals(123L, result.id)
         assertEquals("receipt.pdf", result.filename)
-        assertEquals(BillStatus.PENDING, result.status)
+        assertEquals(ItemStatus.NEW, result.status)
         assertEquals(userId, result.userId)
 
         verify(incomingFileRepository).findByChecksum(any())
@@ -189,7 +189,7 @@ class FileProcessingServiceTest {
             filename = "existing.pdf",
             filePath = "/path/to/existing.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.APPROVED,
+            status = ItemStatus.APPROVED,
             checksum = "existing_checksum",
             userId = userId
         )

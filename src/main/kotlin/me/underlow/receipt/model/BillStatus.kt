@@ -1,7 +1,7 @@
 package me.underlow.receipt.model
 
-enum class BillStatus {
-    PENDING,
+enum class ItemStatus {
+    NEW,
     PROCESSING,
     APPROVED,
     REJECTED

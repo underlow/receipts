@@ -6,7 +6,7 @@ import com.codeborne.selenide.Configuration
 import com.codeborne.selenide.Selenide.*
 import com.codeborne.selenide.WebDriverRunner
 import com.github.tomakehurst.wiremock.http.Response.response
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.User
 import org.junit.jupiter.api.*
 import org.springframework.boot.test.context.SpringBootTest

@@ -23,7 +23,7 @@ data class Receipt(
     val checksum: String? = null,
     
     @field:NotNull(message = "Status cannot be null")
-    val status: BillStatus = BillStatus.PENDING,
+    val status: ItemStatus = ItemStatus.NEW,
     
     // OCR processing fields
     val ocrRawJson: String? = null,

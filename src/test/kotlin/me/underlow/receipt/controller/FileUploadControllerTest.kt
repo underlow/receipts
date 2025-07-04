@@ -2,7 +2,7 @@ package me.underlow.receipt.controller
 
 import me.underlow.receipt.dto.ErrorResponse
 import me.underlow.receipt.dto.FileUploadResponse
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import me.underlow.receipt.service.FileProcessingService
@@ -54,7 +54,7 @@ class FileUploadControllerTest {
             filename = "receipt.pdf",
             filePath = "/storage/receipt.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "abc123",
             userId = 1L
         )
@@ -74,7 +74,7 @@ class FileUploadControllerTest {
         val responseBody = response.body as FileUploadResponse
         assertEquals(123L, responseBody.id)
         assertEquals("receipt.pdf", responseBody.filename)
-        assertEquals(BillStatus.PENDING, responseBody.status)
+        assertEquals(ItemStatus.NEW, responseBody.status)
         assertEquals("abc123", responseBody.checksum)
         assertTrue(responseBody.success)
         
@@ -234,7 +234,7 @@ class FileUploadControllerTest {
             filename = "receipt.jpg",
             filePath = "/storage/receipt.jpg",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "def456",
             userId = 1L
         )

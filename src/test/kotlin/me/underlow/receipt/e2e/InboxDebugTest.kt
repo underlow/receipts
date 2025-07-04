@@ -2,7 +2,7 @@ package me.underlow.receipt.e2e
 
 import com.codeborne.selenide.Selenide.*
 import com.codeborne.selenide.Configuration
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import org.junit.jupiter.api.*
@@ -91,8 +91,8 @@ class InboxDebugTest(
         println("User count in database: $userCount")
 
         // Step 3: Create test files
-        val file1 = createTestIncomingFile(testUser.id!!, "test-file-1.pdf", BillStatus.PENDING)
-        val file2 = createTestIncomingFile(testUser.id!!, "test-file-2.jpg", BillStatus.APPROVED)
+        val file1 = createTestIncomingFile(testUser.id!!, "test-file-1.pdf", ItemStatus.NEW)
+        val file2 = createTestIncomingFile(testUser.id!!, "test-file-2.jpg", ItemStatus.APPROVED)
         println("Created files: file1.id=${file1.id}, file2.id=${file2.id}")
 
         // Step 4: Verify files were created
@@ -144,7 +144,7 @@ class InboxDebugTest(
         return User(id = userId, email = email, name = name)
     }
 
-    private fun createTestIncomingFile(userId: Long, filename: String, status: BillStatus): IncomingFile {
+    private fun createTestIncomingFile(userId: Long, filename: String, status: ItemStatus): IncomingFile {
         val tempFile = Files.createTempFile("test", ".${filename.substringAfterLast('.')}")
         Files.write(tempFile, "test content".toByteArray())
 

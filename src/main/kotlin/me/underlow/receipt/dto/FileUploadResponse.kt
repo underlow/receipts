@@ -1,6 +1,6 @@
 package me.underlow.receipt.dto
 
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import java.time.LocalDateTime
 
 /**
@@ -11,7 +11,7 @@ data class FileUploadResponse(
     val id: Long,
     val filename: String,
     val uploadDate: LocalDateTime,
-    val status: BillStatus,
+    val status: ItemStatus,
     val checksum: String,
     val success: Boolean = true,
     val message: String? = null

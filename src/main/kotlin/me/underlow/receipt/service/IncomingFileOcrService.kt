@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.model.IncomingFile
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.service.ocr.OcrResult
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ class IncomingFileOcrService(
         if (!ocrService.hasAvailableEngines()) {
             logger.error("No OCR engines available for processing file: ${incomingFile.filename}")
             val errorFile = incomingFile.copy(
-                status = BillStatus.REJECTED,
+                status = ItemStatus.REJECTED,
                 ocrProcessedAt = LocalDateTime.now(),
                 ocrErrorMessage = "No OCR engines available. Please configure at least one API key (OpenAI, Claude, or Google AI)."
             )
@@ -40,7 +40,7 @@ class IncomingFileOcrService(
         }
         
         // Update status to PROCESSING
-        val processingFile = incomingFile.copy(status = BillStatus.PROCESSING)
+        val processingFile = incomingFile.copy(status = ItemStatus.PROCESSING)
         incomingFileRepository.save(processingFile)
         
         return try {
@@ -72,7 +72,7 @@ class IncomingFileOcrService(
             
             // Update with error information
             val errorFile = processingFile.copy(
-                status = BillStatus.REJECTED,
+                status = ItemStatus.REJECTED,
                 ocrProcessedAt = LocalDateTime.now(),
                 ocrErrorMessage = "OCR processing failed: ${e.message}"
             )
@@ -106,7 +106,7 @@ class IncomingFileOcrService(
             if (!ocrService.hasAvailableEngines()) {
                 logger.error("Cannot retry OCR processing - no OCR engines available for file: ${incomingFile.filename}")
                 val errorFile = incomingFile.copy(
-                    status = BillStatus.REJECTED,
+                    status = ItemStatus.REJECTED,
                     ocrProcessedAt = LocalDateTime.now(),
                     ocrErrorMessage = "No OCR engines available. Please configure at least one API key (OpenAI, Claude, or Google AI)."
                 )
@@ -115,7 +115,7 @@ class IncomingFileOcrService(
             
             // Reset file to PENDING status and clear previous OCR results
             val resetFile = incomingFile.copy(
-                status = BillStatus.PENDING,
+                status = ItemStatus.NEW,
                 ocrRawJson = null,
                 extractedAmount = null,
                 extractedDate = null,
@@ -151,7 +151,7 @@ class IncomingFileOcrService(
      */
     private fun updateIncomingFileWithOcrResult(incomingFile: IncomingFile, ocrResult: OcrResult): IncomingFile {
         return incomingFile.copy(
-            status = if (ocrResult.success) BillStatus.APPROVED else BillStatus.REJECTED,
+            status = if (ocrResult.success) ItemStatus.APPROVED else ItemStatus.REJECTED,
             ocrRawJson = ocrResult.rawJson,
             extractedAmount = ocrResult.extractedAmount,
             extractedDate = ocrResult.extractedDate,

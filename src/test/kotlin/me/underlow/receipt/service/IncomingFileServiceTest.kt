@@ -1,6 +1,6 @@
 package me.underlow.receipt.service
 
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import me.underlow.receipt.repository.IncomingFileRepository
@@ -43,13 +43,13 @@ class IncomingFileServiceTest {
 
         // Then: All statuses should be present with count 0
         assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(0, statistics[BillStatus.PENDING], "PENDING count should be 0")
-        assertEquals(0, statistics[BillStatus.PROCESSING], "PROCESSING count should be 0")
-        assertEquals(0, statistics[BillStatus.APPROVED], "APPROVED count should be 0")
-        assertEquals(0, statistics[BillStatus.REJECTED], "REJECTED count should be 0")
+        assertEquals(0, statistics[ItemStatus.NEW], "PENDING count should be 0")
+        assertEquals(0, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 0")
+        assertEquals(0, statistics[ItemStatus.APPROVED], "APPROVED count should be 0")
+        assertEquals(0, statistics[ItemStatus.REJECTED], "REJECTED count should be 0")
         
-        // And: All BillStatus values should be present as keys
-        BillStatus.values().forEach { status ->
+        // And: All ItemStatus values should be present as keys
+        ItemStatus.values().forEach { status ->
             assertTrue(statistics.containsKey(status), "Statistics should contain key for $status")
         }
     }
@@ -66,8 +66,8 @@ class IncomingFileServiceTest {
         val userEmail = "pendingonly@example.com"
         val user = User(id = 2L, email = userEmail, name = "Pending Only User")
         val pendingFiles = listOf(
-            IncomingFile(1L, "file1.pdf", "/path/file1.pdf", LocalDateTime.now(), BillStatus.PENDING, "checksum1", 2L),
-            IncomingFile(2L, "file2.jpg", "/path/file2.jpg", LocalDateTime.now(), BillStatus.PENDING, "checksum2", 2L)
+            IncomingFile(1L, "file1.pdf", "/path/file1.pdf", LocalDateTime.now(), ItemStatus.NEW, "checksum1", 2L),
+            IncomingFile(2L, "file2.jpg", "/path/file2.jpg", LocalDateTime.now(), ItemStatus.NEW, "checksum2", 2L)
         )
         
         whenever(userRepository.findByEmail(userEmail)).thenReturn(user)
@@ -78,10 +78,10 @@ class IncomingFileServiceTest {
 
         // Then: Should have correct counts
         assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(2, statistics[BillStatus.PENDING], "PENDING count should be 2")
-        assertEquals(0, statistics[BillStatus.PROCESSING], "PROCESSING count should be 0")
-        assertEquals(0, statistics[BillStatus.APPROVED], "APPROVED count should be 0")
-        assertEquals(0, statistics[BillStatus.REJECTED], "REJECTED count should be 0")
+        assertEquals(2, statistics[ItemStatus.NEW], "PENDING count should be 2")
+        assertEquals(0, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 0")
+        assertEquals(0, statistics[ItemStatus.APPROVED], "APPROVED count should be 0")
+        assertEquals(0, statistics[ItemStatus.REJECTED], "REJECTED count should be 0")
     }
 
     /**
@@ -96,11 +96,11 @@ class IncomingFileServiceTest {
         val userEmail = "mixed@example.com"
         val user = User(id = 3L, email = userEmail, name = "Mixed Status User")
         val mixedFiles = listOf(
-            IncomingFile(1L, "pending.pdf", "/path/pending.pdf", LocalDateTime.now(), BillStatus.PENDING, "checksum1", 3L),
-            IncomingFile(2L, "processing.jpg", "/path/processing.jpg", LocalDateTime.now(), BillStatus.PROCESSING, "checksum2", 3L),
-            IncomingFile(3L, "approved1.png", "/path/approved1.png", LocalDateTime.now(), BillStatus.APPROVED, "checksum3", 3L),
-            IncomingFile(4L, "approved2.pdf", "/path/approved2.pdf", LocalDateTime.now(), BillStatus.APPROVED, "checksum4", 3L),
-            IncomingFile(5L, "rejected.jpg", "/path/rejected.jpg", LocalDateTime.now(), BillStatus.REJECTED, "checksum5", 3L)
+            IncomingFile(1L, "pending.pdf", "/path/pending.pdf", LocalDateTime.now(), ItemStatus.NEW, "checksum1", 3L),
+            IncomingFile(2L, "processing.jpg", "/path/processing.jpg", LocalDateTime.now(), ItemStatus.PROCESSING, "checksum2", 3L),
+            IncomingFile(3L, "approved1.png", "/path/approved1.png", LocalDateTime.now(), ItemStatus.APPROVED, "checksum3", 3L),
+            IncomingFile(4L, "approved2.pdf", "/path/approved2.pdf", LocalDateTime.now(), ItemStatus.APPROVED, "checksum4", 3L),
+            IncomingFile(5L, "rejected.jpg", "/path/rejected.jpg", LocalDateTime.now(), ItemStatus.REJECTED, "checksum5", 3L)
         )
         
         whenever(userRepository.findByEmail(userEmail)).thenReturn(user)
@@ -111,10 +111,10 @@ class IncomingFileServiceTest {
 
         // Then: Should have correct counts for each status
         assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(1, statistics[BillStatus.PENDING], "PENDING count should be 1")
-        assertEquals(1, statistics[BillStatus.PROCESSING], "PROCESSING count should be 1")
-        assertEquals(2, statistics[BillStatus.APPROVED], "APPROVED count should be 2")
-        assertEquals(1, statistics[BillStatus.REJECTED], "REJECTED count should be 1")
+        assertEquals(1, statistics[ItemStatus.NEW], "PENDING count should be 1")
+        assertEquals(1, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 1")
+        assertEquals(2, statistics[ItemStatus.APPROVED], "APPROVED count should be 2")
+        assertEquals(1, statistics[ItemStatus.REJECTED], "REJECTED count should be 1")
     }
 
     /**
@@ -129,7 +129,7 @@ class IncomingFileServiceTest {
         val userEmail = "paginated@example.com"
         val user = User(id = 4L, email = userEmail, name = "Paginated User")
         val files = (1..10).map { i ->
-            IncomingFile(i.toLong(), "file$i.pdf", "/path/file$i.pdf", LocalDateTime.now(), BillStatus.PENDING, "checksum$i", 4L)
+            IncomingFile(i.toLong(), "file$i.pdf", "/path/file$i.pdf", LocalDateTime.now(), ItemStatus.NEW, "checksum$i", 4L)
         }
         
         whenever(userRepository.findByEmail(userEmail)).thenReturn(user)

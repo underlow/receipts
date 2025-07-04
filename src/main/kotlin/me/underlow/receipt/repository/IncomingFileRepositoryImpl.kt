@@ -1,7 +1,7 @@
 package me.underlow.receipt.repository
 
 import me.underlow.receipt.model.IncomingFile
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -16,7 +16,7 @@ class IncomingFileRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : Incom
             filename = rs.getString("filename"),
             filePath = rs.getString("file_path"),
             uploadDate = rs.getTimestamp("upload_date").toLocalDateTime(),
-            status = BillStatus.valueOf(rs.getString("status")),
+            status = ItemStatus.valueOf(rs.getString("status")),
             checksum = rs.getString("checksum"),
             userId = rs.getLong("user_id"),
             ocrRawJson = rs.getString("ocr_raw_json"),
@@ -87,10 +87,17 @@ class IncomingFileRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : Incom
         ).firstOrNull()
     }
 
-    override fun findByStatus(status: BillStatus): List<IncomingFile> {
+    override fun findByStatus(status: ItemStatus): List<IncomingFile> {
         return jdbcTemplate.query(
             "SELECT id, filename, file_path, upload_date, status, checksum, user_id, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, ocr_processed_at, ocr_error_message FROM incoming_files WHERE status = ?",
             rowMapper, status.name
+        )
+    }
+
+    override fun findByUserIdAndStatus(userId: Long, status: ItemStatus): List<IncomingFile> {
+        return jdbcTemplate.query(
+            "SELECT id, filename, file_path, upload_date, status, checksum, user_id, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, ocr_processed_at, ocr_error_message FROM incoming_files WHERE user_id = ? AND status = ?",
+            rowMapper, userId, status.name
         )
     }
 

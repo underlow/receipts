@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.config.ReceiptsProperties
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
@@ -104,7 +104,7 @@ class FileWatcherServiceIntegrationTest {
             filename = "existing.pdf",
             filePath = "/path/to/existing.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.APPROVED,
+            status = ItemStatus.APPROVED,
             checksum = "duplicate_checksum",
             userId = 1L
         )

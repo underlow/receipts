@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.config.ReceiptsProperties
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
@@ -55,7 +55,7 @@ class FileProcessingService(
                 filename = file.name,
                 filePath = movedFile.absolutePath,
                 uploadDate = LocalDateTime.now(),
-                status = BillStatus.PENDING,
+                status = ItemStatus.NEW,
                 checksum = checksum,
                 userId = userId
             )

@@ -2,7 +2,7 @@ package me.underlow.receipt.service
 
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.Bill
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.BillRepository
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ class FileDispatchService(
     fun dispatchAllReadyFiles(): List<Bill> {
         logger.info("Dispatching all ready IncomingFiles to Bills")
         
-        val approvedFiles = incomingFileRepository.findByStatus(BillStatus.APPROVED)
+        val approvedFiles = incomingFileRepository.findByStatus(ItemStatus.APPROVED)
         val readyFiles = approvedFiles.filter { isFileReadyForDispatch(it) }
         
         logger.info("Found ${readyFiles.size} IncomingFiles ready for dispatch")
@@ -68,7 +68,7 @@ class FileDispatchService(
      * File must be APPROVED and have OCR results.
      */
     fun isFileReadyForDispatch(incomingFile: IncomingFile): Boolean {
-        return incomingFile.status == BillStatus.APPROVED &&
+        return incomingFile.status == ItemStatus.APPROVED &&
                incomingFile.ocrRawJson != null &&
                incomingFile.ocrProcessedAt != null
     }
@@ -82,7 +82,7 @@ class FileDispatchService(
             filename = incomingFile.filename,
             filePath = incomingFile.filePath,
             uploadDate = incomingFile.uploadDate,
-            status = BillStatus.APPROVED, // Bills start as approved since they come from approved IncomingFiles
+            status = ItemStatus.APPROVED, // Bills start as approved since they come from approved IncomingFiles
             ocrRawJson = incomingFile.ocrRawJson,
             extractedAmount = incomingFile.extractedAmount,
             extractedDate = incomingFile.extractedDate,
@@ -115,7 +115,7 @@ class FileDispatchService(
      * Gets statistics about files ready for dispatch.
      */
     fun getDispatchStatistics(): DispatchStatistics {
-        val allApprovedFiles = incomingFileRepository.findByStatus(BillStatus.APPROVED)
+        val allApprovedFiles = incomingFileRepository.findByStatus(ItemStatus.APPROVED)
         val readyFiles = allApprovedFiles.filter { isFileReadyForDispatch(it) }
         
         return DispatchStatistics(

@@ -1,7 +1,7 @@
 package me.underlow.receipt.controller
 
 import me.underlow.receipt.dto.*
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.service.*
 import me.underlow.receipt.model.EntityType
 import org.slf4j.LoggerFactory
@@ -70,8 +70,8 @@ class BillController(
         model.addAttribute("bill", billDetail)
         model.addAttribute("serviceProviders", serviceProviders)
         model.addAttribute("paymentMethods", paymentMethods)
-        model.addAttribute("canApprove", bill.status == BillStatus.PENDING || bill.status == BillStatus.PROCESSING)
-        model.addAttribute("canReject", bill.status == BillStatus.PENDING || bill.status == BillStatus.PROCESSING)
+        model.addAttribute("canApprove", bill.status == ItemStatus.NEW || bill.status == ItemStatus.PROCESSING)
+        model.addAttribute("canReject", bill.status == ItemStatus.NEW || bill.status == ItemStatus.PROCESSING)
 
         logger.info("Successfully showed bill detail for billId: $billId for user: $userEmail")
         return "bill-detail"

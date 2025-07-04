@@ -65,7 +65,7 @@ class DomainEntitiesUnitTest {
         val filename = "electricity_bill_jan_2024.pdf"
         val filePath = "/data/bills/electricity_bill_jan_2024.pdf"
         val uploadDate = LocalDateTime.now()
-        val status = BillStatus.PENDING
+        val status = ItemStatus.NEW
         val userId = 1L
 
         // When: Bill is created
@@ -161,17 +161,17 @@ class DomainEntitiesUnitTest {
     }
 
     @Test
-    fun `given BillStatus enum when accessing values then should have correct statuses`() {
-        // Given: BillStatus enum
+    fun `given ItemStatus enum when accessing values then should have correct statuses`() {
+        // Given: ItemStatus enum
         // When: Accessing enum values
-        val values = BillStatus.values()
+        val values = ItemStatus.values()
 
-        // Then: Should contain all expected bill statuses
+        // Then: Should contain all expected item statuses
         assertEquals(4, values.size)
-        assertEquals(BillStatus.PENDING, BillStatus.valueOf("PENDING"))
-        assertEquals(BillStatus.PROCESSING, BillStatus.valueOf("PROCESSING"))
-        assertEquals(BillStatus.APPROVED, BillStatus.valueOf("APPROVED"))
-        assertEquals(BillStatus.REJECTED, BillStatus.valueOf("REJECTED"))
+        assertEquals(ItemStatus.NEW, ItemStatus.valueOf("NEW"))
+        assertEquals(ItemStatus.PROCESSING, ItemStatus.valueOf("PROCESSING"))
+        assertEquals(ItemStatus.APPROVED, ItemStatus.valueOf("APPROVED"))
+        assertEquals(ItemStatus.REJECTED, ItemStatus.valueOf("REJECTED"))
     }
 
     @Test
@@ -180,7 +180,7 @@ class DomainEntitiesUnitTest {
         val filename = "receipt_2024_01_15.pdf"
         val filePath = "/data/attachments/2024/01/15/receipt_2024_01_15.pdf"
         val uploadDate = LocalDateTime.now()
-        val status = BillStatus.PENDING
+        val status = ItemStatus.NEW
         val checksum = "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
         val userId = 1L
 
@@ -216,7 +216,7 @@ class DomainEntitiesUnitTest {
             filename = "receipt1.pdf",
             filePath = "/path/to/receipt1.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = checksum,
             userId = userId
         )
@@ -226,7 +226,7 @@ class DomainEntitiesUnitTest {
             filename = "receipt2.pdf",
             filePath = "/path/to/receipt2.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.APPROVED,
+            status = ItemStatus.APPROVED,
             checksum = checksum,
             userId = userId
         )

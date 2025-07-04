@@ -1,7 +1,7 @@
 package me.underlow.receipt.dto
 
 import me.underlow.receipt.model.Bill
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.Receipt
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -18,7 +18,7 @@ class BillDetailDtoTest {
         val filename = "test_bill.pdf"
         val filePath = "/path/to/test_bill.pdf"
         val uploadDate = LocalDateTime.now()
-        val status = BillStatus.PENDING
+        val status = ItemStatus.NEW
         val ocrRawJson = """{"provider": "Test Provider", "amount": 100.50}"""
         val extractedAmount = 100.50
         val extractedDate = LocalDate.of(2024, 1, 15)
@@ -56,7 +56,7 @@ class BillDetailDtoTest {
         assertEquals(filePath, billDetailDto.filePath)
         assertEquals(uploadDate, billDetailDto.uploadDate)
         assertEquals(status, billDetailDto.status)
-        assertEquals("Pending Review", billDetailDto.statusDisplayName)
+        assertEquals("New", billDetailDto.statusDisplayName)
         assertEquals(ocrRawJson, billDetailDto.ocrRawJson)
         assertEquals(extractedAmount, billDetailDto.extractedAmount)
         assertEquals(extractedDate, billDetailDto.extractedDate)
@@ -76,7 +76,7 @@ class BillDetailDtoTest {
         val filename = "test_bill.pdf"
         val filePath = "/path/to/test_bill.pdf"
         val uploadDate = LocalDateTime.now()
-        val status = BillStatus.APPROVED
+        val status = ItemStatus.APPROVED
         val userId = 1L
 
         val bill = Bill(
@@ -129,7 +129,7 @@ class BillDetailDtoTest {
             filename = "test_bill.pdf",
             filePath = "/path/to/test_bill.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PROCESSING,
+            status = ItemStatus.PROCESSING,
             userId = userId,
             checksum = "test_checksum"
         )
@@ -168,7 +168,7 @@ class BillDetailDtoTest {
             filename = "bill_with_checksum.pdf",
             filePath = "/path/to/bill_with_checksum.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             userId = 1L,
             checksum = checksum
         )

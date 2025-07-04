@@ -131,7 +131,7 @@ class ReceiptService(
         
         // Return all bills for the user that are not rejected
         return billRepository.findByUserId(user.id!!)
-            .filter { it.status != me.underlow.receipt.model.BillStatus.REJECTED }
+            .filter { it.status != me.underlow.receipt.model.ItemStatus.REJECTED }
     }
 
     /**

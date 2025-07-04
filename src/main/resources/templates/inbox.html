@@ -203,19 +203,19 @@
                 <label>Filter by Status:</label>
                 <div class="status-badges">
                     <a href="javascript:void(0)" onclick="updateFilter('')" class="status-badge all" th:classappend="${selectedStatus == '' ? 'active' : ''}">
-                        All (<span th:text="${(statusCounts.get(T(me.underlow.receipt.model.BillStatus).PENDING) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).PROCESSING) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).APPROVED) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.BillStatus).REJECTED) ?: 0)}">0</span>)
+                        All (<span th:text="${(statusCounts.get(T(me.underlow.receipt.model.ItemStatus).NEW) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.ItemStatus).PROCESSING) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.ItemStatus).APPROVED) ?: 0) + (statusCounts.get(T(me.underlow.receipt.model.ItemStatus).REJECTED) ?: 0)}">0</span>)
                     </a>
-                    <a href="javascript:void(0)" onclick="updateFilter('pending')" class="status-badge pending" th:classappend="${selectedStatus == 'pending' ? 'active' : ''}">
-                        Pending (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).PENDING) ?: 0}">0</span>)
+                    <a href="javascript:void(0)" onclick="updateFilter('new')" class="status-badge pending" th:classappend="${selectedStatus == 'new' ? 'active' : ''}">
+                        New (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.ItemStatus).NEW) ?: 0}">0</span>)
                     </a>
                     <a href="javascript:void(0)" onclick="updateFilter('processing')" class="status-badge processing" th:classappend="${selectedStatus == 'processing' ? 'active' : ''}">
-                        Processing (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).PROCESSING) ?: 0}">0</span>)
+                        Processing (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.ItemStatus).PROCESSING) ?: 0}">0</span>)
                     </a>
                     <a href="javascript:void(0)" onclick="updateFilter('approved')" class="status-badge approved" th:classappend="${selectedStatus == 'approved' ? 'active' : ''}">
-                        Approved (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).APPROVED) ?: 0}">0</span>)
+                        Approved (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.ItemStatus).APPROVED) ?: 0}">0</span>)
                     </a>
                     <a href="javascript:void(0)" onclick="updateFilter('rejected')" class="status-badge rejected" th:classappend="${selectedStatus == 'rejected' ? 'active' : ''}">
-                        Rejected (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.BillStatus).REJECTED) ?: 0}">0</span>)
+                        Rejected (<span th:text="${statusCounts.get(T(me.underlow.receipt.model.ItemStatus).REJECTED) ?: 0}">0</span>)
                     </a>
                 </div>
             </div>
@@ -260,12 +260,12 @@
                         </span>
                         <span th:if="${!file.hasOcrResults and file.status.name() == 'PROCESSING'}">🔍 Processing...</span>
                         <span th:if="${file.ocrErrorMessage != null}">❌ OCR Failed</span>
-                        <span th:if="${!file.hasOcrResults and file.status.name() == 'PENDING'}">⏳ Pending OCR</span>
+                        <span th:if="${!file.hasOcrResults and file.status.name() == 'NEW'}">⏳ Pending OCR</span>
                     </div>
                 </div>
                 <div class="file-actions">
-                    <button th:if="${file.status.name() == 'PENDING'}" class="btn btn-approve" th:onclick="'approveFile(' + ${file.id} + ')'">Approve</button>
-                    <button th:if="${file.status.name() == 'PENDING'}" class="btn btn-reject" th:onclick="'rejectFile(' + ${file.id} + ')'">Reject</button>
+                    <button th:if="${file.status.name() == 'NEW'}" class="btn btn-approve" th:onclick="'approveFile(' + ${file.id} + ')'">Approve</button>
+                    <button th:if="${file.status.name() == 'NEW'}" class="btn btn-reject" th:onclick="'rejectFile(' + ${file.id} + ')'">Reject</button>
                     <a th:href="'/inbox/files/' + ${file.id}" class="btn" style="background-color: #17a2b8; color: white;">Detail</a>
                     <button class="btn btn-delete" th:onclick="'deleteFile(' + ${file.id} + ')'">Delete</button>
                     <a th:href="${file.fileUrl}" class="btn" style="background-color: #007bff; color: white;" target="_blank">View</a>

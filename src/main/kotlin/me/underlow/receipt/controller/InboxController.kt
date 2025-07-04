@@ -4,7 +4,7 @@ import me.underlow.receipt.dto.FileOperationResponse
 import me.underlow.receipt.dto.InboxFileDto
 import me.underlow.receipt.dto.InboxListResponse
 import me.underlow.receipt.dto.IncomingFileDetailDto
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.service.IncomingFileService
 import me.underlow.receipt.service.EntityConversionService
 import org.slf4j.LoggerFactory
@@ -49,7 +49,7 @@ class InboxController(
 
         // Parse status filter
         val statusFilter = if (status.isBlank()) null else try {
-            BillStatus.valueOf(status.uppercase())
+            ItemStatus.valueOf(status.uppercase())
         } catch (e: IllegalArgumentException) {
             logger.warn("Invalid status filter: '$status'")
             null
@@ -107,7 +107,7 @@ class InboxController(
         }
 
         val statusFilter = if (status.isBlank()) null else try {
-            BillStatus.valueOf(status.uppercase())
+            ItemStatus.valueOf(status.uppercase())
         } catch (e: IllegalArgumentException) {
             logger.warn("Invalid status filter for API inbox list: '$status'")
             null
@@ -152,7 +152,7 @@ class InboxController(
             )
         }
 
-        val success = incomingFileService.updateStatus(fileId, userEmail, BillStatus.APPROVED)
+        val success = incomingFileService.updateStatus(fileId, userEmail, ItemStatus.APPROVED)
         val response = if (success) {
             logger.info("File $fileId approved successfully by user: $userEmail")
             FileOperationResponse(true, "File approved successfully", fileId)
@@ -182,7 +182,7 @@ class InboxController(
             )
         }
 
-        val success = incomingFileService.updateStatus(fileId, userEmail, BillStatus.REJECTED)
+        val success = incomingFileService.updateStatus(fileId, userEmail, ItemStatus.REJECTED)
         val response = if (success) {
             logger.info("File $fileId rejected successfully by user: $userEmail")
             FileOperationResponse(true, "File rejected successfully", fileId)

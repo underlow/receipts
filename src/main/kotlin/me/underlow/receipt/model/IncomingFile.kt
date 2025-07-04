@@ -23,7 +23,7 @@ data class IncomingFile(
     val uploadDate: LocalDateTime,
     
     @field:NotNull(message = "Status cannot be null")
-    val status: BillStatus,
+    val status: ItemStatus,
     
     @field:NotBlank(message = "Checksum cannot be blank")
     val checksum: String,

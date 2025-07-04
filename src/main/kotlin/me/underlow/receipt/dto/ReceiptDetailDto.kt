@@ -2,7 +2,7 @@ package me.underlow.receipt.dto
 
 import me.underlow.receipt.model.Receipt
 import me.underlow.receipt.model.Bill
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -46,7 +46,7 @@ data class BillSummaryDto(
     val id: Long,
     val filename: String,
     val uploadDate: LocalDateTime,
-    val status: BillStatus,
+    val status: ItemStatus,
     val statusDisplayName: String,
     val extractedAmount: Double?,
     val extractedDate: LocalDate?,
@@ -70,12 +70,12 @@ data class BillSummaryDto(
             )
         }
 
-        private fun formatStatus(status: BillStatus): String {
+        private fun formatStatus(status: ItemStatus): String {
             return when (status) {
-                BillStatus.PENDING -> "Pending Review"
-                BillStatus.PROCESSING -> "Processing"
-                BillStatus.APPROVED -> "Approved"
-                BillStatus.REJECTED -> "Rejected"
+                ItemStatus.NEW -> "New"
+                ItemStatus.PROCESSING -> "Processing"
+                ItemStatus.APPROVED -> "Approved"
+                ItemStatus.REJECTED -> "Rejected"
             }
         }
     }

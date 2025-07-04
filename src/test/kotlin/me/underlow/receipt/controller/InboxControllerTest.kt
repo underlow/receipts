@@ -1,7 +1,7 @@
 package me.underlow.receipt.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.service.IncomingFileService
 import me.underlow.receipt.service.EntityConversionService
@@ -58,10 +58,10 @@ class InboxControllerTest {
         // Given: User with no files - all status counts are 0
         val userEmail = "nofiles@example.com"
         val emptyStatusCounts = mapOf(
-            BillStatus.PENDING to 0,
-            BillStatus.PROCESSING to 0,
-            BillStatus.APPROVED to 0,
-            BillStatus.REJECTED to 0
+            ItemStatus.NEW to 0,
+            ItemStatus.PROCESSING to 0,
+            ItemStatus.APPROVED to 0,
+            ItemStatus.REJECTED to 0
         )
 
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
@@ -98,10 +98,10 @@ class InboxControllerTest {
         val model = result.andReturn().modelAndView?.model
         val statusCounts = model?.get("statusCounts") as? Map<*, *>
         assertTrue(statusCounts != null, "statusCounts should not be null")
-        assertTrue(statusCounts.containsKey(BillStatus.PENDING), "Should contain PENDING status")
-        assertTrue(statusCounts.containsKey(BillStatus.PROCESSING), "Should contain PROCESSING status")
-        assertTrue(statusCounts.containsKey(BillStatus.APPROVED), "Should contain APPROVED status")
-        assertTrue(statusCounts.containsKey(BillStatus.REJECTED), "Should contain REJECTED status")
+        assertTrue(statusCounts.containsKey(ItemStatus.NEW), "Should contain NEW status")
+        assertTrue(statusCounts.containsKey(ItemStatus.PROCESSING), "Should contain PROCESSING status")
+        assertTrue(statusCounts.containsKey(ItemStatus.APPROVED), "Should contain APPROVED status")
+        assertTrue(statusCounts.containsKey(ItemStatus.REJECTED), "Should contain REJECTED status")
     }
 
     /**
@@ -115,10 +115,10 @@ class InboxControllerTest {
         // Given: User with no files
         val userEmail = "nofiles@example.com"
         val emptyStatusCounts = mapOf(
-            BillStatus.PENDING to 0,
-            BillStatus.PROCESSING to 0,
-            BillStatus.APPROVED to 0,
-            BillStatus.REJECTED to 0
+            ItemStatus.NEW to 0,
+            ItemStatus.PROCESSING to 0,
+            ItemStatus.APPROVED to 0,
+            ItemStatus.REJECTED to 0
         )
 
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
@@ -151,7 +151,7 @@ class InboxControllerTest {
             .andExpect(jsonPath("$.totalFiles").value(0))
             .andExpect(jsonPath("$.currentPage").value(0))
             .andExpect(jsonPath("$.totalPages").value(0))
-            .andExpect(jsonPath("$.statusCounts.pending").value(0))
+            .andExpect(jsonPath("$.statusCounts.new").value(0))
             .andExpect(jsonPath("$.statusCounts.processing").value(0))
             .andExpect(jsonPath("$.statusCounts.approved").value(0))
             .andExpect(jsonPath("$.statusCounts.rejected").value(0))
@@ -160,7 +160,7 @@ class InboxControllerTest {
     /**
      * Test that filter and sort parameters are properly handled
      * Given: User with filter and sort parameters
-     * When: GET /inbox with status=pending&sortBy=filename&sortDirection=asc
+     * When: GET /inbox with status=new&sortBy=filename&sortDirection=asc
      * Then: Should pass correct parameters to service and display in model
      */
     @Test
@@ -168,13 +168,13 @@ class InboxControllerTest {
         // Given: User with filter and sort parameters
         val userEmail = "test@example.com"
         val statusCounts = mapOf(
-            BillStatus.PENDING to 5,
-            BillStatus.PROCESSING to 2,
-            BillStatus.APPROVED to 3,
-            BillStatus.REJECTED to 1
+            ItemStatus.NEW to 5,
+            ItemStatus.PROCESSING to 2,
+            ItemStatus.APPROVED to 3,
+            ItemStatus.REJECTED to 1
         )
 
-        whenever(incomingFileService.findByUserEmailWithPagination(userEmail, BillStatus.PENDING, 0, 20, "filename", "asc"))
+        whenever(incomingFileService.findByUserEmailWithPagination(userEmail, ItemStatus.NEW, 0, 20, "filename", "asc"))
             .thenReturn(Pair(emptyList(), 5L))
         whenever(incomingFileService.getFileStatistics(userEmail))
             .thenReturn(statusCounts)
@@ -192,7 +192,7 @@ class InboxControllerTest {
         // When: Making request with filter and sort parameters
         val result = mockMvc.perform(
             get("/inbox")
-                .param("status", "pending")
+                .param("status", "new")
                 .param("sortBy", "filename")
                 .param("sortDirection", "asc")
                 .with(authentication(auth))
@@ -201,7 +201,7 @@ class InboxControllerTest {
         // Then: Should return successful response with correct model attributes
         result.andExpect(status().isOk)
             .andExpect(view().name("inbox"))
-            .andExpect(model().attribute("selectedStatus", "pending"))
+            .andExpect(model().attribute("selectedStatus", "new"))
             .andExpect(model().attribute("sortBy", "filename"))
             .andExpect(model().attribute("sortDirection", "asc"))
             .andExpect(model().attributeExists("statusCounts"))
@@ -218,10 +218,10 @@ class InboxControllerTest {
         // Given: User with invalid status parameter
         val userEmail = "test@example.com"
         val statusCounts = mapOf(
-            BillStatus.PENDING to 5,
-            BillStatus.PROCESSING to 2,
-            BillStatus.APPROVED to 3,
-            BillStatus.REJECTED to 1
+            ItemStatus.NEW to 5,
+            ItemStatus.PROCESSING to 2,
+            ItemStatus.APPROVED to 3,
+            ItemStatus.REJECTED to 1
         )
 
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
@@ -269,7 +269,7 @@ class InboxControllerTest {
             filename = "test-document.pdf",
             filePath = "/tmp/test-document.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "abc123def456",
             userId = 1L
         )
@@ -358,7 +358,7 @@ class InboxControllerTest {
             filename = "test-document.pdf",
             filePath = "/tmp/test-document.pdf",
             uploadDate = LocalDateTime.of(2024, 1, 15, 10, 30, 0),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "abc123def456",
             userId = 1L
         )
@@ -387,8 +387,8 @@ class InboxControllerTest {
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$.id").value(fileId))
             .andExpect(jsonPath("$.filename").value("test-document.pdf"))
-            .andExpect(jsonPath("$.status").value("PENDING"))
-            .andExpect(jsonPath("$.statusDisplayName").value("Pending Review"))
+            .andExpect(jsonPath("$.status").value("NEW"))
+            .andExpect(jsonPath("$.statusDisplayName").value("New"))
             .andExpect(jsonPath("$.checksum").value("abc123def456"))
             .andExpect(jsonPath("$.fileUrl").value("/api/files/$fileId"))
             .andExpect(jsonPath("$.thumbnailUrl").value("/api/files/$fileId/thumbnail"))
@@ -474,7 +474,7 @@ class InboxControllerTest {
             filename = "test-document.pdf",
             filePath = "/tmp/test-document.pdf",
             uploadDate = LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             checksum = "abc123def456",
             userId = 1L,
             originalIncomingFileId = fileId

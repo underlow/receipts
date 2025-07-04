@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.model.Bill
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.Receipt
 import me.underlow.receipt.repository.BillRepository
 import me.underlow.receipt.repository.ReceiptRepository
@@ -49,7 +49,7 @@ class BillService(
     /**
      * Finds all Bills for a user by email with optional status filtering
      */
-    fun findByUserEmail(userEmail: String, status: BillStatus? = null): List<Bill> {
+    fun findByUserEmail(userEmail: String, status: ItemStatus? = null): List<Bill> {
         logger.debug("Attempting to find bills for user: {} with status: {}", userEmail, status)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
@@ -91,7 +91,7 @@ class BillService(
             filename = filename,
             filePath = filePath,
             uploadDate = java.time.LocalDateTime.now(),
-            status = BillStatus.PENDING,
+            status = ItemStatus.NEW,
             ocrRawJson = ocrRawJson,
             extractedAmount = extractedAmount,
             extractedDate = extractedDate,
@@ -127,7 +127,7 @@ class BillService(
             extractedAmount = extractedAmount,
             extractedDate = extractedDate,
             extractedProvider = extractedProvider,
-            status = BillStatus.PROCESSING
+            status = ItemStatus.PROCESSING
         )
         
         val savedBill = billRepository.save(updatedBill)
@@ -138,7 +138,7 @@ class BillService(
     /**
      * Updates the status of a Bill
      */
-    fun updateStatus(billId: Long, userEmail: String, newStatus: BillStatus): Boolean {
+    fun updateStatus(billId: Long, userEmail: String, newStatus: ItemStatus): Boolean {
         logger.info("Attempting to update status of bill ID: {} to {} for user: {}", billId, newStatus, userEmail)
         val existingBill = findByIdAndUserEmail(billId, userEmail)
         if (existingBill == null) {
@@ -209,7 +209,7 @@ class BillService(
     /**
      * Counts Bills by status for a user
      */
-    fun getBillStatistics(userEmail: String): Map<BillStatus, Int> {
+    fun getBillStatistics(userEmail: String): Map<ItemStatus, Int> {
         logger.debug("Attempting to get bill statistics for user: {}", userEmail)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
@@ -228,7 +228,7 @@ class BillService(
      */
     fun approveBill(billId: Long, userEmail: String): Bill? {
         logger.info("Attempting to approve bill ID: {} for user: {}", billId, userEmail)
-        val success = updateStatus(billId, userEmail, BillStatus.APPROVED)
+        val success = updateStatus(billId, userEmail, ItemStatus.APPROVED)
         return if (success) {
             val approvedBill = findByIdAndUserEmail(billId, userEmail)
             logger.info("Bill ID: {} approved successfully for user: {}", billId, userEmail)
@@ -244,7 +244,7 @@ class BillService(
      */
     fun rejectBill(billId: Long, userEmail: String): Bill? {
         logger.info("Attempting to reject bill ID: {} for user: {}", billId, userEmail)
-        val success = updateStatus(billId, userEmail, BillStatus.REJECTED)
+        val success = updateStatus(billId, userEmail, ItemStatus.REJECTED)
         return if (success) {
             val rejectedBill = findByIdAndUserEmail(billId, userEmail)
             logger.info("Bill ID: {} rejected successfully for user: {}", billId, userEmail)

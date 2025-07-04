@@ -3,7 +3,7 @@ package me.underlow.receipt.controller
 import me.underlow.receipt.config.ReceiptsProperties
 import me.underlow.receipt.dto.ErrorResponse
 import me.underlow.receipt.dto.FileUploadResponse
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.User
 import me.underlow.receipt.repository.IncomingFileRepository
@@ -99,7 +99,7 @@ class FileUploadControllerIntegrationTest {
         val responseBody = response.body as FileUploadResponse
         assertEquals(999L, responseBody.id)
         assertEquals("integration-test.pdf", responseBody.filename)
-        assertEquals(BillStatus.PENDING, responseBody.status)
+        assertEquals(ItemStatus.NEW, responseBody.status)
         assertTrue(responseBody.success)
         assertNotNull(responseBody.checksum)
 
@@ -109,7 +109,7 @@ class FileUploadControllerIntegrationTest {
         verify(incomingFileRepository).save(argThat { incomingFile ->
             incomingFile.filename == "integration-test.pdf" &&
             incomingFile.userId == 1L &&
-            incomingFile.status == BillStatus.PENDING &&
+            incomingFile.status == ItemStatus.NEW &&
             incomingFile.checksum.isNotEmpty()
         })
 
@@ -154,7 +154,7 @@ class FileUploadControllerIntegrationTest {
                 filename = "original.pdf",
                 filePath = "/storage/original.pdf",
                 uploadDate = LocalDateTime.now(),
-                status = BillStatus.PENDING,
+                status = ItemStatus.NEW,
                 checksum = "duplicate_checksum",
                 userId = 2L
             )

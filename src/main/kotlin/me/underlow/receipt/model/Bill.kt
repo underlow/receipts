@@ -18,7 +18,7 @@ data class Bill(
     val uploadDate: LocalDateTime,
     
     @field:NotNull(message = "Status cannot be null")
-    val status: BillStatus,
+    val status: ItemStatus,
     
     val ocrRawJson: String? = null,
     

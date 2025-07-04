@@ -1,7 +1,7 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.model.IncomingFile
-import me.underlow.receipt.model.BillStatus
+import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -33,7 +33,7 @@ class IncomingFileService(
     /**
      * Finds all IncomingFiles for a user by email with optional status filtering
      */
-    fun findByUserEmailAndStatus(userEmail: String, status: BillStatus? = null): List<IncomingFile> {
+    fun findByUserEmailAndStatus(userEmail: String, status: ItemStatus? = null): List<IncomingFile> {
         val user = userRepository.findByEmail(userEmail) ?: return emptyList()
         
         return if (status != null) {
@@ -48,7 +48,7 @@ class IncomingFileService(
      */
     fun findByUserEmailWithPagination(
         userEmail: String, 
-        status: BillStatus? = null,
+        status: ItemStatus? = null,
         page: Int = 0,
         size: Int = 20,
         sortBy: String = "uploadDate",
@@ -87,7 +87,7 @@ class IncomingFileService(
     /**
      * Updates the status of an IncomingFile if user owns it
      */
-    fun updateStatus(fileId: Long, userEmail: String, newStatus: BillStatus): Boolean {
+    fun updateStatus(fileId: Long, userEmail: String, newStatus: ItemStatus): Boolean {
         val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
         
         val updatedFile = incomingFile.copy(status = newStatus)
@@ -106,12 +106,12 @@ class IncomingFileService(
     /**
      * Gets file statistics for a user
      */
-    fun getFileStatistics(userEmail: String): Map<BillStatus, Int> {
+    fun getFileStatistics(userEmail: String): Map<ItemStatus, Int> {
         val files = findByUserEmailAndStatus(userEmail)
         val groupedFiles = files.groupBy { it.status }.mapValues { it.value.size }
         
         // Ensure all statuses are present with default value 0
-        return BillStatus.values().associateWith { status ->
+        return ItemStatus.values().associateWith { status ->
             groupedFiles[status] ?: 0
         }
     }
