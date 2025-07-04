@@ -137,9 +137,12 @@
 - ✅Implemented standardized `OcrResult` and `OcrRequest` data classes
 
 12. **Dispatch logic**
-    - Upon `Receipt` creation, invoke the selected engine bean.
-    - Persist raw JSON and extract core fields (provider guess, amount, dates).
-    - Flag ambiguous or missing provider info for manual review.
+    - Upon `IncomingFile` creation, invoke the selected engine bean.
+    - Informatioon which should be sent to OCR: prompt, image, set of `ServiceProvider` and `PaymentMethod` as json array
+    - Persist raw JSON and extract core fields (type, provider guess, amount, dates).
+    - There should ba a fallback is no keys are set. 
+    - information about ocr(ocr provider, date, result) should be accessible in UI
+    
 
 ---
 
