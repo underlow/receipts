@@ -315,3 +315,9 @@
 
 
 
+---
+
+**rework e2e testing**
+ - rework authentication and make it possible to login from e2e test with custom user
+ - fix all disabled tests
+ - implement all new what is required to test app.
