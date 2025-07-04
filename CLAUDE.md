@@ -36,19 +36,6 @@ if you are asked to plan feature implementation:
 - analyze requirements. think hard.
 - be concrete, describe all changes at class and functions level.
 - don't leave anything to be explored later, at implementation stage everything should already be known and documented.
-  worst case scenario - first item in the plan can be research item
-- make a plan similar to this example:
-
-Motivation: reasoning for a feature
-Feature: describe feature in detail. update this on each change
-
-Definition of done: describe what tests should be written, describe all test cases to check
-
-Steps: actual steps.
-
-Save plan in the /docs/features/<github issue id or other prefix - ask for it> <feature name>.md file before
-implementing.
-Update file on each plan change
 
 ## Implementing a plan
 
