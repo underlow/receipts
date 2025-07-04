@@ -73,11 +73,14 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - Duplicate detection and prevention
 3. **OCR Processing**: ✅ **IMPLEMENTED** - Automatic extraction of key information using AI engines
    - Multi-engine support (OpenAI, Claude, Google AI) with fallback mechanisms
-   - Automatic processing of uploaded files immediately after storage
-   - Intelligent extraction of provider, amount, date, and currency information
+   - **Automatic OCR Flow**: Files trigger OCR immediately after upload → type guessing → user acceptance/rejection/retry
+   - **Manual OCR Flow**: User can manually trigger OCR or select type first then OCR
+   - **Intelligent Processing**: 
+     - IncomingFile OCR: Guesses type and extracts info
+     - Bill/Receipt OCR: Only extracts info (no type guessing)
    - Status management through PENDING → PROCESSING → APPROVED/REJECTED workflow
-   - Error handling and retry mechanisms for failed OCR processing
-   - Raw OCR data preservation for audit and debugging purposes
+   - Error handling and retry mechanisms with unlimited user fixes
+   - **OCR History**: Complete attempts history preserved across entity transitions
 
 #### 3.2 OCR & Data Extraction ✅ **IMPLEMENTED**
 - **Multi-Engine Support**: OpenAI GPT-4 Vision, Claude Vision, and Google Gemini integration
@@ -88,20 +91,38 @@ The Household Expense Tracker is a web-based application designed to streamline 
 - **Error Handling**: Comprehensive error capture and retry mechanisms
 - **Performance Monitoring**: Processing time tracking and confidence scoring
 - **Integration Points**: Seamless integration with ServiceProvider and PaymentMethod entities
+- **Type Detection**: Can either automatically detect document type or use user-specified type
+- **Manual Type Selection**: Users can pre-select Bill or Receipt type before OCR processing
+- **OCR Prompt Behavior**: 
+  - For IncomingFile: OCR guesses type and extracts info
+  - For Bill/Receipt: OCR only extracts info (no type guessing)
+- **OCR Attempts History**: Complete history of all OCR processing attempts stored for audit
 
 #### 3.3 Review & Approval Process ✅ **IMPLEMENTED**
 1. **Inbox Management**: ✅ Comprehensive inbox interface for file review and management
    - Paginated grid view with thumbnails for uploaded files
    - Status filtering (PENDING, PROCESSING, APPROVED, REJECTED) with counts
    - Sorting capabilities by filename, upload date, and status
-   - File operations: approve, reject, delete with AJAX support
+   - File operations: manual type selection (Bill/Receipt), OCR processing, delete with AJAX support
    - Modal image viewer for detailed file inspection
    - Navigation to detail views via "Detail" buttons
+   - **New Panel Actions**: 
+     - "Send to OCR" - processes file with automatic type detection
+     - "Bill" - converts file to Bill entity in pending state
+     - "Receipt" - converts file to Receipt entity in pending state
+   - **Flexible Workflows**:
+     - Automatic OCR on upload with type detection
+     - Manual type selection then OCR for info extraction only
+     - User can accept, reject (revert to IncomingFile), or retry OCR anytime
 2. **Detail Views**: ✅ **IMPLEMENTED** - Split-pane interfaces for bill and receipt processing
    - **Bill Detail View**: Zoomable image viewer with OCR data editing and payment creation
    - **Receipt Detail View**: Receipt association management and standalone payment processing
    - **Interactive Forms**: Pre-populated with OCR data, service provider/method selection
    - **Workflow Actions**: Save draft, approve/reject, associate/dissociate operations
+   - **Two-Tab Interface**: When IncomingFile is converted to Bill/Receipt:
+     - **Bill/Receipt Tab**: Editable entity fields prefilled with OCR values, Accept/Revert buttons (available anytime)
+     - **Information Tab**: Technical file details, metadata, and complete OCR attempts history
+   - **Navigation**: Breadcrumbs removed for simplified interface
 3. **OCR Processing Management**: ✅ Complete OCR workflow control through intuitive interface
    - Manual OCR trigger via "Send to OCR" button for unprocessed files
    - Automatic OCR processing for newly uploaded files

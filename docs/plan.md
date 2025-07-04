@@ -113,6 +113,75 @@
     - ✅Update inbox template to link Detail button to new endpoint
     - ✅Create `IncomingFileDetailDto` with computed fields and action permissions
     - ✅Ensure proper user authentication and file ownership verification
+
+38. **Enhanced Panel Actions for IncomingFile**
+    - Remove "Approve File" button from actions panel
+    - Move "Send to OCR" button to actions panel (from OCR section)
+    - Add "Bill" button that converts IncomingFile to Bill entity in pending state
+    - Add "Receipt" button that converts IncomingFile to Receipt entity in pending state
+    - Update UI to show current entity type and available actions
+    - Implement manual type selection workflow before OCR processing
+    - When OCR is triggered with manual type selection, OCR should extract info without guessing type
+    - Add revert functionality to convert Bill/Receipt back to IncomingFile if user declines OCR results
+
+39. **Two-Tab Interface for Bill/Receipt Detail Views**
+    - When IncomingFile is converted to Bill or Receipt, change UI to show two tabs in left pane:
+      - **Bill/Receipt Tab**: Contains editable entity fields prefilled with OCR values
+        - Add Accept button to finalize the conversion
+        - Add Revert button to convert back to IncomingFile
+        - Form fields for provider, amount, date, currency, etc.
+      - **Information Tab**: Contains technical file details and metadata
+        - File information (filename, upload date, size, checksum)
+        - OCR processing history and raw data
+        - System technical details
+    - Preserve existing image viewer functionality in right pane
+    - Update navigation and breadcrumbs to reflect current entity type
+    - Ensure proper state management between IncomingFile ↔ Bill/Receipt transitions
+
+40. **Enhanced User Stories Implementation**
+    - **IncomingFile Creation**: When user uploads a file, it creates an IncomingFile entity
+    - **OCR Processing Options**:
+        - Automatic type detection: User sends to OCR, OCR guesses type and extracts info, converts to corresponding entity
+        - Manual type selection: User selects Bill/Receipt type, then sends to OCR for info extraction only
+    - **OCR Results Handling**: User can accept OCR results or decline and revert back to IncomingFile
+    - **Entity State Management**: Clear transitions between IncomingFile → Bill/Receipt → back to IncomingFile
+    - **UI State Synchronization**: Interface updates based on current entity type and processing state
+
+41. **OCR Attempts History System**
+    - Add OCR attempts history to all entities (IncomingFile, Bill, Receipt)
+    - Track: timestamp, OCR engine used, processing status, extracted data, error messages
+    - Store raw OCR responses for audit and debugging
+    - Display history in Information tab of detail views
+    - Allow users to view previous OCR attempts and results
+    - Maintain history across entity type transitions (IncomingFile → Bill/Receipt)
+
+42. **UI Navigation Improvements**
+    - Remove breadcrumbs from all pages
+    - Simplify navigation to focus on main actions
+    - Allow users to revert/fix errors at any time without restrictions
+    - Update page titles and headers to reflect current entity type
+
+
+## Workflow Requirements Summary
+
+**File Upload Workflow**:
+1. User uploads file → IncomingFile entity created
+2. User can either:
+    - Click "Send to OCR" → OCR guesses type and extracts info → converts to Bill/Receipt
+    - Click "Bill" → converts to Bill in pending state → can send to OCR for info extraction
+    - Click "Receipt" → converts to Receipt in pending state → can send to OCR for info extraction
+3. If user declines OCR results → entity reverts back to IncomingFile
+4. When entity is Bill/Receipt → UI shows two-tab interface (Bill/Receipt tab + Information tab)
+
+**User Interface Changes**:
+- Remove "Approve File" button from actions panel
+- Move "Send to OCR" button to actions panel
+- Add "Bill" and "Receipt" buttons to actions panel
+- Implement two-tab interface for Bill/Receipt detail views
+- Add Accept/Revert buttons in entity-specific tabs
+
+---
+
 ---
 
 ## OCR Integration
@@ -243,5 +312,6 @@
 5. **Audit logging framework**
     - Add an interceptor or aspect to log all create/update/delete on Bills, Payments, Service Providers, Attachments.
     - Store logs with: user ID, entity type, operation, timestamp, before/after data.
+
 
 
