@@ -33,10 +33,10 @@ There are three types of tickets.
  - if it is not a sub issue think if it is possible to split this issue to smaller ones which can be implemented separately.
  - if it is possible to split it then create sub issues and stop. leave items write e2e tests and update documentation in root ticket. stop after creating tickets  
  - plan development
-- write tests first, be sure that new tests a failing
-- implement feature
-- Ensure tests are passed
-- add to the ticket comment describing what was done and how
-- Create a descriptive commit message show it but do not commit
+ - write tests first, be sure that new tests a failing
+ - implement feature
+ - Ensure tests are passed
+ - add to the ticket comment describing what was done and how
+ - Create a descriptive commit message show it but do not commit
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.

@@ -11,7 +11,8 @@
       "Bash(sed:*)",
       "Bash(gh issue view:*)",
       "Bash(gh issue comment:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": []
   }

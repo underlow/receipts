@@ -6,6 +6,7 @@ There are three types of tickets.
 - root(or parent) ticket for a big feature. contains sub-tickets. All main development should be done in sub-tickets.
   Only when all sub-tickets are done root ticket can be implemented. 
   In root ticket we keep only tasks which can be implemented when all sub-tickets are done. Like e2e tests, updating documentation, etc 
+  creating this ticket is important to outline what part of the plan will be implemented in sub-tickets and what part should be implemented in this ticket
 - Sub-ticket. it is a part of a bigger feature
 - Regular ticket. Not a root not a sub-ticket
 
