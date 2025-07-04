@@ -44,17 +44,20 @@ class FileUploadController(
         @RequestParam("file") file: MultipartFile,
         principal: Principal
     ): ResponseEntity<Any> {
+        logger.info("Received file upload request: ${file.originalFilename}")
         return try {
-            logger.info("Received file upload request: ${file.originalFilename}")
-
             // Validate authentication
             val userId = extractUserIdFromPrincipal(principal)
-                ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ErrorResponse(message = "User not authenticated"))
+                ?: run {
+                    logger.warn("Unauthorized file upload attempt. User ID not found.")
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ErrorResponse(message = "User not authenticated"))
+                }
 
             // Validate file
             val validationError = validateUploadedFile(file)
             if (validationError != null) {
+                logger.warn("File upload validation failed for ${file.originalFilename}: ${validationError.message}")
                 return ResponseEntity.badRequest().body(validationError)
             }
 
@@ -79,6 +82,7 @@ class FileUploadController(
                     ResponseEntity.ok(response)
                 } else {
                     // File processing failed (likely duplicate)
+                    logger.warn("File processing failed or file already exists for ${file.originalFilename} for user: $userId")
                     ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ErrorResponse(
                             message = "File already exists or processing failed",
@@ -105,6 +109,7 @@ class FileUploadController(
      * Extracts user ID from OAuth2 authentication principal.
      */
     private fun extractUserIdFromPrincipal(principal: Principal): Long? {
+        logger.debug("Extracting user ID from principal: {}", principal.name)
         return when (principal) {
             is OAuth2AuthenticationToken -> {
                 val email = principal.principal.attributes["email"] as? String
@@ -118,6 +123,7 @@ class FileUploadController(
      * Validates uploaded file for size, type, and content requirements.
      */
     private fun validateUploadedFile(file: MultipartFile): ErrorResponse? {
+        logger.debug("Validating uploaded file: {}", file.originalFilename)
         // Check if file is empty
         if (file.isEmpty) {
             return ErrorResponse(
@@ -149,6 +155,7 @@ class FileUploadController(
             )
         }
 
+        logger.debug("File {} validated successfully.", file.originalFilename)
         return null
     }
 
@@ -173,6 +180,7 @@ class FileUploadController(
             // Delete the file first
             if (tempFileInfo.file.exists()) {
                 tempFileInfo.file.delete()
+                logger.debug("Deleted temporary file: ${tempFileInfo.file.absolutePath}")
             }
 
             // Then delete the directory and all its contents recursively
@@ -188,7 +196,7 @@ class FileUploadController(
                 }
             })
 
-            logger.debug("Cleaned up temporary file and directory: ${tempFileInfo.directory}")
+            logger.debug("Cleaned up temporary directory: ${tempFileInfo.directory}")
         } catch (e: Exception) {
             logger.warn("Failed to cleanup temporary file and directory: ${tempFileInfo.directory}", e)
         }

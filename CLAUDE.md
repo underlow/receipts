@@ -10,10 +10,14 @@
 All documentation are in the ./docs folder:
 ./docs/architecture.md - overall architecture
 ./docs/overview.md - functionality overview
-./docs/changelog.md - changelog
-/docs/features - features implementation plans.
 
 all docs MUST be updated after each new feature implementation.
+
+## Github
+
+all changes should have corresponding github issue. if you are asked to make a code change first create an issue using `gh`
+before implementing a feature or fixing a bug add create plan into github issue as a checklist
+after implementing add to ticket information what was implemented and how.  
 
 ## Writing tests
 

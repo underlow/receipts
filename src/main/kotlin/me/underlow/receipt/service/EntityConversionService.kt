@@ -24,8 +24,17 @@ class EntityConversionService(
      * Converts an IncomingFile to a Bill
      */
     fun convertIncomingFileToBill(incomingFileId: Long, userEmail: String): Bill? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val incomingFile = incomingFileRepository.findById(incomingFileId) ?: return null
+        logger.info("Attempting to convert IncomingFile $incomingFileId to Bill for user $userEmail")
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot convert IncomingFile to Bill.", userEmail)
+            return null
+        }
+        val incomingFile = incomingFileRepository.findById(incomingFileId)
+        if (incomingFile == null) {
+            logger.warn("IncomingFile with ID {} not found.", incomingFileId)
+            return null
+        }
         
         // Verify user ownership
         if (incomingFile.userId != user.id) {
@@ -73,8 +82,17 @@ class EntityConversionService(
      * Converts an IncomingFile to a Receipt
      */
     fun convertIncomingFileToReceipt(incomingFileId: Long, userEmail: String): Receipt? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val incomingFile = incomingFileRepository.findById(incomingFileId) ?: return null
+        logger.info("Attempting to convert IncomingFile $incomingFileId to Receipt for user $userEmail")
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot convert IncomingFile to Receipt.", userEmail)
+            return null
+        }
+        val incomingFile = incomingFileRepository.findById(incomingFileId)
+        if (incomingFile == null) {
+            logger.warn("IncomingFile with ID {} not found.", incomingFileId)
+            return null
+        }
         
         // Verify user ownership
         if (incomingFile.userId != user.id) {
@@ -123,8 +141,17 @@ class EntityConversionService(
      * Reverts a Bill back to an IncomingFile
      */
     fun revertBillToIncomingFile(billId: Long, userEmail: String): IncomingFile? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val bill = billRepository.findById(billId) ?: return null
+        logger.info("Attempting to revert Bill $billId to IncomingFile for user $userEmail")
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot revert Bill to IncomingFile.", userEmail)
+            return null
+        }
+        val bill = billRepository.findById(billId)
+        if (bill == null) {
+            logger.warn("Bill with ID {} not found.", billId)
+            return null
+        }
         
         // Verify user ownership
         if (bill.userId != user.id) {
@@ -171,8 +198,17 @@ class EntityConversionService(
      * Reverts a Receipt back to an IncomingFile
      */
     fun revertReceiptToIncomingFile(receiptId: Long, userEmail: String): IncomingFile? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val receipt = receiptRepository.findById(receiptId) ?: return null
+        logger.info("Attempting to revert Receipt $receiptId to IncomingFile for user $userEmail")
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot revert Receipt to IncomingFile.", userEmail)
+            return null
+        }
+        val receipt = receiptRepository.findById(receiptId)
+        if (receipt == null) {
+            logger.warn("Receipt with ID {} not found.", receiptId)
+            return null
+        }
         
         // Verify user ownership
         if (receipt.userId != user.id) {
@@ -225,19 +261,31 @@ class EntityConversionService(
      * Checks if an entity can be reverted to IncomingFile
      */
     fun canRevertToIncomingFile(entityType: EntityType, entityId: Long, userEmail: String): Boolean {
-        val user = userRepository.findByEmail(userEmail) ?: return false
+        logger.debug("Checking if entity type {} with ID {} can be reverted to IncomingFile for user {}", entityType, entityId, userEmail)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot check revert capability.", userEmail)
+            return false
+        }
         
         return when (entityType) {
             EntityType.BILL -> {
                 val bill = billRepository.findById(entityId)
-                bill != null && bill.userId == user.id && bill.originalIncomingFileId != null
+                val canRevert = bill != null && bill.userId == user.id && bill.originalIncomingFileId != null
+                logger.debug("Bill {} can be reverted: {}", entityId, canRevert)
+                canRevert
             }
             EntityType.RECEIPT -> {
                 val receipt = receiptRepository.findById(entityId)
-                receipt != null && receipt.userId == user.id && 
+                val canRevert = receipt != null && receipt.userId == user.id && 
                 receipt.filename != null && receipt.filePath != null
+                logger.debug("Receipt {} can be reverted: {}", entityId, canRevert)
+                canRevert
             }
-            EntityType.INCOMING_FILE -> false // Already an IncomingFile
+            EntityType.INCOMING_FILE -> {
+                logger.debug("Entity {} is already an IncomingFile, cannot revert.", entityId)
+                false // Already an IncomingFile
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import me.underlow.receipt.model.Receipt
 import me.underlow.receipt.repository.BillRepository
 import me.underlow.receipt.repository.ReceiptRepository
 import me.underlow.receipt.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 /**
@@ -18,26 +19,51 @@ class BillService(
     private val userRepository: UserRepository
 ) {
 
+    private val logger = LoggerFactory.getLogger(BillService::class.java)
+
     /**
      * Finds a Bill by ID and verifies user ownership via email
      */
     fun findByIdAndUserEmail(billId: Long, userEmail: String): Bill? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val bill = billRepository.findById(billId) ?: return null
+        logger.debug("Attempting to find bill by ID: {} for user: {}", billId, userEmail)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found.", userEmail)
+            return null
+        }
+        val bill = billRepository.findById(billId)
+        if (bill == null) {
+            logger.warn("Bill with ID {} not found.", billId)
+            return null
+        }
         
-        return if (bill.userId == user.id) bill else null
+        return if (bill.userId == user.id) {
+            logger.debug("Found bill with ID {} for user {}.", billId, userEmail)
+            bill
+        } else {
+            logger.warn("Bill with ID {} does not belong to user {}.", billId, userEmail)
+            null
+        }
     }
 
     /**
      * Finds all Bills for a user by email with optional status filtering
      */
     fun findByUserEmail(userEmail: String, status: BillStatus? = null): List<Bill> {
-        val user = userRepository.findByEmail(userEmail) ?: return emptyList()
+        logger.debug("Attempting to find bills for user: {} with status: {}", userEmail, status)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found.", userEmail)
+            return emptyList()
+        }
         val bills = billRepository.findByUserId(user.id!!)
         
         return if (status != null) {
-            bills.filter { it.status == status }
+            val filteredBills = bills.filter { it.status == status }
+            logger.debug("Found {} bills for user {} with status {}.", filteredBills.size, userEmail, status)
+            filteredBills
         } else {
+            logger.debug("Found {} bills for user {}.", bills.size, userEmail)
             bills
         }
     }
@@ -54,7 +80,12 @@ class BillService(
         extractedDate: java.time.LocalDate? = null,
         extractedProvider: String? = null
     ): Bill? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
+        logger.info("Attempting to create new bill for file: {} for user: {}", filename, userEmail)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found, cannot create bill.", userEmail)
+            return null
+        }
         
         val bill = Bill(
             filename = filename,
@@ -68,7 +99,9 @@ class BillService(
             userId = user.id!!
         )
         
-        return billRepository.save(bill)
+        val savedBill = billRepository.save(bill)
+        logger.info("Bill created successfully with ID: {} for user: {}", savedBill.id, userEmail)
+        return savedBill
     }
 
     /**
@@ -82,7 +115,12 @@ class BillService(
         extractedDate: java.time.LocalDate? = null,
         extractedProvider: String? = null
     ): Bill? {
-        val existingBill = findByIdAndUserEmail(billId, userEmail) ?: return null
+        logger.info("Attempting to update OCR data for bill ID: {} for user: {}", billId, userEmail)
+        val existingBill = findByIdAndUserEmail(billId, userEmail)
+        if (existingBill == null) {
+            logger.warn("Bill with ID {} not found or does not belong to user {}. Cannot update OCR data.", billId, userEmail)
+            return null
+        }
         
         val updatedBill = existingBill.copy(
             ocrRawJson = ocrRawJson,
@@ -92,18 +130,25 @@ class BillService(
             status = BillStatus.PROCESSING
         )
         
-        return billRepository.save(updatedBill)
+        val savedBill = billRepository.save(updatedBill)
+        logger.info("OCR data updated successfully for bill ID: {} for user: {}", savedBill.id, userEmail)
+        return savedBill
     }
 
     /**
      * Updates the status of a Bill
      */
     fun updateStatus(billId: Long, userEmail: String, newStatus: BillStatus): Boolean {
-        val existingBill = findByIdAndUserEmail(billId, userEmail) ?: return false
+        logger.info("Attempting to update status of bill ID: {} to {} for user: {}", billId, newStatus, userEmail)
+        val existingBill = findByIdAndUserEmail(billId, userEmail)
+        if (existingBill == null) {
+            logger.warn("Bill with ID {} not found or does not belong to user {}. Cannot update status.", billId, userEmail)
+            return false
+        }
         
         val updatedBill = existingBill.copy(status = newStatus)
         billRepository.save(updatedBill)
-        
+        logger.info("Status of bill ID: {} updated to {} successfully for user: {}", billId, newStatus, userEmail)
         return true
     }
 
@@ -111,12 +156,24 @@ class BillService(
      * Gets all Receipts associated with a Bill
      */
     fun getAssociatedReceipts(billId: Long, userEmail: String): List<Receipt> {
-        val user = userRepository.findByEmail(userEmail) ?: return emptyList()
-        val bill = billRepository.findById(billId) ?: return emptyList()
+        logger.debug("Attempting to get associated receipts for bill ID: {} for user: {}", billId, userEmail)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found.", userEmail)
+            return emptyList()
+        }
+        val bill = billRepository.findById(billId)
+        if (bill == null) {
+            logger.warn("Bill with ID {} not found.", billId)
+            return emptyList()
+        }
         
         return if (bill.userId == user.id) {
-            receiptRepository.findByBillId(billId)
+            val receipts = receiptRepository.findByBillId(billId)
+            logger.debug("Found {} associated receipts for bill ID: {} for user: {}", receipts.size, billId, userEmail)
+            receipts
         } else {
+            logger.warn("Bill with ID {} does not belong to user {}. Cannot get associated receipts.", billId, userEmail)
             emptyList()
         }
     }
@@ -125,43 +182,76 @@ class BillService(
      * Deletes a Bill and all associated Receipts
      */
     fun deleteBill(billId: Long, userEmail: String): Boolean {
-        val bill = findByIdAndUserEmail(billId, userEmail) ?: return false
+        logger.info("Attempting to delete bill ID: {} for user: {}", billId, userEmail)
+        val bill = findByIdAndUserEmail(billId, userEmail)
+        if (bill == null) {
+            logger.warn("Bill with ID {} not found or does not belong to user {}. Cannot delete bill.", billId, userEmail)
+            return false
+        }
         
         // First delete all associated receipts
         val receipts = receiptRepository.findByBillId(billId)
         receipts.forEach { receipt ->
+            logger.debug("Deleting associated receipt ID: {} for bill ID: {}", receipt.id, billId)
             receiptRepository.delete(receipt.id!!)
         }
         
         // Then delete the bill
-        return billRepository.delete(billId)
+        val deleted = billRepository.delete(billId)
+        if (deleted) {
+            logger.info("Bill ID: {} deleted successfully for user: {}", billId, userEmail)
+        } else {
+            logger.error("Failed to delete bill ID: {} for user: {}", billId, userEmail)
+        }
+        return deleted
     }
 
     /**
      * Counts Bills by status for a user
      */
     fun getBillStatistics(userEmail: String): Map<BillStatus, Int> {
-        val user = userRepository.findByEmail(userEmail) ?: return emptyMap()
+        logger.debug("Attempting to get bill statistics for user: {}", userEmail)
+        val user = userRepository.findByEmail(userEmail)
+        if (user == null) {
+            logger.warn("User with email {} not found.", userEmail)
+            return emptyMap()
+        }
         val bills = billRepository.findByUserId(user.id!!)
         
-        return bills.groupingBy { it.status }.eachCount()
+        val statistics = bills.groupingBy { it.status }.eachCount()
+        logger.debug("Generated bill statistics for user {}: {}", userEmail, statistics)
+        return statistics
     }
 
     /**
      * Approves a Bill for conversion to Payment
      */
     fun approveBill(billId: Long, userEmail: String): Bill? {
-        return updateStatus(billId, userEmail, BillStatus.APPROVED)
-            .takeIf { it }
-            ?.let { findByIdAndUserEmail(billId, userEmail) }
+        logger.info("Attempting to approve bill ID: {} for user: {}", billId, userEmail)
+        val success = updateStatus(billId, userEmail, BillStatus.APPROVED)
+        return if (success) {
+            val approvedBill = findByIdAndUserEmail(billId, userEmail)
+            logger.info("Bill ID: {} approved successfully for user: {}", billId, userEmail)
+            approvedBill
+        } else {
+            logger.error("Failed to approve bill ID: {} for user: {}", billId, userEmail)
+            null
+        }
     }
 
     /**
      * Rejects a Bill
      */
     fun rejectBill(billId: Long, userEmail: String): Bill? {
-        return updateStatus(billId, userEmail, BillStatus.REJECTED)
-            .takeIf { it }
-            ?.let { findByIdAndUserEmail(billId, userEmail) }
+        logger.info("Attempting to reject bill ID: {} for user: {}", billId, userEmail)
+        val success = updateStatus(billId, userEmail, BillStatus.REJECTED)
+        return if (success) {
+            val rejectedBill = findByIdAndUserEmail(billId, userEmail)
+            logger.info("Bill ID: {} rejected successfully for user: {}", billId, userEmail)
+            rejectedBill
+        } else {
+            logger.error("Failed to reject bill ID: {} for user: {}", billId, userEmail)
+            null
+        }
     }
 }
