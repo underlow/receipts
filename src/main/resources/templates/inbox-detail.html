@@ -602,7 +602,7 @@
                 if (data.success) {
                     showAlert('File converted to Bill successfully!', 'success');
                     // Redirect to bill detail page
-                    setTimeout(() => window.location.href = `/bills/${data.entityId}`, 1000);
+                    setTimeout(() => window.location.href = `/bills/${data.fileId}`, 1000);
                 } else {
                     showAlert('Error: ' + data.message, 'danger');
                 }
@@ -629,7 +629,7 @@
                 if (data.success) {
                     showAlert('File converted to Receipt successfully!', 'success');
                     // Redirect to receipt detail page
-                    setTimeout(() => window.location.href = `/receipts/${data.entityId}`, 1000);
+                    setTimeout(() => window.location.href = `/receipts/${data.fileId}`, 1000);
                 } else {
                     showAlert('Error: ' + data.message, 'danger');
                 }

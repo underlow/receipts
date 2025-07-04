@@ -19,9 +19,14 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import kotlin.test.assertTrue
 import java.io.File
+import me.underlow.receipt.model.Bill
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 
 /**
  * Integration tests for InboxController specifically testing the status counts bug fix
@@ -447,5 +452,100 @@ class InboxControllerTest {
 
         // Then: Should return 401 Unauthorized (handled by Spring Security)
         result.andExpect(status().isUnauthorized)
+    }
+
+    /**
+     * Test that converting IncomingFile to Bill returns the correct Bill ID
+     * This test addresses the bug fix where frontend JavaScript was trying to access
+     * `data.entityId` instead of `data.fileId` for the converted Bill ID
+     * Given: User owns a file with ID 123
+     * When: POST /inbox/api/files/123/convert-to-bill
+     * Then: Should return success response with Bill ID in fileId field
+     */
+    @Test
+    fun `Given user owns file, when converting file to bill, then should return success response with bill ID in fileId field`() {
+        // Given: User owns a file that can be converted to Bill
+        val userEmail = "test@example.com"
+        val fileId = 123L
+        val convertedBillId = 456L
+        
+        val testBill = Bill(
+            id = convertedBillId,
+            filename = "test-document.pdf",
+            filePath = "/tmp/test-document.pdf",
+            uploadDate = LocalDateTime.now(),
+            status = BillStatus.PENDING,
+            checksum = "abc123def456",
+            userId = 1L,
+            originalIncomingFileId = fileId
+        )
+
+        whenever(entityConversionService.convertIncomingFileToBill(eq(fileId), eq(userEmail)))
+            .thenReturn(testBill)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request to convert file to bill
+        val result = mockMvc.perform(
+            post("/inbox/api/files/$fileId/convert-to-bill")
+                .with(authentication(auth))
+                .with(csrf())
+        )
+
+        // Then: Should return successful JSON response with Bill ID in fileId field
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.message").value("File converted to Bill successfully"))
+            .andExpect(jsonPath("$.fileId").value(convertedBillId))
+            .andExpect(jsonPath("$.fileId").isNumber)
+            .andExpect(jsonPath("$.entityId").doesNotExist())
+    }
+
+    /**
+     * Test that converting IncomingFile to Bill fails gracefully when conversion fails
+     * Given: User owns a file but conversion fails
+     * When: POST /inbox/api/files/123/convert-to-bill
+     * Then: Should return error response
+     */
+    @Test
+    fun `Given conversion fails, when converting file to bill, then should return error response`() {
+        // Given: User owns a file but conversion fails
+        val userEmail = "test@example.com"
+        val fileId = 123L
+
+        whenever(entityConversionService.convertIncomingFileToBill(eq(fileId), eq(userEmail)))
+            .thenReturn(null)
+
+        val oauth2User = DefaultOAuth2User(
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            mapOf(
+                "email" to userEmail,
+                "name" to "Test User"
+            ),
+            "email"
+        )
+        val auth = OAuth2AuthenticationToken(oauth2User, oauth2User.authorities, "google")
+
+        // When: Making request to convert file to bill
+        val result = mockMvc.perform(
+            post("/inbox/api/files/$fileId/convert-to-bill")
+                .with(authentication(auth))
+                .with(csrf())
+        )
+
+        // Then: Should return error response
+        result.andExpect(status().isBadRequest)
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.message").value("Failed to convert file to Bill"))
     }
 }
