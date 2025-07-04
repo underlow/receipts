@@ -14,3 +14,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/005-enhanced-workflow.sql
       fileType: sql
+  - include:
+      file: db/changelog/changes/006-fix-bills-ocr-columns.sql
+      fileType: sql
