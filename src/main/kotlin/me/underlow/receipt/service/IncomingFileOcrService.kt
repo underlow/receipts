@@ -28,15 +28,30 @@ class IncomingFileOcrService(
     fun processIncomingFile(incomingFile: IncomingFile): IncomingFile {
         logger.info("Starting OCR processing for file: ${incomingFile.filename}")
         
+        // Check if OCR is available before processing
+        if (!ocrService.hasAvailableEngines()) {
+            logger.error("No OCR engines available for processing file: ${incomingFile.filename}")
+            val errorFile = incomingFile.copy(
+                status = BillStatus.REJECTED,
+                ocrProcessedAt = LocalDateTime.now(),
+                ocrErrorMessage = "No OCR engines available. Please configure at least one API key (OpenAI, Claude, or Google AI)."
+            )
+            return incomingFileRepository.save(errorFile)
+        }
+        
         // Update status to PROCESSING
         val processingFile = incomingFile.copy(status = BillStatus.PROCESSING)
         incomingFileRepository.save(processingFile)
         
         return try {
+            logger.info("Processing file ${incomingFile.filename} with available OCR engines: ${ocrService.getAvailableEngineNames()}")
+            
             // Process file through OCR
             val ocrResult = runBlocking {
                 ocrService.processIncomingFile(incomingFile)
             }
+            
+            logger.info("OCR processing completed for file ${incomingFile.filename}. Success: ${ocrResult.success}")
             
             // Update IncomingFile with OCR results
             val updatedFile = updateIncomingFileWithOcrResult(processingFile, ocrResult)
@@ -45,7 +60,7 @@ class IncomingFileOcrService(
             val savedFile = incomingFileRepository.save(updatedFile)
             
             if (ocrResult.success) {
-                logger.info("Successfully processed file ${incomingFile.filename} with OCR")
+                logger.info("Successfully processed file ${incomingFile.filename} with OCR. Extracted: provider=${ocrResult.extractedProvider}, amount=${ocrResult.extractedAmount}, date=${ocrResult.extractedDate}")
             } else {
                 logger.warn("OCR processing failed for file ${incomingFile.filename}: ${ocrResult.errorMessage}")
             }
@@ -88,6 +103,17 @@ class IncomingFileOcrService(
         
         return if (incomingFile != null) {
             logger.info("Retrying OCR processing for file: ${incomingFile.filename}")
+            
+            // Check if OCR is available before retrying
+            if (!ocrService.hasAvailableEngines()) {
+                logger.error("Cannot retry OCR processing - no OCR engines available for file: ${incomingFile.filename}")
+                val errorFile = incomingFile.copy(
+                    status = BillStatus.REJECTED,
+                    ocrProcessedAt = LocalDateTime.now(),
+                    ocrErrorMessage = "No OCR engines available. Please configure at least one API key (OpenAI, Claude, or Google AI)."
+                )
+                return incomingFileRepository.save(errorFile)
+            }
             
             // Reset file to PENDING status and clear previous OCR results
             val resetFile = incomingFile.copy(

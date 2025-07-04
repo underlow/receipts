@@ -4,6 +4,7 @@ import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.repository.IncomingFileRepository
 import me.underlow.receipt.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 /**
@@ -16,6 +17,8 @@ class IncomingFileService(
     private val incomingFileOcrService: IncomingFileOcrService,
     private val fileDispatchService: FileDispatchService
 ) {
+    
+    private val logger = LoggerFactory.getLogger(IncomingFileService::class.java)
 
     /**
      * Finds an IncomingFile by ID and verifies user ownership via email
@@ -123,6 +126,7 @@ class IncomingFileService(
             incomingFileOcrService.processIncomingFile(incomingFile)
             true
         } catch (e: Exception) {
+            logger.error("Error triggering OCR processing for file $fileId", e)
             false
         }
     }
@@ -137,6 +141,7 @@ class IncomingFileService(
             incomingFileOcrService.retryOcrProcessing(fileId)
             true
         } catch (e: Exception) {
+            logger.error("Error retrying OCR processing for file $fileId", e)
             false
         }
     }

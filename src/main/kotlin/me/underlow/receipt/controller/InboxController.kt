@@ -245,6 +245,17 @@ class InboxController(
                 FileOperationResponse(false, "User not authenticated")
             )
 
+        // Check if OCR processing is available
+        if (!incomingFileService.isOcrProcessingAvailable()) {
+            return ResponseEntity.ok(
+                FileOperationResponse(
+                    false, 
+                    "OCR processing is not available. Please configure at least one API key (OpenAI, Claude, or Google AI) in the application settings.",
+                    fileId
+                )
+            )
+        }
+
         val success = incomingFileService.triggerOcrProcessing(fileId, userEmail)
         val response = if (success) {
             FileOperationResponse(true, "OCR processing triggered successfully", fileId)
@@ -268,6 +279,17 @@ class InboxController(
             ?: return ResponseEntity.badRequest().body(
                 FileOperationResponse(false, "User not authenticated")
             )
+
+        // Check if OCR processing is available
+        if (!incomingFileService.isOcrProcessingAvailable()) {
+            return ResponseEntity.ok(
+                FileOperationResponse(
+                    false, 
+                    "OCR processing is not available. Please configure at least one API key (OpenAI, Claude, or Google AI) in the application settings.",
+                    fileId
+                )
+            )
+        }
 
         val success = incomingFileService.retryOcrProcessing(fileId, userEmail)
         val response = if (success) {

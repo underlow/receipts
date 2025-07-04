@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Receipt Tracker - File Detail</title>
     <style>
         body {
@@ -430,14 +432,26 @@
     </div>
 
     <script>
+        // Get CSRF token from meta tag
+        function getCsrfToken() {
+            return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+        }
+        
+        function getCsrfHeader() {
+            return document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+        }
+
         function approveFile(fileId) {
             if (!confirm('Are you sure you want to approve this file?')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}/approve`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {
@@ -457,11 +471,14 @@
         function rejectFile(fileId) {
             if (!confirm('Are you sure you want to reject this file?')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}/reject`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {
@@ -481,11 +498,14 @@
         function deleteFile(fileId) {
             if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {
@@ -505,11 +525,14 @@
         function sendToOcr(fileId) {
             if (!confirm('Send this file to OCR processing?')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}/ocr`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {
@@ -529,11 +552,14 @@
         function retryOcr(fileId) {
             if (!confirm('Retry OCR processing for this file?')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}/ocr-retry`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {
@@ -553,11 +579,14 @@
         function dispatchToBill(fileId) {
             if (!confirm('Create a Bill from this processed file?')) return;
             
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            headers[getCsrfHeader()] = getCsrfToken();
+            
             fetch(`/inbox/api/files/${fileId}/dispatch`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: headers
             })
             .then(response => response.json())
             .then(data => {

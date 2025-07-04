@@ -36,12 +36,6 @@ class OcrConfig {
      * Creates OpenAI OCR engine bean when API key is configured.
      */
     @Bean
-    @ConditionalOnProperty(
-        prefix = "receipts",
-        name = ["openai-api-key"],
-        havingValue = "",
-        matchIfMissing = false
-    )
     fun openAiOcrEngine(
         receiptsProperties: ReceiptsProperties,
         webClient: WebClient,
@@ -62,12 +56,6 @@ class OcrConfig {
      * Creates Claude OCR engine bean when API key is configured.
      */
     @Bean
-    @ConditionalOnProperty(
-        prefix = "receipts",
-        name = ["claude-api-key"],
-        havingValue = "",
-        matchIfMissing = false
-    )
     fun claudeOcrEngine(
         receiptsProperties: ReceiptsProperties,
         webClient: WebClient,
@@ -88,12 +76,6 @@ class OcrConfig {
      * Creates Google AI OCR engine bean when API key is configured.
      */
     @Bean
-    @ConditionalOnProperty(
-        prefix = "receipts",
-        name = ["google-ai-api-key"],
-        havingValue = "",
-        matchIfMissing = false
-    )
     fun googleAiOcrEngine(
         receiptsProperties: ReceiptsProperties,
         webClient: WebClient,

@@ -25,12 +25,21 @@ class OcrService(
     suspend fun processIncomingFile(incomingFile: IncomingFile): OcrResult {
         val file = File(incomingFile.filePath)
         
-        return if (availableOcrEngines.isEmpty()) {
+        logger.info("Processing incoming file: ${incomingFile.filename} (${incomingFile.filePath})")
+        
+        if (availableOcrEngines.isEmpty()) {
             logger.warn("No OCR engines available for processing file: ${incomingFile.filename}")
-            OcrResult.failure("No OCR engines available")
-        } else {
-            processFileWithPrimaryEngine(file)
+            return OcrResult.failure("No OCR engines available")
         }
+        
+        if (!file.exists()) {
+            logger.error("File not found on disk: ${incomingFile.filePath}")
+            return OcrResult.failure("File not found on disk: ${incomingFile.filePath}")
+        }
+        
+        logger.info("File exists, processing with available engines: ${availableOcrEngines.map { it.getEngineName() }}")
+        
+        return processFileWithPrimaryEngine(file)
     }
     
     /**
