@@ -58,7 +58,7 @@ class FileUploadControllerIntegrationTest {
         incomingFileOcrService = mock()
         
         // Create services with actual implementations
-        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService)
+        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService, userRepository)
         userService = UserService(userRepository)
         fileUploadController = FileUploadController(fileProcessingService, userService)
     }

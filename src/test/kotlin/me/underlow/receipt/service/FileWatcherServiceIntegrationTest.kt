@@ -3,6 +3,7 @@ package me.underlow.receipt.service
 import me.underlow.receipt.config.ReceiptsProperties
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.repository.IncomingFileRepository
+import me.underlow.receipt.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -19,6 +20,7 @@ class FileWatcherServiceIntegrationTest {
     private lateinit var incomingFileRepository: IncomingFileRepository
     private lateinit var receiptsProperties: ReceiptsProperties
     private lateinit var incomingFileOcrService: IncomingFileOcrService
+    private lateinit var userRepository: UserRepository
     private lateinit var fileProcessingService: FileProcessingService
     private lateinit var fileWatcherService: FileWatcherService
 
@@ -29,11 +31,12 @@ class FileWatcherServiceIntegrationTest {
     fun setup() {
         incomingFileRepository = mock()
         incomingFileOcrService = mock()
+        userRepository = mock()
         receiptsProperties = ReceiptsProperties(
             inboxPath = tempDir.resolve("inbox").toString(),
             attachmentsPath = tempDir.resolve("attachments").toString()
         )
-        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService)
+        fileProcessingService = FileProcessingService(incomingFileRepository, receiptsProperties, incomingFileOcrService, userRepository)
         fileWatcherService = FileWatcherService(fileProcessingService, receiptsProperties)
     }
 

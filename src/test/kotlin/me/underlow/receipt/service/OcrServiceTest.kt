@@ -22,6 +22,7 @@ class OcrServiceTest {
 
     private lateinit var mockEngine1: OcrEngine
     private lateinit var mockEngine2: OcrEngine
+    private lateinit var ocrAttemptService: OcrAttemptService
     private lateinit var testFile: File
 
     @BeforeEach
@@ -35,6 +36,8 @@ class OcrServiceTest {
             on { getEngineName() } doReturn "MockEngine2"
             on { isAvailable() } doReturn true
         }
+        
+        ocrAttemptService = mock()
 
         testFile = tempDir.resolve("test-receipt.jpg").toFile()
         testFile.writeText("test image content")
@@ -43,7 +46,7 @@ class OcrServiceTest {
     @Test
     fun `when no engines available then returns failure result`() = runTest {
         // Given
-        val ocrService = OcrService(emptyList())
+        val ocrService = OcrService(emptyList(), ocrAttemptService)
         
         // When
         val result = ocrService.processFile(testFile)
@@ -65,7 +68,7 @@ class OcrServiceTest {
         
         whenever(mockEngine1.processFile(testFile)) doReturn expectedResult
         
-        val ocrService = OcrService(listOf(mockEngine1, mockEngine2))
+        val ocrService = OcrService(listOf(mockEngine1, mockEngine2), ocrAttemptService)
         
         // When
         val result = ocrService.processFile(testFile)
@@ -94,10 +97,10 @@ class OcrServiceTest {
         val expectedResult = OcrResult.success(rawJson = """{"processed":true}""")
         whenever(mockEngine1.processFile(any())) doReturn expectedResult
         
-        val ocrService = OcrService(listOf(mockEngine1))
+        val ocrService = OcrService(listOf(mockEngine1), ocrAttemptService)
         
         // When
-        val result = ocrService.processIncomingFile(incomingFile)
+        val result = ocrService.processIncomingFile(incomingFile, "test@example.com")
         
         // Then
         assertTrue(result.success)
@@ -119,7 +122,7 @@ class OcrServiceTest {
         whenever(mockEngine1.processFile(testFile)) doReturn failureResult
         whenever(mockEngine2.processFile(testFile)) doReturn successResult
         
-        val ocrService = OcrService(listOf(mockEngine1, mockEngine2))
+        val ocrService = OcrService(listOf(mockEngine1, mockEngine2), ocrAttemptService)
         
         // When
         val result = ocrService.processFileWithFallback(testFile)
@@ -141,7 +144,7 @@ class OcrServiceTest {
         whenever(mockEngine1.processFile(testFile)) doReturn failure1
         whenever(mockEngine2.processFile(testFile)) doReturn failure2
         
-        val ocrService = OcrService(listOf(mockEngine1, mockEngine2))
+        val ocrService = OcrService(listOf(mockEngine1, mockEngine2), ocrAttemptService)
         
         // When
         val result = ocrService.processFileWithFallback(testFile)
@@ -161,7 +164,7 @@ class OcrServiceTest {
         whenever(mockEngine1.processFile(testFile)) doThrow RuntimeException("API timeout")
         whenever(mockEngine2.processFile(testFile)) doReturn successResult
         
-        val ocrService = OcrService(listOf(mockEngine1, mockEngine2))
+        val ocrService = OcrService(listOf(mockEngine1, mockEngine2), ocrAttemptService)
         
         // When
         val result = ocrService.processFileWithFallback(testFile)
@@ -180,7 +183,7 @@ class OcrServiceTest {
             on { isAvailable() } doReturn false
         }
         
-        val ocrService = OcrService(listOf(mockEngine1, unavailableEngine, mockEngine2))
+        val ocrService = OcrService(listOf(mockEngine1, unavailableEngine, mockEngine2), ocrAttemptService)
         
         // When
         val engineNames = ocrService.getAvailableEngineNames()
@@ -199,9 +202,9 @@ class OcrServiceTest {
             on { isAvailable() } doReturn false
         }
         
-        val serviceWithEngines = OcrService(listOf(mockEngine1))
-        val serviceWithUnavailableEngines = OcrService(listOf(unavailableEngine))
-        val serviceWithNoEngines = OcrService(emptyList())
+        val serviceWithEngines = OcrService(listOf(mockEngine1), ocrAttemptService)
+        val serviceWithUnavailableEngines = OcrService(listOf(unavailableEngine), ocrAttemptService)
+        val serviceWithNoEngines = OcrService(emptyList(), ocrAttemptService)
         
         // When & Then
         assertTrue(serviceWithEngines.hasAvailableEngines())
