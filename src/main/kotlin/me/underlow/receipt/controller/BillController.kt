@@ -4,12 +4,17 @@ import me.underlow.receipt.dto.*
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.service.*
 import me.underlow.receipt.model.EntityType
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+import java.io.File
 import java.math.BigDecimal
+import java.nio.file.Files
 
 /**
  * Web and API controller for bill detail views and operations
@@ -22,7 +27,8 @@ class BillController(
     private val paymentService: PaymentService,
     private val serviceProviderService: ServiceProviderService,
     private val paymentMethodService: PaymentMethodService,
-    private val entityConversionService: EntityConversionService
+    private val entityConversionService: EntityConversionService,
+    private val thumbnailService: ThumbnailService
 ) {
 
     /**
@@ -257,6 +263,80 @@ class BillController(
             ResponseEntity.badRequest().body(
                 BillOperationResponse(false, "Failed to revert Bill to IncomingFile")
             )
+        }
+    }
+
+    /**
+     * Serves the bill image file for authenticated users who own the bill
+     */
+    @GetMapping("/api/{billId}/image")
+    @ResponseBody
+    fun serveBillImage(
+        @PathVariable billId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<ByteArray> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val bill = billService.findByIdAndUserEmail(billId, userEmail)
+            ?: return ResponseEntity.notFound().build()
+
+        val file = File(bill.filePath)
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build()
+        }
+
+        val fileBytes = Files.readAllBytes(file.toPath())
+        val mediaType = determineMediaType(bill.filename)
+
+        return ResponseEntity.ok()
+            .contentType(mediaType)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"${bill.filename}\"")
+            .body(fileBytes)
+    }
+
+    /**
+     * Serves a thumbnail for the bill image
+     */
+    @GetMapping("/api/{billId}/thumbnail")
+    @ResponseBody
+    fun serveBillThumbnail(
+        @PathVariable billId: Long,
+        @RequestParam(defaultValue = "200") width: Int,
+        @RequestParam(defaultValue = "200") height: Int,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<ByteArray> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val bill = billService.findByIdAndUserEmail(billId, userEmail)
+            ?: return ResponseEntity.notFound().build()
+
+        val thumbnailBytes = thumbnailService.generateThumbnail(
+            bill.filePath, 
+            bill.filename, 
+            width, 
+            height
+        ) ?: return ResponseEntity.notFound().build()
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_JPEG)
+            .body(thumbnailBytes)
+    }
+
+    /**
+     * Determines the appropriate MediaType based on file extension
+     */
+    private fun determineMediaType(filename: String): MediaType {
+        val extension = filename.substringAfterLast('.', "").lowercase()
+        return when (extension) {
+            "pdf" -> MediaType.APPLICATION_PDF
+            "jpg", "jpeg" -> MediaType.IMAGE_JPEG
+            "png" -> MediaType.IMAGE_PNG
+            "gif" -> MediaType.IMAGE_GIF
+            "bmp" -> MediaType.parseMediaType("image/bmp")
+            "tiff", "tif" -> MediaType.parseMediaType("image/tiff")
+            else -> MediaType.APPLICATION_OCTET_STREAM
         }
     }
 }
