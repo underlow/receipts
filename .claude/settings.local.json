@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew test:*)",
+      "Bash(rm:*)",
+      "Bash(./gradlew:*)",
+      "Bash(grep:*)",
+      "Bash(SPRING_PROFILES_ACTIVE=test ./gradlew bootRun)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(sed:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue create:*)"
+    ],
+    "deny": []
+  }
+}
