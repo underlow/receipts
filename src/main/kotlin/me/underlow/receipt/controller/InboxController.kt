@@ -4,9 +4,13 @@ import me.underlow.receipt.dto.FileOperationResponse
 import me.underlow.receipt.dto.InboxFileDto
 import me.underlow.receipt.dto.InboxListResponse
 import me.underlow.receipt.dto.IncomingFileDetailDto
+import me.underlow.receipt.dto.InboxTabDto
+import me.underlow.receipt.dto.InboxTabResponse
+import me.underlow.receipt.dto.InboxTabCountsResponse
 import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.service.IncomingFileService
 import me.underlow.receipt.service.EntityConversionService
+import me.underlow.receipt.service.InboxService
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -21,7 +25,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/inbox")
 class InboxController(
     private val incomingFileService: IncomingFileService,
-    private val entityConversionService: EntityConversionService
+    private val entityConversionService: EntityConversionService,
+    private val inboxService: InboxService
 ) {
 
     private val logger = LoggerFactory.getLogger(InboxController::class.java)
@@ -488,5 +493,196 @@ class InboxController(
                 FileOperationResponse(false, "Failed to convert file to Receipt")
             )
         }
+    }
+    
+    /**
+     * API endpoint to get data for a specific tab
+     */
+    @GetMapping("/api/tabs/{tabName}")
+    @ResponseBody
+    fun getTabData(
+        @PathVariable tabName: String,
+        @RequestParam(required = false) itemType: String?,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<InboxTabResponse> {
+        logger.debug("Getting tab data for tab: {} with itemType: {}", tabName, itemType)
+        val userEmail = authentication.principal.getAttribute<String>("email")
+        if (userEmail == null) {
+            logger.warn("Unauthorized API access attempt to get tab data. User email not found.")
+            return ResponseEntity.badRequest().build()
+        }
+        
+        val items = when (tabName.lowercase()) {
+            "new" -> inboxService.getNewItems(userEmail)
+            "approved" -> {
+                val approvedItems = inboxService.getApprovedItems(userEmail)
+                if (itemType != null) {
+                    val filterType = when (itemType.lowercase()) {
+                        "bill" -> InboxService.InboxItemType.BILL
+                        "receipt" -> InboxService.InboxItemType.RECEIPT
+                        else -> null
+                    }
+                    if (filterType != null) {
+                        approvedItems.filter { it.type == filterType }
+                    } else {
+                        approvedItems
+                    }
+                } else {
+                    approvedItems
+                }
+            }
+            "rejected" -> {
+                val rejectedItems = inboxService.getRejectedItems(userEmail)
+                if (itemType != null) {
+                    val filterType = when (itemType.lowercase()) {
+                        "bill" -> InboxService.InboxItemType.BILL
+                        "receipt" -> InboxService.InboxItemType.RECEIPT
+                        else -> null
+                    }
+                    if (filterType != null) {
+                        rejectedItems.filter { it.type == filterType }
+                    } else {
+                        rejectedItems
+                    }
+                } else {
+                    rejectedItems
+                }
+            }
+            else -> {
+                logger.warn("Invalid tab name: {}", tabName)
+                return ResponseEntity.badRequest().build()
+            }
+        }
+        
+        val itemDtos = items.map { InboxTabDto.fromInboxItem(it) }
+        val availableTypes = when (tabName.lowercase()) {
+            "new" -> listOf("incoming_file", "bill", "receipt")
+            "approved", "rejected" -> listOf("bill", "receipt")
+            else -> emptyList()
+        }
+        
+        val response = InboxTabResponse(
+            tab = tabName.lowercase(),
+            items = itemDtos,
+            totalItems = itemDtos.size,
+            itemTypeFilter = itemType,
+            availableTypes = availableTypes
+        )
+        
+        logger.debug("Successfully fetched tab data for tab: {} for user: {}. Found {} items.", 
+                    tabName, userEmail, itemDtos.size)
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to get counts for all tabs
+     */
+    @GetMapping("/api/tab-counts")
+    @ResponseBody
+    fun getTabCounts(
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<InboxTabCountsResponse> {
+        logger.debug("Getting tab counts")
+        val userEmail = authentication.principal.getAttribute<String>("email")
+        if (userEmail == null) {
+            logger.warn("Unauthorized API access attempt to get tab counts. User email not found.")
+            return ResponseEntity.badRequest().build()
+        }
+        
+        val counts = inboxService.getTabCounts(userEmail)
+        val response = InboxTabCountsResponse(
+            new = counts["new"] ?: 0,
+            approved = counts["approved"] ?: 0,
+            rejected = counts["rejected"] ?: 0
+        )
+        
+        logger.debug("Successfully fetched tab counts for user: {}. Counts: {}", userEmail, response)
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to approve an item in the tabbed interface
+     */
+    @PostMapping("/api/tabs/items/{itemId}/approve")
+    @ResponseBody
+    fun approveTabItem(
+        @PathVariable itemId: Long,
+        @RequestParam itemType: String,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        logger.info("Attempting to approve {} item with ID: {}", itemType, itemId)
+        val userEmail = authentication.principal.getAttribute<String>("email")
+        if (userEmail == null) {
+            logger.warn("Unauthorized access attempt to approve item. User email not found.")
+            return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+        }
+        
+        val itemTypeEnum = when (itemType.lowercase()) {
+            "incoming_file" -> InboxService.InboxItemType.INCOMING_FILE
+            "bill" -> InboxService.InboxItemType.BILL
+            "receipt" -> InboxService.InboxItemType.RECEIPT
+            else -> {
+                logger.warn("Invalid item type: {}", itemType)
+                return ResponseEntity.badRequest().body(
+                    FileOperationResponse(false, "Invalid item type")
+                )
+            }
+        }
+        
+        val success = inboxService.approveItem(itemId, itemTypeEnum, userEmail)
+        val response = if (success) {
+            logger.info("{} item {} approved successfully by user: {}", itemType, itemId, userEmail)
+            FileOperationResponse(true, "Item approved successfully", itemId)
+        } else {
+            logger.error("Failed to approve {} item {} for user: {} or item not found.", itemType, itemId, userEmail)
+            FileOperationResponse(false, "Failed to approve item or item not found")
+        }
+        
+        return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to reject an item in the tabbed interface
+     */
+    @PostMapping("/api/tabs/items/{itemId}/reject")
+    @ResponseBody
+    fun rejectTabItem(
+        @PathVariable itemId: Long,
+        @RequestParam itemType: String,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        logger.info("Attempting to reject {} item with ID: {}", itemType, itemId)
+        val userEmail = authentication.principal.getAttribute<String>("email")
+        if (userEmail == null) {
+            logger.warn("Unauthorized access attempt to reject item. User email not found.")
+            return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+        }
+        
+        val itemTypeEnum = when (itemType.lowercase()) {
+            "incoming_file" -> InboxService.InboxItemType.INCOMING_FILE
+            "bill" -> InboxService.InboxItemType.BILL
+            "receipt" -> InboxService.InboxItemType.RECEIPT
+            else -> {
+                logger.warn("Invalid item type: {}", itemType)
+                return ResponseEntity.badRequest().body(
+                    FileOperationResponse(false, "Invalid item type")
+                )
+            }
+        }
+        
+        val success = inboxService.rejectItem(itemId, itemTypeEnum, userEmail)
+        val response = if (success) {
+            logger.info("{} item {} rejected successfully by user: {}", itemType, itemId, userEmail)
+            FileOperationResponse(true, "Item rejected successfully", itemId)
+        } else {
+            logger.error("Failed to reject {} item {} for user: {} or item not found.", itemType, itemId, userEmail)
+            FileOperationResponse(false, "Failed to reject item or item not found")
+        }
+        
+        return ResponseEntity.ok(response)
     }
 }

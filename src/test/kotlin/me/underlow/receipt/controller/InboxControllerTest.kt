@@ -5,6 +5,7 @@ import me.underlow.receipt.model.ItemStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.service.IncomingFileService
 import me.underlow.receipt.service.EntityConversionService
+import me.underlow.receipt.service.InboxService
 import java.time.LocalDateTime
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
@@ -45,6 +46,9 @@ class InboxControllerTest {
 
     @MockitoBean
     private lateinit var entityConversionService: EntityConversionService
+    
+    @MockitoBean
+    private lateinit var inboxService: InboxService
 
     /**
      * Test that the inbox page loads correctly when user has no files

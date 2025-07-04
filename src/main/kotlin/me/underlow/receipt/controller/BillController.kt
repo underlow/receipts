@@ -331,7 +331,7 @@ class BillController(
     /**
      * Serves the bill image file for authenticated users who own the bill
      */
-    @GetMapping("/api/{billId}/image")
+    @GetMapping("/api/bills/{billId}/image")
     @ResponseBody
     fun serveBillImage(
         @PathVariable billId: Long,
