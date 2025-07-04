@@ -3,10 +3,11 @@ Please analyze and implement the GitHub issue: $ARGUMENTS.
 ## Ticket types
 
 There are three types of tickets.
- - root(or parent) ticket for a big feature. contains sub-tickets. All main development should be done in sub-tickets. 
-Only when all sub-tickets are done root ticket can be implemented
- - Sub-ticket. it is a part of a bigger feature
- - Regular ticket. Not a root not a sub-ticket
+- root(or parent) ticket for a big feature. contains sub-tickets. All main development should be done in sub-tickets.
+  Only when all sub-tickets are done root ticket can be implemented.
+  In root ticket we keep only tasks which can be implemented when all sub-tickets are done. Like e2e tests, updating documentation, etc
+- Sub-ticket. it is a part of a bigger feature
+- Regular ticket. Not a root not a sub-ticket
 
 ## Flow for each ticket type: 
 
