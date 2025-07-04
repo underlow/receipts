@@ -1,20 +1,41 @@
 Please analyze and implement the GitHub issue: $ARGUMENTS.
 
-Follow these steps:
+## Ticket types
 
-1. Use `gh issue view` to get the issue details. if this is a sub issue read parent issue to understand the context
-2. Understand the problem described in the issue
-3. if it is not a sub issue think if it is possible to split this issue to smaller ones which can be implemented separately. if yes ask confirmation and create sub issues and stop. Parent issue should containg items write e2e tests and update documentation. Do not close parent issue
-4. if it is a parent issue and all subtickets are complete then implement it, read all subtasks comments and update documentation.if not all subtasks are implemented tell which ones and stop.
-5. provide a plan to implement or fix the issue. skip this if ticked do not require code changes
-6. after plan confirmed add it to ticket as checklist
-7. Implement the necessary changes to implement the issue
-8. Write and run tests to verify the fix. skip this if ticked do not require code changes
-9. Ensure tests are passed. skip this if ticked do not require code changes
-10. add to the ticket comment describing what was done and how. 
-11. Create a descriptive commit message show it but do not commit without confirmation
+There are three types of tickets.
+ - root(or parent) ticket for a big feature. contains sub-tickets. All main development should be done in sub-tickets. 
+Only when all sub-tickets are done root ticket can be implemented
+ - Sub-ticket. it is a part of a bigger feature
+ - Regular ticket. Not a root not a sub-ticket
 
+## Flow for each ticket type: 
 
-do not add Co-Authored-By: Claude string 
+### Root
+ - Use `gh issue view` to get the issue details. 
+ - Understand the problem described in the issue
+ - check if all sub-tickets are done. if not just report and stop
+ - implement ticket if all sub-tickets are done
+
+### Sub-ticket
+ - Use `gh issue view` to get the issue details. read parent issue to understand the context
+ - Understand the problem described in the issue
+ - plan development
+ - write tests first, be sure that new tests a failing
+ - implement feature
+ - Ensure tests are passed
+ - add to the ticket comment describing what was done and how
+ - Create a descriptive commit message show it but do not commit
+
+## Regular ticket
+ - Use `gh issue view` to get the issue details.
+ - Understand the problem described in the issue
+ - if it is not a sub issue think if it is possible to split this issue to smaller ones which can be implemented separately.
+ - if it is possible to split it then create sub issues and stop. leave items write e2e tests and update documentation in root ticket. stop after creating tickets  
+ - plan development
+- write tests first, be sure that new tests a failing
+- implement feature
+- Ensure tests are passed
+- add to the ticket comment describing what was done and how
+- Create a descriptive commit message show it but do not commit
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
