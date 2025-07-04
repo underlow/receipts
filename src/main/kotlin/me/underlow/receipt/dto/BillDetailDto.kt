@@ -22,7 +22,11 @@ data class BillDetailDto(
     val extractedProvider: String?,
     val imageUrl: String,
     val thumbnailUrl: String,
-    val associatedReceipts: List<ReceiptSummaryDto>
+    val associatedReceipts: List<ReceiptSummaryDto>,
+    val checksum: String?,
+    val originalIncomingFileId: Long?,
+    val ocrProcessedAt: LocalDateTime?,
+    val ocrErrorMessage: String?
 ) {
     companion object {
         fun fromBill(bill: Bill, receipts: List<Receipt> = emptyList()): BillDetailDto {
@@ -39,7 +43,11 @@ data class BillDetailDto(
                 extractedProvider = bill.extractedProvider,
                 imageUrl = "/api/bills/${bill.id}/image",
                 thumbnailUrl = "/api/bills/${bill.id}/thumbnail",
-                associatedReceipts = receipts.map { ReceiptSummaryDto.fromReceipt(it) }
+                associatedReceipts = receipts.map { ReceiptSummaryDto.fromReceipt(it) },
+                checksum = bill.checksum,
+                originalIncomingFileId = bill.originalIncomingFileId,
+                ocrProcessedAt = bill.ocrProcessedAt,
+                ocrErrorMessage = bill.ocrErrorMessage
             )
         }
 
