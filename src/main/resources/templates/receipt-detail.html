@@ -293,6 +293,95 @@
         .remove-association-btn:hover {
             background-color: #c82333;
         }
+        
+        /* Tab styles */
+        .tab-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .tab-headers {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab-header {
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab-header.active {
+            background-color: white;
+            border-bottom: 2px solid white;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tab-header:hover:not(.active) {
+            background-color: #e9ecef;
+        }
+        
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        /* Metadata styles */
+        .metadata-section {
+            margin-bottom: 25px;
+        }
+        
+        .metadata-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .metadata-item {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metadata-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .metadata-value {
+            color: #333;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        
+        .checksum {
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -314,8 +403,200 @@
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Left Pane: Image Viewer -->
+        <!-- Left Pane: Tabbed Interface -->
         <div class="left-pane">
+            <div class="tab-container">
+                <div class="tab-headers">
+                    <div class="tab-header active" onclick="switchTab('receipt-tab')">🧾 Receipt</div>
+                    <div class="tab-header" onclick="switchTab('information-tab')">ℹ️ Information</div>
+                </div>
+                
+                <div class="tab-content">
+                    <!-- Receipt Tab -->
+                    <div id="receipt-tab" class="tab-pane active">
+                        <!-- Receipt Information -->
+                        <div class="receipt-info">
+                            <h3>Receipt Information</h3>
+                            <p><strong>Status:</strong> 
+                                <span class="status-badge" 
+                                      th:classappend="${receipt.isStandalone} ? 'status-standalone' : 'status-associated'"
+                                      th:text="${receipt.isStandalone} ? 'Standalone' : 'Associated with Bill'"></span>
+                            </p>
+                        </div>
+
+                        <!-- Associated Bill (if any) -->
+                        <div class="form-section" th:if="${receipt.associatedBill != null}">
+                            <h3>Associated Bill</h3>
+                            <div class="associated-bill">
+                                <div class="bill-summary">
+                                    <div class="bill-thumbnail">
+                                        <img th:src="${receipt.associatedBill.thumbnailUrl}" alt="Bill thumbnail">
+                                    </div>
+                                    <div class="bill-info">
+                                        <h4 th:text="${receipt.associatedBill.filename}"></h4>
+                                        <p th:text="'Status: ' + ${receipt.associatedBill.statusDisplayName}"></p>
+                                        <p th:text="'Upload Date: ' + ${#temporals.format(receipt.associatedBill.uploadDate, 'yyyy-MM-dd HH:mm')}"></p>
+                                        <p th:if="${receipt.associatedBill.extractedAmount != null}" 
+                                           th:text="'Amount: $' + ${receipt.associatedBill.extractedAmount}"></p>
+                                    </div>
+                                    <button class="remove-association-btn" onclick="removeAssociation()">
+                                        Remove Association
+                                    </button>
+                                </div>
+                                <a th:href="${receipt.associatedBill.detailUrl}" class="btn btn-primary" style="margin-top: 10px;">
+                                    View Bill Details
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Bill Association -->
+                        <div class="form-section">
+                            <h3>Associate with Bill</h3>
+                            <div class="form-group">
+                                <label for="billAssociation">Available Bills:</label>
+                                <select id="billAssociation" name="billId">
+                                    <option value="">Select a bill to associate...</option>
+                                    <option th:each="bill : ${receipt.availableBills}" 
+                                            th:value="${bill.id}" 
+                                            th:text="${bill.filename + ' - ' + bill.statusDisplayName + 
+                                                     (bill.extractedAmount != null ? ' ($' + bill.extractedAmount + ')' : '')}"
+                                            th:selected="${receipt.billId != null && receipt.billId == bill.id}"></option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="updateAssociation()">
+                                Update Association
+                            </button>
+                        </div>
+
+                        <!-- Payment Information (for standalone receipts) -->
+                        <div class="form-section">
+                            <h3>Payment Information</h3>
+                            <div class="form-group">
+                                <label for="serviceProvider">Service Provider:</label>
+                                <select id="serviceProvider" name="serviceProviderId">
+                                    <option value="">Select a provider...</option>
+                                    <option th:each="provider : ${serviceProviders}" 
+                                            th:value="${provider.id}" 
+                                            th:text="${provider.name + ' (' + provider.category + ')'}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method:</label>
+                                <select id="paymentMethod" name="paymentMethodId">
+                                    <option value="">Select a method...</option>
+                                    <option th:each="method : ${paymentMethods}" 
+                                            th:value="${method.id}" 
+                                            th:text="${method.name + ' (' + method.typeDisplayName + ')'}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount:</label>
+                                <input type="number" id="amount" name="amount" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="currency">Currency:</label>
+                                <select id="currency" name="currency">
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="invoiceDate">Invoice Date:</label>
+                                <input type="date" id="invoiceDate" name="invoiceDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentDate">Payment Date:</label>
+                                <input type="date" id="paymentDate" name="paymentDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="comment">Comment:</label>
+                                <textarea id="comment" name="comment" placeholder="Additional notes..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" onclick="saveDraft()" id="saveDraftBtn">
+                                Save Draft
+                            </button>
+                            <button class="btn btn-success" onclick="acceptAsPayment()" id="acceptBtn">
+                                Accept as Payment
+                            </button>
+                            <button class="btn btn-info" onclick="revertReceipt()" id="revertBtn">
+                                Revert to IncomingFile
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Information Tab -->
+                    <div id="information-tab" class="tab-pane">
+                        <div class="metadata-section" th:if="${receipt.filename}">
+                            <h3>File Information</h3>
+                            <div class="metadata-item">
+                                <div class="metadata-label">Filename</div>
+                                <div class="metadata-value" th:text="${receipt.filename}">filename.pdf</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.uploadDate}">
+                                <div class="metadata-label">Upload Date</div>
+                                <div class="metadata-value" th:text="${#temporals.format(receipt.uploadDate, 'yyyy-MM-dd HH:mm')}">Jan 01, 2024 at 12:00</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.filePath}">
+                                <div class="metadata-label">File Path</div>
+                                <div class="metadata-value" th:text="${receipt.filePath}">/path/to/file.pdf</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.checksum}">
+                                <div class="metadata-label">Checksum (SHA-256)</div>
+                                <div class="metadata-value checksum" th:text="${receipt.checksum}">abc123def456...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metadata-section" th:if="${receipt.ocrRawJson}">
+                            <h3>OCR Processing</h3>
+                            <div class="metadata-item" th:if="${receipt.extractedProvider}">
+                                <div class="metadata-label">Extracted Provider</div>
+                                <div class="metadata-value" th:text="${receipt.extractedProvider}">Provider Name</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.extractedAmount}">
+                                <div class="metadata-label">Extracted Amount</div>
+                                <div class="metadata-value" th:text="'$' + ${receipt.extractedAmount}">$25.99</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.extractedDate}">
+                                <div class="metadata-label">Extracted Date</div>
+                                <div class="metadata-value" th:text="${receipt.extractedDate}">2024-01-15</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.ocrProcessedAt}">
+                                <div class="metadata-label">Processed At</div>
+                                <div class="metadata-value" th:text="${#temporals.format(receipt.ocrProcessedAt, 'yyyy-MM-dd HH:mm')}">Jan 15, 2024 at 14:32</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.ocrErrorMessage}">
+                                <div class="metadata-label">Error Message</div>
+                                <div class="metadata-value" style="color: #dc3545;" th:text="${receipt.ocrErrorMessage}">Error details</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metadata-section">
+                            <h3>Technical Details</h3>
+                            <div class="metadata-item">
+                                <div class="metadata-label">Receipt ID</div>
+                                <div class="metadata-value" th:text="${receipt.id}">123</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.originalIncomingFileId}">
+                                <div class="metadata-label">Original File ID</div>
+                                <div class="metadata-value" th:text="${receipt.originalIncomingFileId}">456</div>
+                            </div>
+                            <div class="metadata-item" th:if="${receipt.billId}">
+                                <div class="metadata-label">Associated Bill ID</div>
+                                <div class="metadata-value" th:text="${receipt.billId}">789</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Image Viewer -->
+        <div class="right-pane">
             <h3>Receipt Image</h3>
             <div class="image-viewer" id="imageViewer">
                 <img th:src="${receipt.imageUrl}" alt="Receipt Image" id="receiptImage">
@@ -326,126 +607,46 @@
                 <button class="control-btn" onclick="resetImage()">Reset</button>
             </div>
         </div>
-
-        <!-- Right Pane: Form -->
-        <div class="right-pane">
-            <!-- Receipt Information -->
-            <div class="receipt-info">
-                <h3>Receipt Information</h3>
-                <p><strong>Status:</strong> 
-                    <span class="status-badge" 
-                          th:classappend="${receipt.isStandalone} ? 'status-standalone' : 'status-associated'"
-                          th:text="${receipt.isStandalone} ? 'Standalone' : 'Associated with Bill'"></span>
-                </p>
-            </div>
-
-            <!-- Associated Bill (if any) -->
-            <div class="form-section" th:if="${receipt.associatedBill != null}">
-                <h3>Associated Bill</h3>
-                <div class="associated-bill">
-                    <div class="bill-summary">
-                        <div class="bill-thumbnail">
-                            <img th:src="${receipt.associatedBill.thumbnailUrl}" alt="Bill thumbnail">
-                        </div>
-                        <div class="bill-info">
-                            <h4 th:text="${receipt.associatedBill.filename}"></h4>
-                            <p th:text="'Status: ' + ${receipt.associatedBill.statusDisplayName}"></p>
-                            <p th:text="'Upload Date: ' + ${#temporals.format(receipt.associatedBill.uploadDate, 'yyyy-MM-dd HH:mm')}"></p>
-                            <p th:if="${receipt.associatedBill.extractedAmount != null}" 
-                               th:text="'Amount: $' + ${receipt.associatedBill.extractedAmount}"></p>
-                        </div>
-                        <button class="remove-association-btn" onclick="removeAssociation()">
-                            Remove Association
-                        </button>
-                    </div>
-                    <a th:href="${receipt.associatedBill.detailUrl}" class="btn btn-primary" style="margin-top: 10px;">
-                        View Bill Details
-                    </a>
-                </div>
-            </div>
-
-            <!-- Bill Association -->
-            <div class="form-section">
-                <h3>Associate with Bill</h3>
-                <div class="form-group">
-                    <label for="billAssociation">Available Bills:</label>
-                    <select id="billAssociation" name="billId">
-                        <option value="">Select a bill to associate...</option>
-                        <option th:each="bill : ${receipt.availableBills}" 
-                                th:value="${bill.id}" 
-                                th:text="${bill.filename + ' - ' + bill.statusDisplayName + 
-                                         (bill.extractedAmount != null ? ' ($' + bill.extractedAmount + ')' : '')}"
-                                th:selected="${receipt.billId != null && receipt.billId == bill.id}"></option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="updateAssociation()">
-                    Update Association
-                </button>
-            </div>
-
-            <!-- Payment Information (for standalone receipts) -->
-            <div class="form-section">
-                <h3>Payment Information</h3>
-                <div class="form-group">
-                    <label for="serviceProvider">Service Provider:</label>
-                    <select id="serviceProvider" name="serviceProviderId">
-                        <option value="">Select a provider...</option>
-                        <option th:each="provider : ${serviceProviders}" 
-                                th:value="${provider.id}" 
-                                th:text="${provider.name + ' (' + provider.category + ')'}"></option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="paymentMethod">Payment Method:</label>
-                    <select id="paymentMethod" name="paymentMethodId">
-                        <option value="">Select a method...</option>
-                        <option th:each="method : ${paymentMethods}" 
-                                th:value="${method.id}" 
-                                th:text="${method.name + ' (' + method.typeDisplayName + ')'}"></option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="amount">Amount:</label>
-                    <input type="number" id="amount" name="amount" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="currency">Currency:</label>
-                    <select id="currency" name="currency">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="invoiceDate">Invoice Date:</label>
-                    <input type="date" id="invoiceDate" name="invoiceDate">
-                </div>
-                <div class="form-group">
-                    <label for="paymentDate">Payment Date:</label>
-                    <input type="date" id="paymentDate" name="paymentDate">
-                </div>
-                <div class="form-group">
-                    <label for="comment">Comment:</label>
-                    <textarea id="comment" name="comment" placeholder="Additional notes..."></textarea>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="saveDraft()" id="saveDraftBtn">
-                    Save Draft
-                </button>
-                <button class="btn btn-success" onclick="acceptAsPayment()" id="acceptBtn">
-                    Accept as Payment
-                </button>
-            </div>
-        </div>
     </div>
 
     <script>
         let isZoomed = false;
         let rotation = 0;
         const receiptId = /*[[${receipt.id}]]*/ 0;
+
+        function switchTab(tabId) {
+            // Remove active class from all tabs and headers
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-header').forEach(header => header.classList.remove('active'));
+            
+            // Add active class to selected tab and header
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function revertReceipt() {
+            if (!confirm('Revert this Receipt back to IncomingFile? This will move it back to the inbox.')) return;
+            
+            fetch(`/receipts/api/${receiptId}/revert`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Receipt reverted to IncomingFile successfully!', 'success');
+                    // Redirect to inbox
+                    setTimeout(() => window.location.href = '/inbox', 1000);
+                } else {
+                    showAlert('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error reverting Receipt: ' + error, 'danger');
+            });
+        }
 
         function toggleZoom() {
             const imageViewer = document.getElementById('imageViewer');

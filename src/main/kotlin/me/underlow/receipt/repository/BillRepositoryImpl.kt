@@ -20,7 +20,11 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
             extractedAmount = rs.getObject("extracted_amount") as? Double,
             extractedDate = rs.getDate("extracted_date")?.toLocalDate(),
             extractedProvider = rs.getString("extracted_provider"),
-            userId = rs.getLong("user_id")
+            userId = rs.getLong("user_id"),
+            checksum = rs.getString("checksum"),
+            originalIncomingFileId = rs.getObject("original_incoming_file_id") as? Long,
+            ocrProcessedAt = rs.getTimestamp("ocr_processed_at")?.toLocalDateTime(),
+            ocrErrorMessage = rs.getString("ocr_error_message")
         )
     }
 
@@ -30,7 +34,7 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
             jdbcTemplate.update({
                 connection ->
                 val ps = connection.prepareStatement(
-                    "INSERT INTO bills (filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO bills (filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS
                 )
                 ps.setString(1, bill.filename)
@@ -42,16 +46,21 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
                 ps.setDate(7, bill.extractedDate?.let { java.sql.Date.valueOf(it) })
                 ps.setString(8, bill.extractedProvider)
                 ps.setLong(9, bill.userId)
+                ps.setString(10, bill.checksum)
+                ps.setObject(11, bill.originalIncomingFileId)
+                ps.setTimestamp(12, bill.ocrProcessedAt?.let { java.sql.Timestamp.valueOf(it) })
+                ps.setString(13, bill.ocrErrorMessage)
                 ps
             }, keyHolder)
             val generatedId = keyHolder.keyList.firstOrNull()?.get("id") as? Number
             bill.copy(id = generatedId?.toLong())
         } else {
             jdbcTemplate.update(
-                "UPDATE bills SET filename = ?, file_path = ?, upload_date = ?, status = ?, ocr_raw_json = ?, extracted_amount = ?, extracted_date = ?, extracted_provider = ?, user_id = ? WHERE id = ?",
+                "UPDATE bills SET filename = ?, file_path = ?, upload_date = ?, status = ?, ocr_raw_json = ?, extracted_amount = ?, extracted_date = ?, extracted_provider = ?, user_id = ?, checksum = ?, original_incoming_file_id = ?, ocr_processed_at = ?, ocr_error_message = ? WHERE id = ?",
                 bill.filename, bill.filePath, java.sql.Timestamp.valueOf(bill.uploadDate), bill.status.name,
                 bill.ocrRawJson, bill.extractedAmount, bill.extractedDate?.let { java.sql.Date.valueOf(it) },
-                bill.extractedProvider, bill.userId, bill.id
+                bill.extractedProvider, bill.userId, bill.checksum, bill.originalIncomingFileId, 
+                bill.ocrProcessedAt?.let { java.sql.Timestamp.valueOf(it) }, bill.ocrErrorMessage, bill.id
             )
             bill
         }
@@ -59,21 +68,21 @@ class BillRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : BillRepositor
 
     override fun findById(id: Long): Bill? {
         return jdbcTemplate.query(
-            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id FROM bills WHERE id = ?",
+            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills WHERE id = ?",
             rowMapper, id
         ).firstOrNull()
     }
 
     override fun findByUserId(userId: Long): List<Bill> {
         return jdbcTemplate.query(
-            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id FROM bills WHERE user_id = ?",
+            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills WHERE user_id = ?",
             rowMapper, userId
         )
     }
 
     override fun findAll(): List<Bill> {
         return jdbcTemplate.query(
-            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id FROM bills",
+            "SELECT id, filename, file_path, upload_date, status, ocr_raw_json, extracted_amount, extracted_date, extracted_provider, user_id, checksum, original_incoming_file_id, ocr_processed_at, ocr_error_message FROM bills",
             rowMapper
         )
     }

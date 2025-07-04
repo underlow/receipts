@@ -1,6 +1,8 @@
 package me.underlow.receipt.service
 
 import me.underlow.receipt.model.IncomingFile
+import me.underlow.receipt.model.EntityType
+import me.underlow.receipt.model.OcrProcessingStatus
 import me.underlow.receipt.service.ocr.OcrEngine
 import me.underlow.receipt.service.ocr.OcrResult
 import org.slf4j.LoggerFactory
@@ -13,7 +15,8 @@ import java.io.File
  */
 @Service
 class OcrService(
-    private val availableOcrEngines: List<OcrEngine>
+    private val availableOcrEngines: List<OcrEngine>,
+    private val ocrAttemptService: OcrAttemptService
 ) {
     
     private val logger = LoggerFactory.getLogger(OcrService::class.java)
@@ -22,7 +25,7 @@ class OcrService(
      * Processes an IncomingFile using the first available OCR engine.
      * Returns OCR result with extracted receipt information.
      */
-    suspend fun processIncomingFile(incomingFile: IncomingFile): OcrResult {
+    suspend fun processIncomingFile(incomingFile: IncomingFile, userEmail: String): OcrResult {
         val file = File(incomingFile.filePath)
         
         logger.info("Processing incoming file: ${incomingFile.filename} (${incomingFile.filePath})")
@@ -39,7 +42,12 @@ class OcrService(
         
         logger.info("File exists, processing with available engines: ${availableOcrEngines.map { it.getEngineName() }}")
         
-        return processFileWithPrimaryEngine(file)
+        return processEntityWithOcrTracking(
+            EntityType.INCOMING_FILE,
+            incomingFile.id!!,
+            userEmail,
+            file
+        )
     }
     
     /**
@@ -126,5 +134,88 @@ class OcrService(
         } else {
             OcrResult.failure("No available OCR engines")
         }
+    }
+    
+    /**
+     * Processes an entity file with OCR tracking for audit and history purposes
+     */
+    suspend fun processEntityWithOcrTracking(
+        entityType: EntityType,
+        entityId: Long,
+        userEmail: String,
+        file: File
+    ): OcrResult {
+        val primaryEngine = availableOcrEngines.firstOrNull { it.isAvailable() }
+        
+        if (primaryEngine == null) {
+            val errorMessage = "No available OCR engines"
+            ocrAttemptService.recordOcrAttempt(
+                entityType = entityType,
+                entityId = entityId,
+                userEmail = userEmail,
+                ocrEngineUsed = "NONE",
+                processingStatus = OcrProcessingStatus.FAILED,
+                errorMessage = errorMessage
+            )
+            return OcrResult.failure(errorMessage)
+        }
+        
+        // Record the start of OCR processing
+        val attempt = ocrAttemptService.recordOcrAttempt(
+            entityType = entityType,
+            entityId = entityId,
+            userEmail = userEmail,
+            ocrEngineUsed = primaryEngine.getEngineName(),
+            processingStatus = OcrProcessingStatus.IN_PROGRESS
+        )
+        
+        return try {
+            logger.info("Processing file ${file.name} with OCR engine: ${primaryEngine.getEngineName()}")
+            val result = primaryEngine.processFile(file)
+            
+            // Update the attempt with the result
+            if (attempt != null) {
+                ocrAttemptService.updateAttemptStatus(
+                    attemptId = attempt.id!!,
+                    processingStatus = if (result.success) OcrProcessingStatus.SUCCESS else OcrProcessingStatus.FAILED,
+                    extractedDataJson = result.rawJson,
+                    errorMessage = if (!result.success) result.errorMessage else null
+                )
+            }
+            
+            logger.info("OCR processing completed for file ${file.name} with status: ${if (result.success) "SUCCESS" else "FAILED"}")
+            result
+            
+        } catch (e: Exception) {
+            val errorMessage = "OCR engine failed: ${e.message}"
+            logger.error("Error processing file with OCR engine", e)
+            
+            // Update the attempt with failure
+            if (attempt != null) {
+                ocrAttemptService.updateAttemptStatus(
+                    attemptId = attempt.id!!,
+                    processingStatus = OcrProcessingStatus.FAILED,
+                    errorMessage = errorMessage
+                )
+            }
+            
+            OcrResult.failure(errorMessage)
+        }
+    }
+    
+    /**
+     * Processes Bill entity with OCR tracking
+     */
+    suspend fun processBill(billId: Long, userEmail: String, filePath: String): OcrResult {
+        val file = File(filePath)
+        return processEntityWithOcrTracking(EntityType.BILL, billId, userEmail, file)
+    }
+    
+    /**
+     * Processes Receipt entity with OCR tracking
+     */
+    suspend fun processReceipt(receiptId: Long, userEmail: String, filePath: String): OcrResult {
+        val file = File(filePath)
+        return processEntityWithOcrTracking(EntityType.RECEIPT, receiptId, userEmail, file)
     }
 }

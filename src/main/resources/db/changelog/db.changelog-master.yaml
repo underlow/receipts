@@ -11,3 +11,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/004-incoming-files-ocr.sql
       fileType: sql
+  - include:
+      file: db/changelog/changes/005-enhanced-workflow.sql
+      fileType: sql

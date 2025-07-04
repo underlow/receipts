@@ -25,7 +25,7 @@ class IncomingFileOcrService(
      * Processes an IncomingFile through OCR and updates the entity with results.
      * Updates status to PROCESSING during processing and APPROVED/REJECTED based on result.
      */
-    fun processIncomingFile(incomingFile: IncomingFile): IncomingFile {
+    fun processIncomingFile(incomingFile: IncomingFile, userEmail: String): IncomingFile {
         logger.info("Starting OCR processing for file: ${incomingFile.filename}")
         
         // Check if OCR is available before processing
@@ -48,7 +48,7 @@ class IncomingFileOcrService(
             
             // Process file through OCR
             val ocrResult = runBlocking {
-                ocrService.processIncomingFile(incomingFile)
+                ocrService.processIncomingFile(incomingFile, userEmail)
             }
             
             logger.info("OCR processing completed for file ${incomingFile.filename}. Success: ${ocrResult.success}")
@@ -84,21 +84,19 @@ class IncomingFileOcrService(
     /**
      * Processes all pending IncomingFiles through OCR.
      * Used for batch processing of files that haven't been processed yet.
+     * NOTE: This method is deprecated as OCR tracking requires userEmail.
      */
+    @Deprecated("Use user-specific OCR processing instead")
     fun processAllPendingFiles(): List<IncomingFile> {
-        logger.info("Processing all pending IncomingFiles through OCR")
-        
-        val pendingFiles = incomingFileRepository.findByStatus(BillStatus.PENDING)
-        logger.info("Found ${pendingFiles.size} pending files to process")
-        
-        return pendingFiles.map { processIncomingFile(it) }
+        logger.warn("processAllPendingFiles is deprecated - OCR tracking requires userEmail")
+        return emptyList()
     }
     
     /**
      * Retries OCR processing for a failed file.
      * Resets the file to PENDING status and processes again.
      */
-    fun retryOcrProcessing(incomingFileId: Long): IncomingFile? {
+    fun retryOcrProcessing(incomingFileId: Long, userEmail: String): IncomingFile? {
         val incomingFile = incomingFileRepository.findById(incomingFileId)
         
         return if (incomingFile != null) {
@@ -127,7 +125,7 @@ class IncomingFileOcrService(
             )
             
             val savedResetFile = incomingFileRepository.save(resetFile)
-            processIncomingFile(savedResetFile)
+            processIncomingFile(savedResetFile, userEmail)
         } else {
             logger.warn("Cannot retry OCR processing - file not found: $incomingFileId")
             null

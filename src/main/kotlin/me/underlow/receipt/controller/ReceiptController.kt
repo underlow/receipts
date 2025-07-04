@@ -2,6 +2,7 @@ package me.underlow.receipt.controller
 
 import me.underlow.receipt.dto.*
 import me.underlow.receipt.service.*
+import me.underlow.receipt.model.EntityType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
@@ -19,7 +20,8 @@ class ReceiptController(
     private val billService: BillService,
     private val paymentService: PaymentService,
     private val serviceProviderService: ServiceProviderService,
-    private val paymentMethodService: PaymentMethodService
+    private val paymentMethodService: PaymentMethodService,
+    private val entityConversionService: EntityConversionService
 ) {
 
     /**
@@ -244,5 +246,32 @@ class ReceiptController(
         val billSummaries = availableBills.map { BillSummaryDto.fromBill(it) }
 
         return ResponseEntity.ok(billSummaries)
+    }
+    
+    /**
+     * API endpoint to revert Receipt back to IncomingFile
+     */
+    @PostMapping("/api/{receiptId}/revert")
+    @ResponseBody
+    fun revertToIncomingFile(
+        @PathVariable receiptId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<ReceiptOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                ReceiptOperationResponse(false, "User not authenticated")
+            )
+
+        val incomingFile = entityConversionService.revertReceiptToIncomingFile(receiptId, userEmail)
+        
+        return if (incomingFile != null) {
+            ResponseEntity.ok(
+                ReceiptOperationResponse(true, "Receipt reverted to IncomingFile successfully", incomingFile.id)
+            )
+        } else {
+            ResponseEntity.badRequest().body(
+                ReceiptOperationResponse(false, "Failed to revert Receipt to IncomingFile")
+            )
+        }
     }
 }

@@ -123,7 +123,7 @@ class IncomingFileService(
         val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
         
         return try {
-            incomingFileOcrService.processIncomingFile(incomingFile)
+            incomingFileOcrService.processIncomingFile(incomingFile, userEmail)
             true
         } catch (e: Exception) {
             logger.error("Error triggering OCR processing for file $fileId", e)
@@ -138,7 +138,7 @@ class IncomingFileService(
         findByIdAndUserEmail(fileId, userEmail) ?: return false
         
         return try {
-            incomingFileOcrService.retryOcrProcessing(fileId)
+            incomingFileOcrService.retryOcrProcessing(fileId, userEmail)
             true
         } catch (e: Exception) {
             logger.error("Error retrying OCR processing for file $fileId", e)

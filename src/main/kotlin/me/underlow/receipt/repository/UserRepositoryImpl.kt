@@ -23,6 +23,10 @@ class UserRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : UserRepositor
         return jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE email = ?", rowMapper, email).firstOrNull()
     }
 
+    override fun findById(id: Long): User? {
+        return jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE id = ?", rowMapper, id).firstOrNull()
+    }
+
     override fun save(user: User): User {
         return if (user.id == null) {
             // Insert new user - let database handle created_at, only set last_login_at

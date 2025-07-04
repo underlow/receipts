@@ -4,6 +4,7 @@ import me.underlow.receipt.config.ReceiptsProperties
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.model.IncomingFile
 import me.underlow.receipt.repository.IncomingFileRepository
+import me.underlow.receipt.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
@@ -22,7 +23,8 @@ import java.time.format.DateTimeFormatter
 class FileProcessingService(
     private val incomingFileRepository: IncomingFileRepository,
     private val receiptsProperties: ReceiptsProperties,
-    private val incomingFileOcrService: IncomingFileOcrService
+    private val incomingFileOcrService: IncomingFileOcrService,
+    private val userRepository: UserRepository
 ) {
     private val logger = LoggerFactory.getLogger(FileProcessingService::class.java)
 
@@ -65,7 +67,13 @@ class FileProcessingService(
             if (incomingFileOcrService.isOcrProcessingAvailable()) {
                 logger.info("Triggering OCR processing for file: ${file.name}")
                 try {
-                    incomingFileOcrService.processIncomingFile(savedFile)
+                    // Get user email from userId to pass to OCR service
+                    val user = userRepository.findById(userId)
+                    if (user != null) {
+                        incomingFileOcrService.processIncomingFile(savedFile, user.email)
+                    } else {
+                        logger.warn("User with ID $userId not found, skipping OCR processing")
+                    }
                 } catch (e: Exception) {
                     logger.error("Error during OCR processing for file: ${file.name}", e)
                     // Continue execution - file is still processed even if OCR fails

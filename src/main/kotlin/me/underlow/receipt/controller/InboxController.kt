@@ -6,6 +6,7 @@ import me.underlow.receipt.dto.InboxListResponse
 import me.underlow.receipt.dto.IncomingFileDetailDto
 import me.underlow.receipt.model.BillStatus
 import me.underlow.receipt.service.IncomingFileService
+import me.underlow.receipt.service.EntityConversionService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
@@ -18,7 +19,8 @@ import org.springframework.web.bind.annotation.*
 @Controller
 @RequestMapping("/inbox")
 class InboxController(
-    private val incomingFileService: IncomingFileService
+    private val incomingFileService: IncomingFileService,
+    private val entityConversionService: EntityConversionService
 ) {
 
     /**
@@ -344,5 +346,59 @@ class InboxController(
         )
 
         return ResponseEntity.ok(response)
+    }
+    
+    /**
+     * API endpoint to convert IncomingFile to Bill
+     */
+    @PostMapping("/api/files/{fileId}/convert-to-bill")
+    @ResponseBody
+    fun convertToBill(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+
+        val bill = entityConversionService.convertIncomingFileToBill(fileId, userEmail)
+        
+        return if (bill != null) {
+            ResponseEntity.ok(
+                FileOperationResponse(true, "File converted to Bill successfully", bill.id)
+            )
+        } else {
+            ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "Failed to convert file to Bill")
+            )
+        }
+    }
+    
+    /**
+     * API endpoint to convert IncomingFile to Receipt
+     */
+    @PostMapping("/api/files/{fileId}/convert-to-receipt")
+    @ResponseBody
+    fun convertToReceipt(
+        @PathVariable fileId: Long,
+        authentication: OAuth2AuthenticationToken
+    ): ResponseEntity<FileOperationResponse> {
+        val userEmail = authentication.principal.getAttribute<String>("email")
+            ?: return ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "User not authenticated")
+            )
+
+        val receipt = entityConversionService.convertIncomingFileToReceipt(fileId, userEmail)
+        
+        return if (receipt != null) {
+            ResponseEntity.ok(
+                FileOperationResponse(true, "File converted to Receipt successfully", receipt.id)
+            )
+        } else {
+            ResponseEntity.badRequest().body(
+                FileOperationResponse(false, "Failed to convert file to Receipt")
+            )
+        }
     }
 }

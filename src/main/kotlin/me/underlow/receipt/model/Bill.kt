@@ -29,5 +29,14 @@ data class Bill(
     val extractedProvider: String? = null,
     
     @field:NotNull(message = "User ID cannot be null")
-    val userId: Long
+    val userId: Long,
+    
+    // New file metadata fields
+    val checksum: String? = null,
+    
+    val originalIncomingFileId: Long? = null,
+    
+    val ocrProcessedAt: LocalDateTime? = null,
+    
+    val ocrErrorMessage: String? = null
 )

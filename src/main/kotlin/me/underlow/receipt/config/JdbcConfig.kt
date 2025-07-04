@@ -56,4 +56,9 @@ class JdbcConfig {
     fun incomingFileRepository(jdbcTemplate: JdbcTemplate): IncomingFileRepository {
         return IncomingFileRepositoryImpl(jdbcTemplate)
     }
+
+    @Bean
+    fun ocrAttemptRepository(jdbcTemplate: JdbcTemplate): OcrAttemptRepository {
+        return OcrAttemptRepositoryImpl(jdbcTemplate)
+    }
 }
