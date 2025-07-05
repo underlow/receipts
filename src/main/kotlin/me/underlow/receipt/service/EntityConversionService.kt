@@ -24,7 +24,6 @@ class EntityConversionService(
      * Converts an IncomingFile to a Bill
      */
     fun convertIncomingFileToBill(incomingFileId: Long, userEmail: String): Bill? {
-        logger.info("Attempting to convert IncomingFile $incomingFileId to Bill for user $userEmail")
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found, cannot convert IncomingFile to Bill.", userEmail)
@@ -38,7 +37,7 @@ class EntityConversionService(
         
         // Verify user ownership
         if (incomingFile.userId != user.id) {
-            logger.warn("User $userEmail attempted to convert IncomingFile $incomingFileId they don't own")
+            logger.warn("Unauthorized conversion attempt: user {} tried to convert IncomingFile {} they don't own", userEmail, incomingFileId)
             return null
         }
         
@@ -72,7 +71,7 @@ class EntityConversionService(
             
             // Delete the original IncomingFile
             incomingFileRepository.delete(incomingFileId)
-            logger.info("Converted IncomingFile $incomingFileId to Bill ${savedBill.id} for user $userEmail")
+            logger.info("Entity conversion completed: IncomingFile {} -> Bill {} for user {}", incomingFileId, savedBill.id, userEmail)
         }
         
         return savedBill
@@ -82,7 +81,6 @@ class EntityConversionService(
      * Converts an IncomingFile to a Receipt
      */
     fun convertIncomingFileToReceipt(incomingFileId: Long, userEmail: String): Receipt? {
-        logger.info("Attempting to convert IncomingFile $incomingFileId to Receipt for user $userEmail")
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found, cannot convert IncomingFile to Receipt.", userEmail)
@@ -96,7 +94,7 @@ class EntityConversionService(
         
         // Verify user ownership
         if (incomingFile.userId != user.id) {
-            logger.warn("User $userEmail attempted to convert IncomingFile $incomingFileId they don't own")
+            logger.warn("Unauthorized conversion attempt: user {} tried to convert IncomingFile {} they don't own", userEmail, incomingFileId)
             return null
         }
         
@@ -131,7 +129,7 @@ class EntityConversionService(
             
             // Delete the original IncomingFile
             incomingFileRepository.delete(incomingFileId)
-            logger.info("Converted IncomingFile $incomingFileId to Receipt ${savedReceipt.id} for user $userEmail")
+            logger.info("Entity conversion completed: IncomingFile {} -> Receipt {} for user {}", incomingFileId, savedReceipt.id, userEmail)
         }
         
         return savedReceipt
@@ -141,7 +139,6 @@ class EntityConversionService(
      * Reverts a Bill back to an IncomingFile
      */
     fun revertBillToIncomingFile(billId: Long, userEmail: String): IncomingFile? {
-        logger.info("Attempting to revert Bill $billId to IncomingFile for user $userEmail")
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found, cannot revert Bill to IncomingFile.", userEmail)
@@ -155,7 +152,7 @@ class EntityConversionService(
         
         // Verify user ownership
         if (bill.userId != user.id) {
-            logger.warn("User $userEmail attempted to revert Bill $billId they don't own")
+            logger.warn("Unauthorized revert attempt: user {} tried to revert Bill {} they don't own", userEmail, billId)
             return null
         }
         
@@ -188,7 +185,7 @@ class EntityConversionService(
             
             // Delete the Bill
             billRepository.delete(billId)
-            logger.info("Reverted Bill $billId to IncomingFile ${savedIncomingFile.id} for user $userEmail")
+            logger.info("Entity reversion completed: Bill {} -> IncomingFile {} for user {}", billId, savedIncomingFile.id, userEmail)
         }
         
         return savedIncomingFile
@@ -198,7 +195,6 @@ class EntityConversionService(
      * Reverts a Receipt back to an IncomingFile
      */
     fun revertReceiptToIncomingFile(receiptId: Long, userEmail: String): IncomingFile? {
-        logger.info("Attempting to revert Receipt $receiptId to IncomingFile for user $userEmail")
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found, cannot revert Receipt to IncomingFile.", userEmail)
@@ -212,13 +208,13 @@ class EntityConversionService(
         
         // Verify user ownership
         if (receipt.userId != user.id) {
-            logger.warn("User $userEmail attempted to revert Receipt $receiptId they don't own")
+            logger.warn("Unauthorized revert attempt: user {} tried to revert Receipt {} they don't own", userEmail, receiptId)
             return null
         }
         
         // Only revert if receipt has file metadata
         if (receipt.filename == null || receipt.filePath == null) {
-            logger.warn("Receipt $receiptId doesn't have file metadata, cannot revert to IncomingFile")
+            logger.warn("Receipt {} missing file metadata, cannot revert to IncomingFile for user {}", receiptId, userEmail)
             return null
         }
         
@@ -251,7 +247,7 @@ class EntityConversionService(
             
             // Delete the Receipt
             receiptRepository.delete(receiptId)
-            logger.info("Reverted Receipt $receiptId to IncomingFile ${savedIncomingFile.id} for user $userEmail")
+            logger.info("Entity reversion completed: Receipt {} -> IncomingFile {} for user {}", receiptId, savedIncomingFile.id, userEmail)
         }
         
         return savedIncomingFile
@@ -261,7 +257,6 @@ class EntityConversionService(
      * Checks if an entity can be reverted to IncomingFile
      */
     fun canRevertToIncomingFile(entityType: EntityType, entityId: Long, userEmail: String): Boolean {
-        logger.debug("Checking if entity type {} with ID {} can be reverted to IncomingFile for user {}", entityType, entityId, userEmail)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found, cannot check revert capability.", userEmail)
@@ -271,19 +266,14 @@ class EntityConversionService(
         return when (entityType) {
             EntityType.BILL -> {
                 val bill = billRepository.findById(entityId)
-                val canRevert = bill != null && bill.userId == user.id && bill.originalIncomingFileId != null
-                logger.debug("Bill {} can be reverted: {}", entityId, canRevert)
-                canRevert
+                bill != null && bill.userId == user.id && bill.originalIncomingFileId != null
             }
             EntityType.RECEIPT -> {
                 val receipt = receiptRepository.findById(entityId)
-                val canRevert = receipt != null && receipt.userId == user.id && 
+                receipt != null && receipt.userId == user.id && 
                 receipt.filename != null && receipt.filePath != null
-                logger.debug("Receipt {} can be reverted: {}", entityId, canRevert)
-                canRevert
             }
             EntityType.INCOMING_FILE -> {
-                logger.debug("Entity {} is already an IncomingFile, cannot revert.", entityId)
                 false // Already an IncomingFile
             }
         }

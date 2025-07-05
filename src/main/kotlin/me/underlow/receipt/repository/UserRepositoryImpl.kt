@@ -23,30 +23,15 @@ class UserRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : UserRepositor
     }
 
     override fun findByEmail(email: String): User? {
-        logger.debug("Searching for user by email: {}", email)
-        val user = jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE email = ?", rowMapper, email).firstOrNull()
-        if (user == null) {
-            logger.debug("User with email {} not found.", email)
-        } else {
-            logger.debug("Found user with email {}: {}", email, user.id)
-        }
-        return user
+        return jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE email = ?", rowMapper, email).firstOrNull()
     }
 
     override fun findById(id: Long): User? {
-        logger.debug("Searching for user by ID: {}", id)
-        val user = jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE id = ?", rowMapper, id).firstOrNull()
-        if (user == null) {
-            logger.debug("User with ID {} not found.", id)
-        } else {
-            logger.debug("Found user with ID {}: {}", id, user.email)
-        }
-        return user
+        return jdbcTemplate.query("SELECT id, email, name, created_at, last_login_at FROM users WHERE id = ?", rowMapper, id).firstOrNull()
     }
 
     override fun save(user: User): User {
         return if (user.id == null) {
-            logger.debug("Inserting new user with email: {}", user.email)
             val keyHolder = GeneratedKeyHolder()
             jdbcTemplate.update({
                 connection ->
@@ -58,13 +43,12 @@ class UserRepositoryImpl(private val jdbcTemplate: JdbcTemplate) : UserRepositor
             }, keyHolder)
             val generatedId = keyHolder.keyList.firstOrNull()?.get("id") as? Number
             val savedUser = user.copy(id = generatedId?.toLong())
-            logger.info("New user inserted with ID: {}", savedUser.id)
+            logger.info("New user registered with ID: {} for email: {}", savedUser.id, user.email)
             savedUser
         } else {
-            logger.debug("Updating existing user with ID: {}", user.id)
             jdbcTemplate.update("UPDATE users SET last_login_at = ? WHERE id = ?",
                 java.sql.Timestamp.valueOf(user.lastLoginAt), user.id)
-            logger.info("User with ID {} updated successfully.", user.id)
+            logger.info("User login updated for ID: {}", user.id)
             user
         }
     }

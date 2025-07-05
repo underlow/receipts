@@ -46,7 +46,6 @@ class InboxService(
      * This consolidates pending + processing + draft → NEW as per requirements
      */
     fun getNewItems(userEmail: String): List<InboxItem> {
-        logger.debug("Getting new items for user: {}", userEmail)
         
         val newItems = mutableListOf<InboxItem>()
         
@@ -109,7 +108,7 @@ class InboxService(
         
         // Sort by upload date (newest first)
         val sortedItems = newItems.sortedByDescending { it.uploadDate }
-        logger.debug("Found {} new items for user {}", sortedItems.size, userEmail)
+        logger.info("Retrieved {} new items for user {}", sortedItems.size, userEmail)
         return sortedItems
     }
 
@@ -117,7 +116,6 @@ class InboxService(
      * Gets all items for the Approved tab (Bills & Receipts with status=APPROVED)
      */
     fun getApprovedItems(userEmail: String): List<InboxItem> {
-        logger.debug("Getting approved items for user: {}", userEmail)
         
         val approvedItems = mutableListOf<InboxItem>()
         
@@ -162,7 +160,7 @@ class InboxService(
         
         // Sort by upload date (newest first)
         val sortedItems = approvedItems.sortedByDescending { it.uploadDate }
-        logger.debug("Found {} approved items for user {}", sortedItems.size, userEmail)
+        logger.info("Retrieved {} approved items for user {}", sortedItems.size, userEmail)
         return sortedItems
     }
 
@@ -170,7 +168,6 @@ class InboxService(
      * Gets all items for the Rejected tab (Bills & Receipts with status=REJECTED)
      */
     fun getRejectedItems(userEmail: String): List<InboxItem> {
-        logger.debug("Getting rejected items for user: {}", userEmail)
         
         val rejectedItems = mutableListOf<InboxItem>()
         
@@ -215,7 +212,7 @@ class InboxService(
         
         // Sort by upload date (newest first)
         val sortedItems = rejectedItems.sortedByDescending { it.uploadDate }
-        logger.debug("Found {} rejected items for user {}", sortedItems.size, userEmail)
+        logger.info("Retrieved {} rejected items for user {}", sortedItems.size, userEmail)
         return sortedItems
     }
 
@@ -227,7 +224,6 @@ class InboxService(
         status: ItemStatus, 
         itemType: InboxItemType? = null
     ): List<InboxItem> {
-        logger.debug("Getting items for user: {} with status: {} and type: {}", userEmail, status, itemType)
         
         return when (status) {
             ItemStatus.NEW -> getNewItems(userEmail)
@@ -323,7 +319,6 @@ class InboxService(
      * Gets comprehensive statistics for all inbox items by status
      */
     fun getInboxStatistics(userEmail: String): Map<String, Map<ItemStatus, Int>> {
-        logger.debug("Getting inbox statistics for user: {}", userEmail)
         
         val incomingFileStats = incomingFileService.getFileStatistics(userEmail)
         val billStats = billService.getBillStatistics(userEmail)
@@ -335,7 +330,6 @@ class InboxService(
             "receipts" to receiptStats
         )
         
-        logger.debug("Generated inbox statistics for user {}: {}", userEmail, statistics)
         return statistics
     }
 
@@ -343,7 +337,6 @@ class InboxService(
      * Gets count of items per tab for quick overview
      */
     fun getTabCounts(userEmail: String): Map<String, Int> {
-        logger.debug("Getting tab counts for user: {}", userEmail)
         
         val newCount = getNewItems(userEmail).size
         val approvedCount = getApprovedItems(userEmail).size
@@ -355,7 +348,6 @@ class InboxService(
             "rejected" to rejectedCount
         )
         
-        logger.debug("Generated tab counts for user {}: {}", userEmail, counts)
         return counts
     }
 }

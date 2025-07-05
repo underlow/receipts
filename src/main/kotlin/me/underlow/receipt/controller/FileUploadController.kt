@@ -44,12 +44,13 @@ class FileUploadController(
         @RequestParam("file") file: MultipartFile,
         principal: Principal
     ): ResponseEntity<Any> {
-        logger.info("Received file upload request: ${file.originalFilename}")
+        val userEmail = principal.name
+        logger.info("User {} uploading file: {} (size: {} bytes)", userEmail, file.originalFilename, file.size)
         return try {
             // Validate authentication
             val userId = extractUserIdFromPrincipal(principal)
                 ?: run {
-                    logger.warn("Unauthorized file upload attempt. User ID not found.")
+                    logger.warn("Unauthorized file upload attempt from user: {} - User ID not found", userEmail)
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ErrorResponse(message = "User not authenticated"))
                 }
@@ -57,12 +58,14 @@ class FileUploadController(
             // Validate file
             val validationError = validateUploadedFile(file)
             if (validationError != null) {
-                logger.warn("File upload validation failed for ${file.originalFilename}: ${validationError.message}")
+                logger.warn("File upload validation failed for user: {} uploading file: {} - {}", 
+                    userEmail, file.originalFilename, validationError.message)
                 return ResponseEntity.badRequest().body(validationError)
             }
 
             // Save file to temporary location for processing
             val tempFileInfo = saveToTempFile(file)
+            logger.debug("File {} saved to temporary location for user: {}", file.originalFilename, userEmail)
 
             try {
                 // Process file using existing service
@@ -78,11 +81,13 @@ class FileUploadController(
                         message = "File uploaded successfully"
                     )
 
-                    logger.info("Successfully processed uploaded file: ${file.originalFilename} for user: $userId")
+                    logger.info("File upload successful - User: {} uploaded file: {} assigned ID: {}", 
+                        userEmail, file.originalFilename, incomingFile.id)
                     ResponseEntity.ok(response)
                 } else {
                     // File processing failed (likely duplicate)
-                    logger.warn("File processing failed or file already exists for ${file.originalFilename} for user: $userId")
+                    logger.warn("File upload failed - User: {} uploading file: {} - file already exists or processing failed", 
+                        userEmail, file.originalFilename)
                     ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ErrorResponse(
                             message = "File already exists or processing failed",
@@ -96,7 +101,8 @@ class FileUploadController(
             }
 
         } catch (e: Exception) {
-            logger.error("Error processing file upload: ${file.originalFilename}", e)
+            logger.error("Error processing file upload for user: {} uploading file: {}", 
+                userEmail, file.originalFilename, e)
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse(
                     message = "Internal server error during file upload",
@@ -109,13 +115,21 @@ class FileUploadController(
      * Extracts user ID from OAuth2 authentication principal.
      */
     private fun extractUserIdFromPrincipal(principal: Principal): Long? {
-        logger.debug("Extracting user ID from principal: {}", principal.name)
         return when (principal) {
             is OAuth2AuthenticationToken -> {
                 val email = principal.principal.attributes["email"] as? String
-                email?.let { userService.findByEmail(it)?.id }
+                val userId = email?.let { userService.findByEmail(it)?.id }
+                if (userId != null) {
+                    logger.debug("User ID {} extracted for email: {}", userId, email)
+                } else {
+                    logger.warn("Failed to extract user ID for email: {}", email)
+                }
+                userId
             }
-            else -> null
+            else -> {
+                logger.warn("Unsupported principal type: {}", principal.javaClass.simpleName)
+                null
+            }
         }
     }
 
@@ -123,9 +137,9 @@ class FileUploadController(
      * Validates uploaded file for size, type, and content requirements.
      */
     private fun validateUploadedFile(file: MultipartFile): ErrorResponse? {
-        logger.debug("Validating uploaded file: {}", file.originalFilename)
         // Check if file is empty
         if (file.isEmpty) {
+            logger.warn("Empty file upload attempt: {}", file.originalFilename)
             return ErrorResponse(
                 message = "File cannot be empty",
                 code = "EMPTY_FILE"
@@ -135,6 +149,8 @@ class FileUploadController(
         // Check file size (10MB limit by default)
         val maxSize = 10 * 1024 * 1024L // 10MB
         if (file.size > maxSize) {
+            logger.warn("File size exceeds limit: {} ({} bytes > {} bytes)", 
+                file.originalFilename, file.size, maxSize)
             return ErrorResponse(
                 message = "File size exceeds maximum limit of ${maxSize / (1024 * 1024)}MB",
                 code = "FILE_TOO_LARGE",
@@ -148,6 +164,8 @@ class FileUploadController(
         val fileExtension = originalFilename.substringAfterLast(".", "").lowercase()
 
         if (fileExtension.isBlank() || fileExtension !in supportedExtensions) {
+            logger.warn("Unsupported file type uploaded: {} (extension: {})", 
+                originalFilename, fileExtension)
             return ErrorResponse(
                 message = "Unsupported file type. Supported types: ${supportedExtensions.joinToString(", ")}",
                 code = "UNSUPPORTED_FILE_TYPE",
@@ -155,7 +173,8 @@ class FileUploadController(
             )
         }
 
-        logger.debug("File {} validated successfully.", file.originalFilename)
+        logger.debug("File {} validated successfully (size: {} bytes, type: {})", 
+            file.originalFilename, file.size, fileExtension)
         return null
     }
 

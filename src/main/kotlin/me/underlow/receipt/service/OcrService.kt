@@ -28,19 +28,21 @@ class OcrService(
     suspend fun processIncomingFile(incomingFile: IncomingFile, userEmail: String): OcrResult {
         val file = File(incomingFile.filePath)
         
-        logger.info("Processing incoming file: ${incomingFile.filename} (${incomingFile.filePath})")
+        logger.info("Starting OCR processing for user: {} on file: {} (ID: {}, path: {})", 
+            userEmail, incomingFile.filename, incomingFile.id, incomingFile.filePath)
         
         if (availableOcrEngines.isEmpty()) {
-            logger.warn("No OCR engines available for processing file: ${incomingFile.filename}")
+            logger.warn("No OCR engines available for processing file: {} for user: {}", incomingFile.filename, userEmail)
             return OcrResult.failure("No OCR engines available")
         }
         
         if (!file.exists()) {
-            logger.error("File not found on disk: ${incomingFile.filePath}")
+            logger.error("File not found on disk: {} for user: {}", incomingFile.filePath, userEmail)
             return OcrResult.failure("File not found on disk: ${incomingFile.filePath}")
         }
         
-        logger.info("File exists, processing with available engines: ${availableOcrEngines.map { it.getEngineName() }}")
+        logger.info("File exists, processing with available engines: {} for user: {}", 
+            availableOcrEngines.map { it.getEngineName() }, userEmail)
         
         return processEntityWithOcrTracking(
             EntityType.INCOMING_FILE,
@@ -145,10 +147,15 @@ class OcrService(
         userEmail: String,
         file: File
     ): OcrResult {
+        val startTime = System.currentTimeMillis()
+        logger.info("Starting OCR tracking for {} ID: {} for user: {} using file: {}", 
+            entityType, entityId, userEmail, file.name)
+        
         val primaryEngine = availableOcrEngines.firstOrNull { it.isAvailable() }
         
         if (primaryEngine == null) {
             val errorMessage = "No available OCR engines"
+            logger.error("OCR processing failed for user: {} - no engines available", userEmail)
             ocrAttemptService.recordOcrAttempt(
                 entityType = entityType,
                 entityId = entityId,
@@ -161,6 +168,7 @@ class OcrService(
         }
         
         // Record the start of OCR processing
+        logger.info("Recording OCR attempt for user: {} using engine: {}", userEmail, primaryEngine.getEngineName())
         val attempt = ocrAttemptService.recordOcrAttempt(
             entityType = entityType,
             entityId = entityId,
@@ -170,7 +178,7 @@ class OcrService(
         )
         
         return try {
-            logger.info("Processing file ${file.name} with OCR engine: ${primaryEngine.getEngineName()}")
+            logger.info("Processing file ${file.name} with OCR engine: ${primaryEngine.getEngineName()} for user: $userEmail")
             val result = primaryEngine.processFile(file)
             
             // Update the attempt with the result
@@ -183,12 +191,21 @@ class OcrService(
                 )
             }
             
-            logger.info("OCR processing completed for file ${file.name} with status: ${if (result.success) "SUCCESS" else "FAILED"}")
+            val processingTime = System.currentTimeMillis() - startTime
+            if (result.success) {
+                logger.info("OCR processing completed successfully for user: {} on file: {} in {}ms - extracted amount: {}, provider: {}", 
+                    userEmail, file.name, processingTime, result.extractedAmount, result.extractedProvider)
+            } else {
+                logger.warn("OCR processing failed for user: {} on file: {} in {}ms - error: {}", 
+                    userEmail, file.name, processingTime, result.errorMessage)
+            }
             result
             
         } catch (e: Exception) {
             val errorMessage = "OCR engine failed: ${e.message}"
-            logger.error("Error processing file with OCR engine", e)
+            val processingTime = System.currentTimeMillis() - startTime
+            logger.error("Error processing file with OCR engine for user: {} on file: {} in {}ms", 
+                userEmail, file.name, processingTime, e)
             
             // Update the attempt with failure
             if (attempt != null) {

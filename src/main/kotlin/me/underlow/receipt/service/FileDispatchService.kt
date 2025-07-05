@@ -26,11 +26,11 @@ class FileDispatchService(
      * Currently converts to Bill entity - in future could implement Receipt logic.
      */
     fun dispatchIncomingFile(incomingFile: IncomingFile): Bill? {
-        logger.info("Dispatching IncomingFile: ${incomingFile.filename} (ID: ${incomingFile.id})")
+        logger.info("Dispatching IncomingFile: ${incomingFile.filename} (ID: ${incomingFile.id}) for user: ${incomingFile.userId}")
         
         // Validate that file has been processed through OCR
         if (!isFileReadyForDispatch(incomingFile)) {
-            logger.warn("IncomingFile ${incomingFile.filename} is not ready for dispatch")
+            logger.warn("IncomingFile ${incomingFile.filename} (ID: ${incomingFile.id}) is not ready for dispatch - status: ${incomingFile.status}, OCR: ${incomingFile.ocrRawJson != null}")
             return null
         }
         
@@ -39,11 +39,11 @@ class FileDispatchService(
             val bill = convertIncomingFileToBill(incomingFile)
             val savedBill = billRepository.save(bill)
             
-            logger.info("Successfully dispatched IncomingFile ${incomingFile.filename} to Bill with ID: ${savedBill.id}")
+            logger.info("Successfully dispatched IncomingFile ${incomingFile.filename} (ID: ${incomingFile.id}) to Bill with ID: ${savedBill.id}, extracted amount: ${savedBill.extractedAmount}, provider: ${savedBill.extractedProvider}")
             savedBill
             
         } catch (e: Exception) {
-            logger.error("Error dispatching IncomingFile ${incomingFile.filename}", e)
+            logger.error("Error dispatching IncomingFile ${incomingFile.filename} (ID: ${incomingFile.id})", e)
             null
         }
     }
@@ -53,14 +53,17 @@ class FileDispatchService(
      * Used for batch processing of files that have completed OCR processing.
      */
     fun dispatchAllReadyFiles(): List<Bill> {
-        logger.info("Dispatching all ready IncomingFiles to Bills")
+        logger.info("Starting batch dispatch of all ready IncomingFiles to Bills")
         
         val approvedFiles = incomingFileRepository.findByStatus(ItemStatus.APPROVED)
         val readyFiles = approvedFiles.filter { isFileReadyForDispatch(it) }
         
-        logger.info("Found ${readyFiles.size} IncomingFiles ready for dispatch")
+        logger.info("Found ${readyFiles.size} IncomingFiles ready for dispatch out of ${approvedFiles.size} approved files")
         
-        return readyFiles.mapNotNull { dispatchIncomingFile(it) }
+        val dispatchedBills = readyFiles.mapNotNull { dispatchIncomingFile(it) }
+        
+        logger.info("Batch dispatch completed - successfully dispatched ${dispatchedBills.size} files to Bills")
+        return dispatchedBills
     }
     
     /**
@@ -96,17 +99,20 @@ class FileDispatchService(
      * Useful for UI operations where you need to show the result.
      */
     fun convertToBillAndReturn(incomingFileId: Long): Pair<IncomingFile, Bill>? {
+        logger.info("Converting IncomingFile {} to Bill and returning both entities", incomingFileId)
         val incomingFile = incomingFileRepository.findById(incomingFileId)
         
         return if (incomingFile != null) {
             val bill = dispatchIncomingFile(incomingFile)
             if (bill != null) {
+                logger.info("Successfully converted IncomingFile {} to Bill {} - returning both entities", incomingFileId, bill.id)
                 Pair(incomingFile, bill)
             } else {
+                logger.warn("Failed to convert IncomingFile {} to Bill - dispatch failed", incomingFileId)
                 null
             }
         } else {
-            logger.warn("IncomingFile not found: $incomingFileId")
+            logger.warn("IncomingFile not found: {}", incomingFileId)
             null
         }
     }

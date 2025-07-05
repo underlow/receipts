@@ -24,10 +24,22 @@ class IncomingFileService(
      * Finds an IncomingFile by ID and verifies user ownership via email
      */
     fun findByIdAndUserEmail(fileId: Long, userEmail: String): IncomingFile? {
-        val user = userRepository.findByEmail(userEmail) ?: return null
-        val incomingFile = incomingFileRepository.findById(fileId) ?: return null
+        val user = userRepository.findByEmail(userEmail) ?: run {
+            logger.warn("User not found: {}", userEmail)
+            return null
+        }
+        val incomingFile = incomingFileRepository.findById(fileId) ?: run {
+            logger.warn("File not found: {}", fileId)
+            return null
+        }
         
-        return if (incomingFile.userId == user.id) incomingFile else null
+        return if (incomingFile.userId == user.id) {
+            incomingFile
+        } else {
+            logger.warn("Unauthorized file access: user {} attempted to access file {} owned by user {}", 
+                userEmail, fileId, incomingFile.userId)
+            null
+        }
     }
 
     /**
@@ -88,10 +100,15 @@ class IncomingFileService(
      * Updates the status of an IncomingFile if user owns it
      */
     fun updateStatus(fileId: Long, userEmail: String, newStatus: ItemStatus): Boolean {
-        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: run {
+            logger.warn("Failed to update status - file {} not found or unauthorized for user {}", fileId, userEmail)
+            return false
+        }
         
+        val oldStatus = incomingFile.status
         val updatedFile = incomingFile.copy(status = newStatus)
         incomingFileRepository.save(updatedFile)
+        logger.info("IncomingFile status updated: {} ({} -> {}) for user {}", fileId, oldStatus, newStatus, userEmail)
         return true
     }
 
@@ -99,8 +116,18 @@ class IncomingFileService(
      * Deletes an IncomingFile if user owns it
      */
     fun deleteFile(fileId: Long, userEmail: String): Boolean {
-        findByIdAndUserEmail(fileId, userEmail) ?: return false
-        return incomingFileRepository.delete(fileId)
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: run {
+            logger.warn("Failed to delete - file {} not found or unauthorized for user {}", fileId, userEmail)
+            return false
+        }
+        
+        val deleted = incomingFileRepository.delete(fileId)
+        if (deleted) {
+            logger.info("IncomingFile deleted: {} ({}) by user {}", fileId, incomingFile.filename, userEmail)
+        } else {
+            logger.error("Failed to delete IncomingFile {} for user {}", fileId, userEmail)
+        }
+        return deleted
     }
 
     /**
@@ -120,13 +147,17 @@ class IncomingFileService(
      * Triggers OCR processing for a specific file if user owns it
      */
     fun triggerOcrProcessing(fileId: Long, userEmail: String): Boolean {
-        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: run {
+            logger.warn("Failed to trigger OCR - file {} not found or unauthorized for user {}", fileId, userEmail)
+            return false
+        }
         
         return try {
             incomingFileOcrService.processIncomingFile(incomingFile, userEmail)
+            logger.info("OCR processing triggered for file {} by user {}", fileId, userEmail)
             true
         } catch (e: Exception) {
-            logger.error("Error triggering OCR processing for file $fileId", e)
+            logger.error("OCR processing trigger failed for file {} by user {}", fileId, userEmail, e)
             false
         }
     }
@@ -135,13 +166,17 @@ class IncomingFileService(
      * Retries OCR processing for a failed file if user owns it
      */
     fun retryOcrProcessing(fileId: Long, userEmail: String): Boolean {
-        findByIdAndUserEmail(fileId, userEmail) ?: return false
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: run {
+            logger.warn("Failed to retry OCR - file {} not found or unauthorized for user {}", fileId, userEmail)
+            return false
+        }
         
         return try {
             incomingFileOcrService.retryOcrProcessing(fileId, userEmail)
+            logger.info("OCR retry initiated for file {} by user {}", fileId, userEmail)
             true
         } catch (e: Exception) {
-            logger.error("Error retrying OCR processing for file $fileId", e)
+            logger.error("OCR retry failed for file {} by user {}", fileId, userEmail, e)
             false
         }
     }
@@ -150,12 +185,22 @@ class IncomingFileService(
      * Dispatches an IncomingFile to Bill if user owns it and file is ready
      */
     fun dispatchToBill(fileId: Long, userEmail: String): Boolean {
-        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: return false
+        val incomingFile = findByIdAndUserEmail(fileId, userEmail) ?: run {
+            logger.warn("Failed to dispatch - file {} not found or unauthorized for user {}", fileId, userEmail)
+            return false
+        }
         
         return try {
             val bill = fileDispatchService.dispatchIncomingFile(incomingFile)
-            bill != null
+            if (bill != null) {
+                logger.info("File dispatch completed: {} -> Bill {} by user {}", fileId, bill.id, userEmail)
+                true
+            } else {
+                logger.warn("File dispatch failed: {} not ready for dispatch by user {}", fileId, userEmail)
+                false
+            }
         } catch (e: Exception) {
+            logger.error("File dispatch error: {} to Bill for user {}", fileId, userEmail, e)
             false
         }
     }

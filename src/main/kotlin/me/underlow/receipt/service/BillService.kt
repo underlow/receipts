@@ -25,7 +25,6 @@ class BillService(
      * Finds a Bill by ID and verifies user ownership via email
      */
     fun findByIdAndUserEmail(billId: Long, userEmail: String): Bill? {
-        logger.debug("Attempting to find bill by ID: {} for user: {}", billId, userEmail)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found.", userEmail)
@@ -38,10 +37,9 @@ class BillService(
         }
         
         return if (bill.userId == user.id) {
-            logger.debug("Found bill with ID {} for user {}.", billId, userEmail)
             bill
         } else {
-            logger.warn("Bill with ID {} does not belong to user {}.", billId, userEmail)
+            logger.warn("Unauthorized access attempt - Bill with ID {} does not belong to user {}.", billId, userEmail)
             null
         }
     }
@@ -50,7 +48,6 @@ class BillService(
      * Finds all Bills for a user by email with optional status filtering
      */
     fun findByUserEmail(userEmail: String, status: ItemStatus? = null): List<Bill> {
-        logger.debug("Attempting to find bills for user: {} with status: {}", userEmail, status)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found.", userEmail)
@@ -59,11 +56,8 @@ class BillService(
         val bills = billRepository.findByUserId(user.id!!)
         
         return if (status != null) {
-            val filteredBills = bills.filter { it.status == status }
-            logger.debug("Found {} bills for user {} with status {}.", filteredBills.size, userEmail, status)
-            filteredBills
+            bills.filter { it.status == status }
         } else {
-            logger.debug("Found {} bills for user {}.", bills.size, userEmail)
             bills
         }
     }
@@ -156,7 +150,6 @@ class BillService(
      * Gets all Receipts associated with a Bill
      */
     fun getAssociatedReceipts(billId: Long, userEmail: String): List<Receipt> {
-        logger.debug("Attempting to get associated receipts for bill ID: {} for user: {}", billId, userEmail)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found.", userEmail)
@@ -169,11 +162,9 @@ class BillService(
         }
         
         return if (bill.userId == user.id) {
-            val receipts = receiptRepository.findByBillId(billId)
-            logger.debug("Found {} associated receipts for bill ID: {} for user: {}", receipts.size, billId, userEmail)
-            receipts
+            receiptRepository.findByBillId(billId)
         } else {
-            logger.warn("Bill with ID {} does not belong to user {}. Cannot get associated receipts.", billId, userEmail)
+            logger.warn("Unauthorized access attempt - Bill with ID {} does not belong to user {}.", billId, userEmail)
             emptyList()
         }
     }
@@ -182,24 +173,26 @@ class BillService(
      * Deletes a Bill and all associated Receipts
      */
     fun deleteBill(billId: Long, userEmail: String): Boolean {
-        logger.info("Attempting to delete bill ID: {} for user: {}", billId, userEmail)
+        logger.info("User {} deleting bill ID: {}", userEmail, billId)
         val bill = findByIdAndUserEmail(billId, userEmail)
         if (bill == null) {
-            logger.warn("Bill with ID {} not found or does not belong to user {}. Cannot delete bill.", billId, userEmail)
+            logger.warn("Bill deletion failed - Bill with ID {} not found or unauthorized for user {}", billId, userEmail)
             return false
         }
         
         // First delete all associated receipts
         val receipts = receiptRepository.findByBillId(billId)
-        receipts.forEach { receipt ->
-            logger.debug("Deleting associated receipt ID: {} for bill ID: {}", receipt.id, billId)
-            receiptRepository.delete(receipt.id!!)
+        if (receipts.isNotEmpty()) {
+            receipts.forEach { receipt ->
+                receiptRepository.delete(receipt.id!!)
+            }
+            logger.info("Deleted {} associated receipts for bill ID: {}", receipts.size, billId)
         }
         
         // Then delete the bill
         val deleted = billRepository.delete(billId)
         if (deleted) {
-            logger.info("Bill ID: {} deleted successfully for user: {}", billId, userEmail)
+            logger.info("Bill ID: {} ({}) deleted successfully by user: {}", billId, bill.filename, userEmail)
         } else {
             logger.error("Failed to delete bill ID: {} for user: {}", billId, userEmail)
         }
@@ -210,7 +203,6 @@ class BillService(
      * Counts Bills by status for a user
      */
     fun getBillStatistics(userEmail: String): Map<ItemStatus, Int> {
-        logger.debug("Attempting to get bill statistics for user: {}", userEmail)
         val user = userRepository.findByEmail(userEmail)
         if (user == null) {
             logger.warn("User with email {} not found.", userEmail)
@@ -218,9 +210,7 @@ class BillService(
         }
         val bills = billRepository.findByUserId(user.id!!)
         
-        val statistics = bills.groupingBy { it.status }.eachCount()
-        logger.debug("Generated bill statistics for user {}: {}", userEmail, statistics)
-        return statistics
+        return bills.groupingBy { it.status }.eachCount()
     }
 
     /**

@@ -33,8 +33,9 @@ class FileProcessingService(
      * creates an IncomingFile entity in PENDING status, and triggers OCR processing.
      */
     fun processFile(file: File, userId: Long): IncomingFile? {
+        val startTime = System.currentTimeMillis()
         return try {
-            logger.info("Processing file: ${file.name}")
+            logger.info("Processing file: ${file.name} (size: ${file.length()} bytes) for user: $userId")
 
             // Calculate file checksum first to detect duplicates
             val checksum = calculateFileChecksum(file)
@@ -42,7 +43,7 @@ class FileProcessingService(
             // Check if file already exists by checksum
             val existingFile = incomingFileRepository.findByChecksum(checksum)
             if (existingFile != null) {
-                logger.warn("File ${file.name} already exists with checksum $checksum, skipping")
+                logger.warn("Duplicate file detected: ${file.name} matches existing file ${existingFile.filename} (ID: ${existingFile.id}) with checksum $checksum")
                 return null
             }
 
@@ -61,31 +62,33 @@ class FileProcessingService(
             )
 
             val savedFile = incomingFileRepository.save(incomingFile)
-            logger.info("Successfully processed file: ${file.name}, created IncomingFile with ID: ${savedFile.id}")
+            logger.info("File processing completed: {} -> IncomingFile ID: {} for user: {}", file.name, savedFile.id, userId)
             
             // Trigger OCR processing if available
             if (incomingFileOcrService.isOcrProcessingAvailable()) {
-                logger.info("Triggering OCR processing for file: ${file.name}")
                 try {
                     // Get user email from userId to pass to OCR service
                     val user = userRepository.findById(userId)
                     if (user != null) {
                         incomingFileOcrService.processIncomingFile(savedFile, user.email)
+                        logger.info("OCR processing initiated for file: {} (ID: {}) for user: {}", file.name, savedFile.id, user.email)
                     } else {
-                        logger.warn("User with ID $userId not found, skipping OCR processing")
+                        logger.warn("User with ID {} not found, skipping OCR processing for file: {}", userId, file.name)
                     }
                 } catch (e: Exception) {
-                    logger.error("Error during OCR processing for file: ${file.name}", e)
+                    logger.error("Error during OCR processing for file: {}", file.name, e)
                     // Continue execution - file is still processed even if OCR fails
                 }
             } else {
-                logger.warn("OCR processing not available for file: ${file.name}")
+                logger.warn("OCR processing not available for file: {} - file will require manual processing", file.name)
             }
             
+            val processingTime = System.currentTimeMillis() - startTime
+            logger.info("File processing completed for {} in {}ms", file.name, processingTime)
             savedFile
 
         } catch (e: Exception) {
-            logger.error("Error processing file: ${file.name}", e)
+            logger.error("Error processing file: ${file.name} for user: $userId", e)
             null
         }
     }
@@ -152,15 +155,13 @@ class FileProcessingService(
      * Moves file from inbox to permanent storage location.
      */
     fun moveFileToStorage(sourceFile: File, targetPath: Path): File {
-        logger.debug("Moving file from ${sourceFile.absolutePath} to $targetPath")
-
         // Ensure target directory exists
         Files.createDirectories(targetPath.parent)
 
         // Move file to target location
         Files.move(sourceFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING)
 
-        logger.debug("Successfully moved file to $targetPath")
+        logger.info("File moved to storage: {} -> {}", sourceFile.name, targetPath)
         return targetPath.toFile()
     }
 
@@ -168,9 +169,10 @@ class FileProcessingService(
      * Checks if a file is ready for processing (not locked, has proper extension).
      */
     fun isFileReadyForProcessing(file: File): Boolean {
+        
         // Check if file is readable and not empty
         if (!file.canRead() || file.length() == 0L) {
-            logger.warn("File ${file.name} is not readable or empty")
+            logger.warn("File {} is not readable or empty (size: {} bytes)", file.name, file.length())
             return false
         }
 
@@ -179,15 +181,19 @@ class FileProcessingService(
         val fileExtension = file.extension.lowercase()
 
         if (fileExtension !in supportedExtensions) {
-            logger.warn("File ${file.name} has unsupported extension: $fileExtension")
+            logger.warn("File {} has unsupported extension: {}. Supported: {}", file.name, fileExtension, supportedExtensions)
             return false
         }
 
         // Try to check if file is locked by another process
         return try {
-            file.renameTo(file) // This will fail if file is locked
+            val isAvailable = file.renameTo(file) // This will fail if file is locked
+            if (!isAvailable) {
+                logger.warn("File {} appears to be locked or inaccessible", file.name)
+            }
+            isAvailable
         } catch (e: Exception) {
-            logger.warn("File ${file.name} appears to be locked: ${e.message}")
+            logger.warn("File {} appears to be locked or inaccessible: {}", file.name, e.message)
             false
         }
     }

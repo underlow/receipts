@@ -18,12 +18,9 @@ class UserService(private val userRepository: UserRepository) {
      * Finds a user by email address.
      */
     fun findByEmail(email: String): User? {
-        logger.debug("Attempting to find user by email: {}", email)
         val user = userRepository.findByEmail(email)
         if (user == null) {
-            logger.info("User with email {} not found.", email)
-        } else {
-            logger.debug("Found user with email {}: {}", email, user.id)
+            logger.info("User authentication failed - user not found for email: {}", email)
         }
         return user
     }
@@ -32,9 +29,8 @@ class UserService(private val userRepository: UserRepository) {
      * Saves a user entity.
      */
     fun save(user: User): User {
-        logger.debug("Attempting to save user with email: {}", user.email)
         val savedUser = userRepository.save(user)
-        logger.info("User with ID {} saved successfully.", savedUser.id)
+        logger.info("User registration/update completed for email: {} with ID: {}", user.email, savedUser.id)
         return savedUser
     }
 }
