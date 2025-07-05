@@ -34,15 +34,15 @@ This document provides a high-level overview of the system architecture for the 
 - **Supported Engines**: OpenAI GPT-4 Vision, Claude (Anthropic) Vision, Google Gemini Vision
 - **Configuration**: API keys configurable via environment variables
 - **Architecture**: Multi-engine support with fallback mechanisms and conditional bean creation
-- **Processing**: Asynchronous processing using Kotlin coroutines
+- **Processing**: Synchronous processing with real-time progress feedback
 - **Workflow**: ✅ **COMPLETE END-TO-END IMPLEMENTATION**
     1. File upload/detection triggers automatic OCR processing
     2. IncomingFileOcrService orchestrates the processing workflow
-    3. Status transitions: PENDING → PROCESSING → APPROVED/REJECTED
+    3. Status transitions: NEW → APPROVED/REJECTED (processing state removed)
     4. OcrService selects and invokes available OCR engines with fallback
     5. Results stored in IncomingFile entity with extracted data
     6. FileDispatchService converts approved files to Bill entities
-    7. UI provides real-time status updates and manual controls
+    7. UI provides synchronous processing with modal progress indicators
 
 ### 2.4 Database
 - **Primary**: PostgreSQL (Production), H2 in-memory (Development/Testing)
@@ -102,8 +102,8 @@ This document provides a high-level overview of the system architecture for the 
     8. **Data Extraction**: Store extracted provider, amount, date, currency
     9. Files ready for user review and bill dispatch
 
-### 2.7 Inbox Management System ✅ **IMPLEMENTED WITH TABBED INTERFACE**
-- **Architecture**: Tabbed interface with status-based views for comprehensive file and item management
+### 2.7 Inbox Management System ✅ **REDESIGNED WITH SIDEBAR NAVIGATION**
+- **Architecture**: Sidebar navigation interface with tab-based entity filtering and unified table display
 - **Components**:
     - **InboxController**: Web and API controller for tabbed inbox functionality
     - **IncomingFileService**: Business logic layer with status-based filtering
@@ -111,33 +111,41 @@ This document provides a high-level overview of the system architecture for the 
     - **ReceiptService**: Business logic for receipt status management
     - **FileServingController**: Secure file access with user authentication
     - **ThumbnailService**: On-demand thumbnail generation for images and PDFs
-- **Features**: ✅ **TABBED INTERFACE WITH STATUS CONSOLIDATION**
-    - **Tabbed UI**: Three-tab interface (New, Approved, Rejected) with status-based content
+- **Features**: ✅ **SIDEBAR NAVIGATION WITH UNIFIED TABLE**
+    - **Sidebar Navigation**: Left sidebar with tabs (Inbox, Bills, Receipts, Service Provider tabs)
+    - **Unified Table**: Right panel table showing entities based on selected tab
+    - **Dynamic Service Provider Tabs**: Automatically created tabs for each provider with associated items
     - **Status Consolidation**: Legacy statuses (pending, processing, draft) consolidated to NEW
-    - **New Tab**: Shows IncomingFile, Bill, Receipt items with status=NEW
-    - **Approved/Rejected Tabs**: Show Bills & Receipts with type filters (Bill/Receipt)
-    - **Type Filtering**: Filter by item type within Approved/Rejected tabs
+    - **Inbox Tab**: Shows IncomingFile, Bill, Receipt items with status=NEW
+    - **Entity Tabs**: Bills/Receipts tabs show all statuses (NEW, APPROVED, REJECTED)
+    - **Provider Tabs**: Show all entity types associated with specific providers
     - **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
     - **Real-time Operations**: AJAX-powered status transitions and OCR operations
     - **Modal Viewer**: Full-screen file preview with keyboard shortcuts
     - **Enhanced Detail View**: Comprehensive OCR workflow management interface
     - **Security**: User-scoped access with OAuth2 authentication verification
 - **Data Flow**:
-    1. Users access inbox via `/inbox` endpoint with tabbed interface
-    2. Controller fetches user's items by status (NEW, APPROVED, REJECTED)
-    3. New tab displays IncomingFile, Bill, Receipt items with NEW status
-    4. Approved/Rejected tabs display Bills & Receipts with type filtering
-    5. Thumbnails generated on-demand for visual preview
-    6. AJAX operations handle status transitions and type filtering
-    7. Detail view accessible via `/inbox/files/{fileId}` for comprehensive item information
-    8. All operations verify user ownership for security
+    1. Users access inbox via `/inbox` endpoint with sidebar navigation interface
+    2. Controller fetches user's items based on selected tab (Inbox, Bills, Receipts, Provider)
+    3. Inbox tab displays IncomingFile, Bill, Receipt items with NEW status
+    4. Entity tabs (Bills/Receipts) display all items with all statuses
+    5. Provider tabs display all entity types associated with specific providers
+    6. Unified table displays appropriate entities based on tab selection
+    7. Thumbnails generated on-demand for visual preview
+    8. AJAX operations handle tab switching and table data loading
+    9. Detail view accessible via clicking table rows for comprehensive item information
+    10. All operations verify user ownership for security
 
 #### 2.7.1 Inbox Endpoints
 - **Web Endpoints**:
-    - `GET /inbox` - Main inbox page with tabbed interface (New/Approved/Rejected)
+    - `GET /inbox` - Main inbox page with sidebar navigation interface
     - `GET /inbox/files/{fileId}` - Detailed file view with metadata and preview
 - **API Endpoints**:
-    - `GET /inbox/api/list` - Paginated item list with status-based filtering
+    - `GET /inbox/api/tabs/inbox` - NEW status items (all entity types)
+    - `GET /inbox/api/tabs/bills` - All bills (all statuses)
+    - `GET /inbox/api/tabs/receipts` - All receipts (all statuses)
+    - `GET /inbox/api/tabs/provider/{providerId}` - All entities for specific provider
+    - `GET /api/service-providers/active` - Get providers with associated items
     - `GET /inbox/api/files/{fileId}/detail` - Detailed item information as JSON
     - `POST /inbox/api/files/{fileId}/approve` - Approve item status change
     - `POST /inbox/api/files/{fileId}/reject` - Reject item status change

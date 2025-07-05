@@ -78,14 +78,15 @@ The Household Expense Tracker is a web-based application designed to streamline 
    - File type validation (PDF, JPG, PNG, GIF, BMP, TIFF)
    - File size limits and validation (10MB maximum)
    - Duplicate detection and prevention
-3. **OCR Processing**: ✅ **IMPLEMENTED** - Automatic extraction of key information using AI engines
+3. **OCR Processing**: ✅ **IMPLEMENTED** - Synchronous extraction of key information using AI engines
    - Multi-engine support (OpenAI, Claude, Google AI) with fallback mechanisms
-   - **Automatic OCR Flow**: Files trigger OCR immediately after upload → type guessing → user acceptance/rejection/retry
-   - **Manual OCR Flow**: User can manually trigger OCR or select type first then OCR
+   - **Synchronous OCR Flow**: Files trigger OCR immediately after upload with modal progress indicator
+   - **Non-closable Processing**: Modal cannot be closed during OCR processing
+   - **Success/Failure Feedback**: Clear feedback with retry options for failed processing
    - **Intelligent Processing**: 
      - IncomingFile OCR: Guesses type and extracts info
      - Bill/Receipt OCR: Only extracts info (no type guessing)
-   - Status management through PENDING → PROCESSING → APPROVED/REJECTED workflow
+   - Status management through NEW → APPROVED/REJECTED workflow (processing state removed)
    - Error handling and retry mechanisms with unlimited user fixes
    - **OCR History**: Complete attempts history preserved across entity transitions
 
@@ -207,19 +208,21 @@ Status Model:
 - **Navigation**: Quick access to key features (Inbox, Upload)
 - **Feature Cards**: Intuitive layout for accessing main functionality
 
-#### 5.2 Inbox Management Interface ✅ **TABBED INTERFACE WITH STATUS-BASED VIEWS**
-- **Tabbed Layout**: Three-tab interface (New, Approved, Rejected) with status-based content
-- **New Tab**: Shows IncomingFile, Bill, Receipt items with NEW status (consolidated from pending, processing, draft)
-- **Approved/Rejected Tabs**: Show Bills & Receipts with type filters (Bill/Receipt)
-- **Type Filtering**: Filter by item type within Approved/Rejected tabs
+#### 5.2 Inbox Management Interface ✅ **SIDEBAR NAVIGATION WITH UNIFIED TABLE**
+- **Sidebar Navigation**: Left sidebar with navigation tabs (Inbox, Bills, Receipts, Service Provider tabs)
+- **Unified Table Layout**: Right panel with sortable table showing entities based on selected tab
+- **Inbox Tab**: Shows IncomingFile, Bill, Receipt items with NEW status (consolidated from pending, processing, draft)
+- **Entity Tabs**: Bills and Receipts tabs show all items with all statuses (NEW, APPROVED, REJECTED)
+- **Dynamic Provider Tabs**: Automatically created tabs for each service provider with associated items
+- **Responsive Design**: Mobile-friendly layout with collapsible sidebar
 - **Smart Thumbnails**: Automatic thumbnail generation for images and PDF placeholders
 - **Status Consolidation**: Legacy statuses (pending, processing, draft) consolidated to NEW
-- **OCR Status Indicators**: Real-time OCR processing status and extracted data preview
-  - ⏳ Pending OCR for unprocessed files
-  - 🔍 Processing status during OCR execution
+- **OCR Status Indicators**: Synchronous OCR processing with modal progress feedback
+  - Modal progress indicator during OCR execution (non-closable)
+  - Success/failure feedback with retry options
   - 🔍 Extracted data display (amount, provider) for completed processing
-  - ❌ Error indicators for failed OCR processing
-- **Real-time Operations**: AJAX-powered status transitions and type filtering
+  - ❌ Error indicators for failed OCR processing with retry functionality
+- **Real-time Operations**: AJAX-powered tab switching and table data loading
 - **Sorting**: Multi-column sorting (filename, date, status) with direction control
 - **Pagination**: Efficient pagination for large item collections
 - **Modal Viewer**: Full-screen file preview with keyboard shortcuts

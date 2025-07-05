@@ -56,7 +56,9 @@ Enable individuals and families to digitize, review, and manage household (and o
     - Ingested files type should be guessed by ocr
 - **Web UI Upload**
     - Drag-and-drop area + “Browse…” button
-    - Progress indicator and success/failure toast
+    - Synchronous OCR processing with modal progress indicator
+    - Non-closable modal during processing
+    - Success/failure feedback with retry options
     - Ingested files type should be guessed by ocr
 
 ### 7.2 OCR Processing & Settings
@@ -65,15 +67,36 @@ Enable individuals and families to digitize, review, and manage household (and o
     - Toggle engines on/off
     - Fields for API keys (stored encrypted)
     - Select default OCR engine
-- **Processing Workflow**
-    1. File lands in inbox → assigned to active engine
-    2. Response JSON parsed into fields
-    3. Guess `serviceProvider`; flag ambiguous
+- **Processing Workflow** (Synchronous)
+    1. File upload triggers immediate OCR processing
+    2. Modal dialog shows progress indicator (non-closable)
+    3. Response JSON parsed into fields
+    4. Guess `serviceProvider`; flag ambiguous
+    5. Success/failure feedback with retry options
+    6. Item appears in appropriate tab based on result
 
 ### 7.3 Receipt and Bill Review & Approval
-- **Inbox List View**
-    - Columns: Thumbnail, Filename, UploadedAt, Provider (if guessed), Status
-    - Click row opens Detail View for either a Receipt or a Bill.
+- **Tabbed Sidebar Interface**
+    - Left sidebar with navigation tabs: Inbox, Bills, Receipts, Service Provider tabs
+    - Right panel with unified table showing entities based on selected tab
+    - Dynamic service provider tabs for each provider with associated items
+- **Inbox Tab**
+    - Shows all NEW status items (IncomingFiles, Bills, Receipts) requiring user action
+    - Unified table with columns: Type, Thumbnail, Name, Provider, Amount, Date, Status
+- **Bills Tab**
+    - Shows all bills in all statuses (NEW, APPROVED, REJECTED)
+    - Same table structure with bill-specific data
+- **Receipts Tab**
+    - Shows all receipts in all statuses (NEW, APPROVED, REJECTED)
+    - Same table structure with receipt-specific data
+- **Service Provider Tabs**
+    - Dynamic tabs for each service provider with associated items
+    - Shows all entity types related to that provider
+    - Same unified table structure
+- **Table Features**
+    - Sortable columns, pagination, row selection
+    - Click row opens Detail View for the entity
+    - Responsive design for desktop/tablet
 - **Receipt Detail View**
     - **Left Pane**: Full-size receipt image (zoomable)
     - **Right Pane**: Form with OCR-populated fields:
@@ -112,10 +135,15 @@ Enable individuals and families to digitize, review, and manage household (and o
     - Display sum of filtered amounts at bottom
 
 ### 7.5 Recurring Payments & Tabs
-- **Create Tab**
-    - Left-sidebar button opens modal to select a Service Provider
-    - Creates persistent tab that lists all payments for that provider
-- **Tab View**
+- **Service Provider Tabs Integration**
+    - Service provider tabs are integrated into main inbox interface
+    - Dynamic tabs created automatically when providers have associated items
+    - Show all entity types (IncomingFiles, Bills, Receipts, Payments) for each provider
+- **Tab Management**
+    - Tabs appear/disappear based on provider activity
+    - Click tab to view all items associated with that provider
+    - Unified table interface consistent with other tabs
+- **Recurring Payment Features**
     - Calendar-style grid or table: highlight months with no `PaymentDate`
     - Option to mark expected payments as “Skipped”
 
