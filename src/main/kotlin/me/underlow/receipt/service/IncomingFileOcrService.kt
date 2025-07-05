@@ -23,7 +23,7 @@ class IncomingFileOcrService(
     
     /**
      * Processes an IncomingFile through OCR and updates the entity with results.
-     * Updates status to PROCESSING during processing and APPROVED/REJECTED based on result.
+     * Updates status to APPROVED/REJECTED based on result (synchronous processing).
      */
     fun processIncomingFile(incomingFile: IncomingFile, userEmail: String): IncomingFile {
         logger.info("Starting OCR processing for file: ${incomingFile.filename}")
@@ -39,10 +39,6 @@ class IncomingFileOcrService(
             return incomingFileRepository.save(errorFile)
         }
         
-        // Update status to PROCESSING
-        val processingFile = incomingFile.copy(status = ItemStatus.PROCESSING)
-        incomingFileRepository.save(processingFile)
-        
         return try {
             logger.info("Processing file ${incomingFile.filename} with available OCR engines: ${ocrService.getAvailableEngineNames()}")
             
@@ -54,7 +50,7 @@ class IncomingFileOcrService(
             logger.info("OCR processing completed for file ${incomingFile.filename}. Success: ${ocrResult.success}")
             
             // Update IncomingFile with OCR results
-            val updatedFile = updateIncomingFileWithOcrResult(processingFile, ocrResult)
+            val updatedFile = updateIncomingFileWithOcrResult(incomingFile, ocrResult)
             
             // Save updated file
             val savedFile = incomingFileRepository.save(updatedFile)
@@ -71,7 +67,7 @@ class IncomingFileOcrService(
             logger.error("Exception during OCR processing for file ${incomingFile.filename}", e)
             
             // Update with error information
-            val errorFile = processingFile.copy(
+            val errorFile = incomingFile.copy(
                 status = ItemStatus.REJECTED,
                 ocrProcessedAt = LocalDateTime.now(),
                 ocrErrorMessage = "OCR processing failed: ${e.message}"

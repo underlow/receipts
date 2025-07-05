@@ -42,9 +42,8 @@ class IncomingFileServiceTest {
         val statistics = incomingFileService.getFileStatistics(userEmail)
 
         // Then: All statuses should be present with count 0
-        assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(0, statistics[ItemStatus.NEW], "PENDING count should be 0")
-        assertEquals(0, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 0")
+        assertEquals(3, statistics.size, "Should have entries for all 3 status types")
+        assertEquals(0, statistics[ItemStatus.NEW], "NEW count should be 0")
         assertEquals(0, statistics[ItemStatus.APPROVED], "APPROVED count should be 0")
         assertEquals(0, statistics[ItemStatus.REJECTED], "REJECTED count should be 0")
         
@@ -77,9 +76,8 @@ class IncomingFileServiceTest {
         val statistics = incomingFileService.getFileStatistics(userEmail)
 
         // Then: Should have correct counts
-        assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(2, statistics[ItemStatus.NEW], "PENDING count should be 2")
-        assertEquals(0, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 0")
+        assertEquals(3, statistics.size, "Should have entries for all 3 status types")
+        assertEquals(2, statistics[ItemStatus.NEW], "NEW count should be 2")
         assertEquals(0, statistics[ItemStatus.APPROVED], "APPROVED count should be 0")
         assertEquals(0, statistics[ItemStatus.REJECTED], "REJECTED count should be 0")
     }
@@ -96,8 +94,8 @@ class IncomingFileServiceTest {
         val userEmail = "mixed@example.com"
         val user = User(id = 3L, email = userEmail, name = "Mixed Status User")
         val mixedFiles = listOf(
-            IncomingFile(1L, "pending.pdf", "/path/pending.pdf", LocalDateTime.now(), ItemStatus.NEW, "checksum1", 3L),
-            IncomingFile(2L, "processing.jpg", "/path/processing.jpg", LocalDateTime.now(), ItemStatus.PROCESSING, "checksum2", 3L),
+            IncomingFile(1L, "new.pdf", "/path/new.pdf", LocalDateTime.now(), ItemStatus.NEW, "checksum1", 3L),
+            IncomingFile(2L, "new2.jpg", "/path/new2.jpg", LocalDateTime.now(), ItemStatus.NEW, "checksum2", 3L),
             IncomingFile(3L, "approved1.png", "/path/approved1.png", LocalDateTime.now(), ItemStatus.APPROVED, "checksum3", 3L),
             IncomingFile(4L, "approved2.pdf", "/path/approved2.pdf", LocalDateTime.now(), ItemStatus.APPROVED, "checksum4", 3L),
             IncomingFile(5L, "rejected.jpg", "/path/rejected.jpg", LocalDateTime.now(), ItemStatus.REJECTED, "checksum5", 3L)
@@ -110,9 +108,8 @@ class IncomingFileServiceTest {
         val statistics = incomingFileService.getFileStatistics(userEmail)
 
         // Then: Should have correct counts for each status
-        assertEquals(4, statistics.size, "Should have entries for all 4 status types")
-        assertEquals(1, statistics[ItemStatus.NEW], "PENDING count should be 1")
-        assertEquals(1, statistics[ItemStatus.PROCESSING], "PROCESSING count should be 1")
+        assertEquals(3, statistics.size, "Should have entries for all 3 status types")
+        assertEquals(2, statistics[ItemStatus.NEW], "NEW count should be 2")
         assertEquals(2, statistics[ItemStatus.APPROVED], "APPROVED count should be 2")
         assertEquals(1, statistics[ItemStatus.REJECTED], "REJECTED count should be 1")
     }

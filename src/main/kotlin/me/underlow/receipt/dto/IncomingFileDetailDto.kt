@@ -91,7 +91,6 @@ data class IncomingFileDetailDto(
         private fun formatStatus(status: ItemStatus): String {
             return when (status) {
                 ItemStatus.NEW -> "New"
-                ItemStatus.PROCESSING -> "Processing"
                 ItemStatus.APPROVED -> "Approved"
                 ItemStatus.REJECTED -> "Rejected"
             }

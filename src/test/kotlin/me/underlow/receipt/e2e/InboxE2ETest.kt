@@ -150,7 +150,7 @@ class InboxE2ETest(
         // Given: Create a user with files in various statuses
         val testUser = createTestUser("mixed@example.com", "Mixed Status User")
         createTestIncomingFile(testUser.id!!, "pending-file.pdf", ItemStatus.NEW)
-        createTestIncomingFile(testUser.id!!, "processing-file.jpg", ItemStatus.PROCESSING)
+        createTestIncomingFile(testUser.id!!, "new-file.jpg", ItemStatus.NEW)
         createTestIncomingFile(testUser.id!!, "approved-file-1.png", ItemStatus.APPROVED)
         createTestIncomingFile(testUser.id!!, "approved-file-2.pdf", ItemStatus.APPROVED)
         createTestIncomingFile(testUser.id!!, "rejected-file.jpg", ItemStatus.REJECTED)
@@ -163,8 +163,7 @@ class InboxE2ETest(
 
         // And: Status badges should show correct counts
         `$`(".status-badge.all").shouldHave(text("All (5)"))
-        `$`(".status-badge.pending").shouldHave(text("Pending (1)"))
-        `$`(".status-badge.processing").shouldHave(text("Processing (1)"))
+        `$`(".status-badge.pending").shouldHave(text("Pending (2)"))
         `$`(".status-badge.approved").shouldHave(text("Approved (2)"))
         `$`(".status-badge.rejected").shouldHave(text("Rejected (1)"))
 

@@ -141,33 +141,7 @@ class InboxServiceTest {
         assertTrue(rejectedItems.any { it.type == InboxService.InboxItemType.RECEIPT }, "Should contain Receipts")
     }
 
-    /**
-     * Test getting processing items (only IncomingFiles)
-     * Given: User with processing IncomingFiles
-     * When: Getting processing items
-     * Then: Should return only processing IncomingFiles
-     */
-    @Test
-    fun `Given processing IncomingFiles, when getting processing items, then should return only processing IncomingFiles`() {
-        // Given: User with processing IncomingFiles
-        val userEmail = "processing@example.com"
-        val uploadTime = LocalDateTime.now()
-        
-        val incomingFiles = listOf(
-            IncomingFile(1L, "processing.pdf", "/path/processing.pdf", uploadTime, ItemStatus.PROCESSING, "checksum1", 1L),
-            IncomingFile(2L, "processing2.jpg", "/path/processing2.jpg", uploadTime, ItemStatus.PROCESSING, "checksum2", 1L)
-        )
-        
-        whenever(incomingFileService.findByUserEmailAndStatus(userEmail, ItemStatus.PROCESSING)).thenReturn(incomingFiles)
-
-        // When: Getting processing items
-        val processingItems = inboxService.getItemsByStatus(userEmail, ItemStatus.PROCESSING)
-
-        // Then: Should return only processing IncomingFiles
-        assertEquals(2, processingItems.size, "Should return processing IncomingFiles")
-        assertTrue(processingItems.all { it.status == ItemStatus.PROCESSING }, "All items should be processing")
-        assertTrue(processingItems.all { it.type == InboxService.InboxItemType.INCOMING_FILE }, "All items should be IncomingFiles")
-    }
+    // Note: Test for PROCESSING status removed as PROCESSING was removed from ItemStatus enum
 
     /**
      * Test item approval functionality
@@ -280,7 +254,6 @@ class InboxServiceTest {
         
         val incomingFileStats = mapOf(
             ItemStatus.NEW to 2,
-            ItemStatus.PROCESSING to 1,
             ItemStatus.APPROVED to 0,
             ItemStatus.REJECTED to 0
         )

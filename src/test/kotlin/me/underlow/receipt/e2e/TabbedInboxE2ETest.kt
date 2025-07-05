@@ -319,7 +319,7 @@ class TabbedInboxE2ETest(
         
         // Create items with legacy statuses that should be consolidated to NEW
         createTestBillWithLegacyStatus(testUser.id!!, "bill-pending.pdf", "PENDING")
-        createTestBillWithLegacyStatus(testUser.id!!, "bill-processing.pdf", "PROCESSING")
+        createTestBillWithLegacyStatus(testUser.id!!, "bill-processing.pdf", "NEW")
         createTestBillWithLegacyStatus(testUser.id!!, "bill-draft.pdf", "DRAFT")
 
         // When: Navigate to inbox and check New tab

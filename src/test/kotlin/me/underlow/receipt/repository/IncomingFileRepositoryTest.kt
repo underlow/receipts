@@ -82,45 +82,7 @@ class IncomingFileRepositoryTest {
         assertEquals("file2.jpg", result[1].filename, "Second file should match expected filename")
     }
 
-    /**
-     * Test findByStatus method with PROCESSING status
-     * Given: Database contains incoming files with PROCESSING status
-     * When: Calling findByStatus with PROCESSING status
-     * Then: Should return only incoming files with PROCESSING status
-     */
-    @Test
-    fun `Given incoming files with PROCESSING status, when calling findByStatus with PROCESSING, then should return only PROCESSING files`() {
-        // Given: Mock incoming files with PROCESSING status
-        val expectedFiles = listOf(
-            IncomingFile(
-                id = 3L,
-                filename = "processing.pdf",
-                filePath = "/path/processing.pdf",
-                uploadDate = LocalDateTime.now(),
-                status = ItemStatus.PROCESSING,
-                checksum = "checksum3",
-                userId = 1L,
-                ocrRawJson = "{\"amount\": 100.50}",
-                extractedAmount = 100.50,
-                extractedDate = null,
-                extractedProvider = "Test Provider"
-            )
-        )
-
-        // Mock JdbcTemplate query response
-        whenever(jdbcTemplate.query(any<String>(), any<RowMapper<IncomingFile>>(), any<String>()))
-            .thenReturn(expectedFiles)
-
-        // When: Calling findByStatus with PROCESSING status
-        val result = incomingFileRepository.findByStatus(ItemStatus.PROCESSING)
-
-        // Then: Should return incoming files with PROCESSING status
-        assertNotNull(result, "Result should not be null")
-        assertEquals(1, result.size, "Should return 1 incoming file")
-        assertEquals(ItemStatus.PROCESSING, result[0].status, "File should have PROCESSING status")
-        assertEquals("processing.pdf", result[0].filename, "File should match expected filename")
-        assertEquals(100.50, result[0].extractedAmount, "File should have extracted amount")
-    }
+    // Note: Test for PROCESSING status removed as PROCESSING was removed from ItemStatus enum
 
     /**
      * Test findByUserIdAndStatus method retrieves incoming files for specific user and status
@@ -226,25 +188,25 @@ class IncomingFileRepositoryTest {
             )
         )
 
-        val processingFiles = listOf(
+        val approvedFiles = listOf(
             IncomingFile(
                 id = 7L,
-                filename = "processing.pdf",
-                filePath = "/path/processing.pdf",
+                filename = "approved.pdf",
+                filePath = "/path/approved.pdf",
                 uploadDate = LocalDateTime.now(),
-                status = ItemStatus.PROCESSING,
+                status = ItemStatus.APPROVED,
                 checksum = "checksum7",
                 userId = userId,
                 ocrRawJson = "{\"amount\": 75.25}",
                 extractedAmount = 75.25,
                 extractedDate = null,
-                extractedProvider = "Processing Provider"
+                extractedProvider = "Approved Provider"
             )
         )
 
         // Mock JdbcTemplate query responses for different statuses
         whenever(jdbcTemplate.query(any<String>(), any<RowMapper<IncomingFile>>(), any<Long>(), any<String>()))
-            .thenReturn(newFiles, processingFiles)
+            .thenReturn(newFiles, approvedFiles)
 
         // When: Calling findByUserIdAndStatus with NEW status
         val newResult = incomingFileRepository.findByUserIdAndStatus(userId, ItemStatus.NEW)
@@ -255,14 +217,14 @@ class IncomingFileRepositoryTest {
         assertEquals(ItemStatus.NEW, newResult[0].status, "File should have NEW status")
         assertEquals("new.pdf", newResult[0].filename, "File should match expected filename")
 
-        // When: Calling findByUserIdAndStatus with PROCESSING status
-        val processingResult = incomingFileRepository.findByUserIdAndStatus(userId, ItemStatus.PROCESSING)
+        // When: Calling findByUserIdAndStatus with APPROVED status
+        val approvedResult = incomingFileRepository.findByUserIdAndStatus(userId, ItemStatus.APPROVED)
 
-        // Then: Should return only PROCESSING incoming files for user 2
-        assertNotNull(processingResult, "PROCESSING result should not be null")
-        assertEquals(1, processingResult.size, "Should return 1 PROCESSING incoming file")
-        assertEquals(ItemStatus.PROCESSING, processingResult[0].status, "File should have PROCESSING status")
-        assertEquals("processing.pdf", processingResult[0].filename, "File should match expected filename")
+        // Then: Should return only APPROVED incoming files for user 2
+        assertNotNull(approvedResult, "APPROVED result should not be null")
+        assertEquals(1, approvedResult.size, "Should return 1 APPROVED incoming file")
+        assertEquals(ItemStatus.APPROVED, approvedResult[0].status, "File should have APPROVED status")
+        assertEquals("approved.pdf", approvedResult[0].filename, "File should match expected filename")
     }
 
     /**

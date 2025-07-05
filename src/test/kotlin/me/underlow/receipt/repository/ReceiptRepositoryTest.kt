@@ -76,41 +76,7 @@ class ReceiptRepositoryTest {
         assertEquals("receipt2.jpg", result[1].filename, "Second receipt should match expected filename")
     }
 
-    /**
-     * Test findByStatus method with PROCESSING status
-     * Given: Database contains receipts with PROCESSING status
-     * When: Calling findByStatus with PROCESSING status
-     * Then: Should return only receipts with PROCESSING status
-     */
-    @Test
-    fun `Given receipts with PROCESSING status, when calling findByStatus with PROCESSING, then should return only PROCESSING receipts`() {
-        // Given: Mock receipts with PROCESSING status
-        val expectedReceipts = listOf(
-            Receipt(
-                id = 3L,
-                userId = 1L,
-                billId = 1L,
-                filename = "processing.pdf",
-                filePath = "/path/processing.pdf",
-                uploadDate = LocalDateTime.now(),
-                checksum = "checksum3",
-                status = ItemStatus.PROCESSING
-            )
-        )
-
-        // Mock JdbcTemplate query response
-        whenever(jdbcTemplate.query(any<String>(), any<RowMapper<Receipt>>(), any<String>()))
-            .thenReturn(expectedReceipts)
-
-        // When: Calling findByStatus with PROCESSING status
-        val result = receiptRepository.findByStatus(ItemStatus.PROCESSING)
-
-        // Then: Should return receipts with PROCESSING status
-        assertNotNull(result, "Result should not be null")
-        assertEquals(1, result.size, "Should return 1 receipt")
-        assertEquals(ItemStatus.PROCESSING, result[0].status, "Receipt should have PROCESSING status")
-        assertEquals("processing.pdf", result[0].filename, "Receipt should match expected filename")
-    }
+    // Note: Test for PROCESSING status removed as PROCESSING was removed from ItemStatus enum
 
     /**
      * Test findByStatus method returns empty list when no receipts match status
@@ -227,22 +193,22 @@ class ReceiptRepositoryTest {
             )
         )
 
-        val processingReceipts = listOf(
+        val approvedReceipts = listOf(
             Receipt(
                 id = 7L,
                 userId = userId,
                 billId = 4L,
-                filename = "processing.pdf",
-                filePath = "/path/processing.pdf",
+                filename = "approved.pdf",
+                filePath = "/path/approved.pdf",
                 uploadDate = LocalDateTime.now(),
                 checksum = "checksum7",
-                status = ItemStatus.PROCESSING
+                status = ItemStatus.APPROVED
             )
         )
 
         // Mock JdbcTemplate query responses for different statuses
         whenever(jdbcTemplate.query(any<String>(), any<RowMapper<Receipt>>(), any<Long>(), any<String>()))
-            .thenReturn(newReceipts, processingReceipts)
+            .thenReturn(newReceipts, approvedReceipts)
 
         // When: Calling findByUserIdAndStatus with NEW status
         val newResult = receiptRepository.findByUserIdAndStatus(userId, ItemStatus.NEW)
@@ -253,13 +219,13 @@ class ReceiptRepositoryTest {
         assertEquals(ItemStatus.NEW, newResult[0].status, "Receipt should have NEW status")
         assertEquals("new.pdf", newResult[0].filename, "Receipt should match expected filename")
 
-        // When: Calling findByUserIdAndStatus with PROCESSING status
-        val processingResult = receiptRepository.findByUserIdAndStatus(userId, ItemStatus.PROCESSING)
+        // When: Calling findByUserIdAndStatus with APPROVED status
+        val approvedResult = receiptRepository.findByUserIdAndStatus(userId, ItemStatus.APPROVED)
 
-        // Then: Should return only PROCESSING receipts for user 2
-        assertNotNull(processingResult, "PROCESSING result should not be null")
-        assertEquals(1, processingResult.size, "Should return 1 PROCESSING receipt")
-        assertEquals(ItemStatus.PROCESSING, processingResult[0].status, "Receipt should have PROCESSING status")
-        assertEquals("processing.pdf", processingResult[0].filename, "Receipt should match expected filename")
+        // Then: Should return only APPROVED receipts for user 2
+        assertNotNull(approvedResult, "APPROVED result should not be null")
+        assertEquals(1, approvedResult.size, "Should return 1 APPROVED receipt")
+        assertEquals(ItemStatus.APPROVED, approvedResult[0].status, "Receipt should have APPROVED status")
+        assertEquals("approved.pdf", approvedResult[0].filename, "Receipt should match expected filename")
     }
 }

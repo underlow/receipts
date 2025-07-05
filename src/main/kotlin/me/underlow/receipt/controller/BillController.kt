@@ -70,8 +70,8 @@ class BillController(
         model.addAttribute("bill", billDetail)
         model.addAttribute("serviceProviders", serviceProviders)
         model.addAttribute("paymentMethods", paymentMethods)
-        model.addAttribute("canApprove", bill.status == ItemStatus.NEW || bill.status == ItemStatus.PROCESSING)
-        model.addAttribute("canReject", bill.status == ItemStatus.NEW || bill.status == ItemStatus.PROCESSING)
+        model.addAttribute("canApprove", bill.status == ItemStatus.NEW)
+        model.addAttribute("canReject", bill.status == ItemStatus.NEW)
 
         logger.info("Successfully showed bill detail for billId: $billId for user: $userEmail")
         return "bill-detail"

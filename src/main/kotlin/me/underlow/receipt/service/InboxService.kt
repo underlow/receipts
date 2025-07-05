@@ -235,25 +235,6 @@ class InboxService(
                 val items = getRejectedItems(userEmail)
                 if (itemType != null) items.filter { it.type == itemType } else items
             }
-            ItemStatus.PROCESSING -> {
-                // For processing items, only check IncomingFiles
-                val incomingFiles = incomingFileService.findByUserEmailAndStatus(userEmail, ItemStatus.PROCESSING)
-                incomingFiles.map { file ->
-                    InboxItem(
-                        id = file.id!!,
-                        type = InboxItemType.INCOMING_FILE,
-                        filename = file.filename,
-                        filePath = file.filePath,
-                        uploadDate = file.uploadDate,
-                        status = file.status,
-                        extractedAmount = file.extractedAmount,
-                        extractedDate = file.extractedDate,
-                        extractedProvider = file.extractedProvider,
-                        ocrRawJson = file.ocrRawJson,
-                        userId = file.userId
-                    )
-                }.sortedByDescending { it.uploadDate }
-            }
         }
     }
 

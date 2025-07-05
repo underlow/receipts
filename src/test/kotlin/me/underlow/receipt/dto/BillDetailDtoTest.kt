@@ -129,7 +129,7 @@ class BillDetailDtoTest {
             filename = "test_bill.pdf",
             filePath = "/path/to/test_bill.pdf",
             uploadDate = LocalDateTime.now(),
-            status = ItemStatus.PROCESSING,
+            status = ItemStatus.APPROVED,
             userId = userId,
             checksum = "test_checksum"
         )
@@ -144,7 +144,7 @@ class BillDetailDtoTest {
         // Then: Associated receipts should be mapped correctly
         assertNotNull(billDetailDto)
         assertEquals(billId, billDetailDto.id)
-        assertEquals("Processing", billDetailDto.statusDisplayName)
+        assertEquals("Approved", billDetailDto.statusDisplayName)
         assertEquals(2, billDetailDto.associatedReceipts.size)
         
         val receiptDto1 = billDetailDto.associatedReceipts[0]

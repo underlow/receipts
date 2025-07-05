@@ -162,14 +162,13 @@ class DomainEntitiesUnitTest {
 
     @Test
     fun `given ItemStatus enum when accessing values then should have correct statuses`() {
-        // Given: ItemStatus enum
+        // Given: ItemStatus enum after removing PROCESSING status
         // When: Accessing enum values
         val values = ItemStatus.values()
 
-        // Then: Should contain all expected item statuses
-        assertEquals(4, values.size)
+        // Then: Should contain only NEW, APPROVED, and REJECTED statuses (no PROCESSING)
+        assertEquals(3, values.size)
         assertEquals(ItemStatus.NEW, ItemStatus.valueOf("NEW"))
-        assertEquals(ItemStatus.PROCESSING, ItemStatus.valueOf("PROCESSING"))
         assertEquals(ItemStatus.APPROVED, ItemStatus.valueOf("APPROVED"))
         assertEquals(ItemStatus.REJECTED, ItemStatus.valueOf("REJECTED"))
     }

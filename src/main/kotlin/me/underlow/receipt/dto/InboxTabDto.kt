@@ -40,7 +40,6 @@ data class InboxTabDto(
             
             val statusDisplayName = when (item.status) {
                 me.underlow.receipt.model.ItemStatus.NEW -> "New"
-                me.underlow.receipt.model.ItemStatus.PROCESSING -> "Processing"
                 me.underlow.receipt.model.ItemStatus.APPROVED -> "Approved"
                 me.underlow.receipt.model.ItemStatus.REJECTED -> "Rejected"
             }

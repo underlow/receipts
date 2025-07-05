@@ -63,7 +63,6 @@ class InboxControllerTest {
         val userEmail = "nofiles@example.com"
         val emptyStatusCounts = mapOf(
             ItemStatus.NEW to 0,
-            ItemStatus.PROCESSING to 0,
             ItemStatus.APPROVED to 0,
             ItemStatus.REJECTED to 0
         )
@@ -103,7 +102,7 @@ class InboxControllerTest {
         val statusCounts = model?.get("statusCounts") as? Map<*, *>
         assertTrue(statusCounts != null, "statusCounts should not be null")
         assertTrue(statusCounts.containsKey(ItemStatus.NEW), "Should contain NEW status")
-        assertTrue(statusCounts.containsKey(ItemStatus.PROCESSING), "Should contain PROCESSING status")
+        // Note: PROCESSING status was removed from ItemStatus enum
         assertTrue(statusCounts.containsKey(ItemStatus.APPROVED), "Should contain APPROVED status")
         assertTrue(statusCounts.containsKey(ItemStatus.REJECTED), "Should contain REJECTED status")
     }
@@ -120,7 +119,6 @@ class InboxControllerTest {
         val userEmail = "nofiles@example.com"
         val emptyStatusCounts = mapOf(
             ItemStatus.NEW to 0,
-            ItemStatus.PROCESSING to 0,
             ItemStatus.APPROVED to 0,
             ItemStatus.REJECTED to 0
         )
@@ -156,7 +154,7 @@ class InboxControllerTest {
             .andExpect(jsonPath("$.currentPage").value(0))
             .andExpect(jsonPath("$.totalPages").value(0))
             .andExpect(jsonPath("$.statusCounts.new").value(0))
-            .andExpect(jsonPath("$.statusCounts.processing").value(0))
+            // Note: PROCESSING status was removed from ItemStatus enum
             .andExpect(jsonPath("$.statusCounts.approved").value(0))
             .andExpect(jsonPath("$.statusCounts.rejected").value(0))
     }
@@ -173,7 +171,6 @@ class InboxControllerTest {
         val userEmail = "test@example.com"
         val statusCounts = mapOf(
             ItemStatus.NEW to 5,
-            ItemStatus.PROCESSING to 2,
             ItemStatus.APPROVED to 3,
             ItemStatus.REJECTED to 1
         )
@@ -223,13 +220,12 @@ class InboxControllerTest {
         val userEmail = "test@example.com"
         val statusCounts = mapOf(
             ItemStatus.NEW to 5,
-            ItemStatus.PROCESSING to 2,
             ItemStatus.APPROVED to 3,
             ItemStatus.REJECTED to 1
         )
 
         whenever(incomingFileService.findByUserEmailWithPagination(userEmail, null, 0, 20, "uploadDate", "desc"))
-            .thenReturn(Pair(emptyList(), 11L))
+            .thenReturn(Pair(emptyList(), 9L))
         whenever(incomingFileService.getFileStatistics(userEmail))
             .thenReturn(statusCounts)
 
@@ -254,7 +250,7 @@ class InboxControllerTest {
         result.andExpect(status().isOk)
             .andExpect(view().name("inbox"))
             .andExpect(model().attribute("selectedStatus", "invalid"))
-            .andExpect(model().attribute("totalFiles", 11L))
+            .andExpect(model().attribute("totalFiles", 9L))
     }
 
     /**

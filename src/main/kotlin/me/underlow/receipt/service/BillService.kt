@@ -120,8 +120,7 @@ class BillService(
             ocrRawJson = ocrRawJson,
             extractedAmount = extractedAmount,
             extractedDate = extractedDate,
-            extractedProvider = extractedProvider,
-            status = ItemStatus.PROCESSING
+            extractedProvider = extractedProvider
         )
         
         val savedBill = billRepository.save(updatedBill)

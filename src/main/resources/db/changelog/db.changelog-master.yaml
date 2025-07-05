@@ -20,3 +20,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/007-rename-bill-status-to-item-status.sql
       fileType: sql
+  - include:
+      file: db/changelog/changes/008-remove-processing-status.sql
+      fileType: sql
