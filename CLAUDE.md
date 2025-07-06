@@ -34,6 +34,9 @@ after implementing add to ticket information what was implemented and how.
 
 ## Planning
 
+A proper plan should follow the TDD approach: implement → test → verify → commit for each small change.
+Split all work to small tasks which can be implemented, tested and commited without breaking code.
+
 if you are asked to plan feature implementation:
 
 - read all docs and find out which files related to this new feature
