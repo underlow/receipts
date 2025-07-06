@@ -5,6 +5,8 @@
 - each important entity MUST be documented in /docs/prd.md Before any development entity states and data MUST be fully defined and documented.
 - any interface MUST be documented. each item of the interface MUST be documented. behaviour of every interface item must be documented and tested with unit and e2e tests. 
 
+- NEVER create copy of functionality in test classes
+
 # Bash commands
 
 - ./gradlew test: Run unit tests
@@ -13,7 +15,6 @@
 
 All documentation are in the ./docs folder:
 ./docs/architecture.md - overall architecture
-./docs/overview.md - functionality overview
 
 all docs MUST be updated after each new feature implementation.
 
@@ -65,6 +66,7 @@ If you are asked to implement a plan:
 
 - use kotlin official code style
 - use immutable data structures when possible 
+- write comments to data structures and functions
 
 to explore a codebase read ./docs/code.md
 update ./docs/code.md after each change in code structure

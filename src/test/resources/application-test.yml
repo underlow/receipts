@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    # PostgreSQL will be provided by TestContainers
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    change-log: classpath:db/changelog-master.yml
+    contexts: test

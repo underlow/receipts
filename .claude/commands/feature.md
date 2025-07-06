@@ -13,12 +13,17 @@ There are three types of tickets.
 ## Plan 
 
  - each step of the plan should describe concrete set of changes. 
- - for each class should be described which class members should be changed and how they should be changed
+ - if new class is added name, behaviour, members, and it's behaviour MUST be described
+ - if existing class is modified each change and it's behaviour MUST be described
  - for each UI interface should be described what exactly should be added/removed/modified
  - each change must contain set of tests to be added/fixed
  - each change must contain set of e2e tests which must be added. 
  - each change must contain definition of done - what user stories are now allowed
  - each plan should contain update documentation item
+ - instead of 'test UserController' create detailed plan like 'test user create, user delete, user update...' 
+
+- think of a feature in terms of user stories. 
+
 
 ## Tickets
 
@@ -27,7 +32,7 @@ each ticked must have:
  - definition of done
  - detailed implementation plan
 
-Follow these steps:
+## Planning workflow
 
 - Understand the requirements described 
 - Analyse how it will fit into current requirements 
@@ -36,6 +41,7 @@ Follow these steps:
 - Show me all requirements in @./docs/prd.md document which will conflict with this new feature. elaborate with me this until all conflicts are resolved 
 - think if it is possible to split this issue to smaller ones which can be implemented separately. 
 - provide a plan to implement feature, plan should be concrete and should be made of smallest possible steps. each step should be one change that can be delivered 
+- before creating an issue or updating documentation MUST be confirmed
 - tend to use vertical split of functionality, 
   plan of several items like 'implement one method in repository, controller and ui' 
   is better than 'implement full dao layer', 'implement full controlles layer' ... 
