@@ -132,4 +132,38 @@ class UserDao(
         
         return user.copy(updatedAt = now)
     }
+    
+    /**
+     * Upsert user - insert if not exists, update if exists.
+     * Uses ON CONFLICT to handle race conditions at database level.
+     * @param email User's email address
+     * @param name User's display name
+     * @param avatar User's avatar URL (optional)
+     * @return The created or updated user
+     */
+    fun upsert(email: String, name: String, avatar: String?): User {
+        val now = LocalDateTime.now()
+        
+        // Use PostgreSQL's ON CONFLICT clause for atomic upsert
+        val sql = """
+            INSERT INTO users (email, name, avatar, created_at, updated_at) 
+            VALUES (:email, :name, :avatar, :createdAt, :updatedAt)
+            ON CONFLICT (email) 
+            DO UPDATE SET 
+                name = EXCLUDED.name,
+                avatar = EXCLUDED.avatar,
+                updated_at = EXCLUDED.updated_at
+            RETURNING id, email, name, avatar, created_at, updated_at
+        """
+        
+        val params = MapSqlParameterSource()
+            .addValue("email", email)
+            .addValue("name", name)
+            .addValue("avatar", avatar)
+            .addValue("createdAt", now)
+            .addValue("updatedAt", now)
+        
+        return namedParameterJdbcTemplate.queryForObject(sql, params, userRowMapper)
+            ?: throw IllegalStateException("Failed to upsert user")
+    }
 }

@@ -38,4 +38,17 @@ class UserService(
             allowedEmail.equals(email, ignoreCase = true)
         }
     }
+    
+    /**
+     * Creates a new user or updates an existing user based on email address.
+     * Uses database-level upsert to handle race conditions safely.
+     * 
+     * @param email User's email address
+     * @param name User's display name
+     * @param avatar User's avatar URL (optional)
+     * @return The created or updated user
+     */
+    fun createOrUpdateUser(email: String, name: String, avatar: String?): User {
+        return userDao.upsert(email, name, avatar)
+    }
 }

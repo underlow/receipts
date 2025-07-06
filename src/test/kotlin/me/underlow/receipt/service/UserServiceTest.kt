@@ -136,4 +136,76 @@ class UserServiceTest {
         // then - returns true (empty entries are ignored)
         assertTrue(result)
     }
+    
+    @Test
+    fun `given new user when createOrUpdateUser then creates new user`() {
+        // given - user does not exist in database
+        val email = "newuser@example.com"
+        val name = "New User"
+        val avatar = "https://example.com/avatar.jpg"
+        val savedUser = User(id = 1L, email = email, name = name, avatar = avatar)
+        
+        whenever(userDao.upsert(email, name, avatar)).thenReturn(savedUser)
+        
+        // when - creating or updating user
+        val result = userService.createOrUpdateUser(email, name, avatar)
+        
+        // then - creates new user and returns saved user
+        assertEquals(savedUser, result)
+        verify(userDao).upsert(email, name, avatar)
+    }
+    
+    @Test
+    fun `given existing user when createOrUpdateUser then updates existing user`() {
+        // given - user exists in database and will be updated
+        val email = "existing@example.com"
+        val name = "Updated Name"
+        val avatar = "https://example.com/new-avatar.jpg"
+        val updatedUser = User(id = 1L, email = email, name = name, avatar = avatar)
+        
+        whenever(userDao.upsert(email, name, avatar)).thenReturn(updatedUser)
+        
+        // when - creating or updating user
+        val result = userService.createOrUpdateUser(email, name, avatar)
+        
+        // then - updates existing user and returns updated user
+        assertEquals(updatedUser, result)
+        verify(userDao).upsert(email, name, avatar)
+    }
+    
+    @Test
+    fun `given user with null avatar when createOrUpdateUser then handles null avatar correctly`() {
+        // given - user with null avatar
+        val email = "user@example.com"
+        val name = "User Name"
+        val avatar = null
+        val savedUser = User(id = 1L, email = email, name = name, avatar = null)
+        
+        whenever(userDao.upsert(email, name, avatar)).thenReturn(savedUser)
+        
+        // when - creating or updating user with null avatar
+        val result = userService.createOrUpdateUser(email, name, avatar)
+        
+        // then - creates user with null avatar
+        assertEquals(savedUser, result)
+        verify(userDao).upsert(email, name, avatar)
+    }
+    
+    @Test
+    fun `given existing user with different details when createOrUpdateUser then updates all fields`() {
+        // given - existing user with different name and avatar will be updated
+        val email = "test@example.com"
+        val newName = "New Name"
+        val newAvatar = "https://example.com/new-avatar.jpg"
+        val updatedUser = User(id = 2L, email = email, name = newName, avatar = newAvatar)
+        
+        whenever(userDao.upsert(email, newName, newAvatar)).thenReturn(updatedUser)
+        
+        // when - updating user with new details
+        val result = userService.createOrUpdateUser(email, newName, newAvatar)
+        
+        // then - updates user with new name and avatar
+        assertEquals(updatedUser, result)
+        verify(userDao).upsert(email, newName, newAvatar)
+    }
 }
