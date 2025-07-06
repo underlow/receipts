@@ -1,5 +1,9 @@
 - when you implement a new function first write a comment of what it is supposed to do
-- split code into small functions
+- split code into small readable functions
+- follow industry best practices
+
+- each important entity MUST be documented in /docs/prd.md Before any development entity states and data MUST be fully defined and documented.
+- any interface MUST be documented. each item of the interface MUST be documented. behaviour of every interface item must be documented and tested with unit and e2e tests. 
 
 # Bash commands
 
@@ -48,9 +52,6 @@ If you are asked to implement a plan:
     - ask user to check if everything is implemented and if yes mark item as complete in file
     - move to the next item
 
-# Workflow
-
-- Be sure to run tests when you’re done making a series of code changes
 
 ## Testing
 
