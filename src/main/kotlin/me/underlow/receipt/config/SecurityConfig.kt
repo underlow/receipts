@@ -1,6 +1,7 @@
 package me.underlow.receipt.config
 
 import me.underlow.receipt.service.CustomOAuth2UserService
+import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -9,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
+@Profile("!e2e")
 class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserService) {
 
     @Bean
@@ -16,20 +18,26 @@ class SecurityConfig(private val customOAuth2UserService: CustomOAuth2UserServic
         http
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/login", "/static/**").permitAll()
+                    .requestMatchers("/login", "/static/**", "/error").permitAll()
+                    .requestMatchers("/api/files/**").authenticated()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2Login ->
                 oauth2Login
                     .loginPage("/login")
                     .userInfoEndpoint { userInfo ->
-                        userInfo.userService(customOAuth2UserService)
+                        userInfo.oidcUserService(customOAuth2UserService)
                     }
+                    .defaultSuccessUrl("/dashboard", true)
             }
             .logout { logout ->
                 logout
-                    .logoutSuccessUrl("/")
+                    .logoutSuccessUrl("/login?logout")
                     .permitAll()
+            }
+            .csrf { csrf ->
+                csrf
+                    .ignoringRequestMatchers("/api/files/**")
             }
         return http.build()
     }

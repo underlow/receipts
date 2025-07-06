@@ -5,6 +5,5 @@ import java.time.LocalDateTime
 data class LoginEvent(
     val id: Long? = null,
     val userId: Long,
-    val timestamp: LocalDateTime = LocalDateTime.now(),
-    val ipAddress: String? = null
+    val timestamp: LocalDateTime = LocalDateTime.now()
 )

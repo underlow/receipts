@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    # Will be dynamically configured by TestContainers
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope: openid,profile,email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          google:
+            authorization-uri: http://localhost:8888/o/oauth2/auth
+            token-uri: http://localhost:8888/token
+            user-info-uri: http://localhost:8888/oauth2/v2/userinfo
+            jwk-set-uri: http://localhost:8888/oauth2/v3/certs
+            user-name-attribute: email
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: TRACE
+    me.underlow.receipt: DEBUG
+    com.codeborne.selenide: DEBUG
