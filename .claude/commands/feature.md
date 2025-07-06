@@ -40,6 +40,6 @@ Follow these steps:
   plan of several items like 'implement one method in repository, controller and ui' 
   is better than 'implement full dao layer', 'implement full controlles layer' ... 
 - after plan confirmed create github tickets. when creating tickets you have to decide if we need set of separate tickets or one umbrella tickets with sub-tickets  
-- after plan confirmed ./docs/prd.md must be updated.
+- after plan confirmed ./docs/prd.md ./docs/architecture.md must be updated.
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
