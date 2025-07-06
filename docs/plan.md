@@ -28,66 +28,202 @@
     - ✅Log each login event with timestamp and user ID.
     - ✅implement a minimal login web page 
 
-5. **Audit logging framework**
-    - Add an interceptor or aspect to log all create/update/delete on Receipts, Payments, Service Providers, Attachments.
-    - Store logs with: user ID, entity type, operation, timestamp, before/after data.
+## Database Management
 
----
+36. **Replace Spring Data JPA with Spring Data JDBC and integrate Liquibase**
+    - ✅Update `build.gradle.kts` to include `liquibase-core`.
+    - ✅Adjust Model Classes (`User.kt`, `LoginEvent.kt`) for JDBC compatibility.
+    - ✅Configure Liquibase in `application.yaml` and `application-test.yaml`.
+    - ✅Create Liquibase Changelog Files (`db.changelog-master.yaml` and `001-initial-schema.yaml`).
+    - ✅Remove `schema.sql` for the main application.
+    - ✅Rewrote Liquibase changelog from YAML to SQL.
+37. **Rework repositories to use JdbcTemplate**
+    - ✅Modified `UserRepository` and `LoginEventRepository` interfaces.
+    - ✅Created `UserRepositoryImpl` and `LoginEventRepositoryImpl` using `JdbcTemplate`.
+    - ✅Removed `@Repository` annotations from implementation classes.
+    - ✅Removed `@Table` and `@Id` annotations from model classes.
+    - ✅Updated `build.gradle.kts` to use `spring-boot-starter-jdbc`.
+    - ✅Created `JdbcConfig` to define repository beans.
+    - ✅Configured `ReceiptApplication` and `ReceiptApplicationTests` to import `JdbcConfig`.
 
 ## Core Domain Model
-6. **Define domain entities**
-    - Create model classes for `ServiceProvider`, `PaymentMethod`, `Receipt`, `Payment`, `Attachment`.
-    - Annotate JPA relationships (e.g. `@OneToMany`, `@ManyToOne`).
 
-7. **Implement repository layer**
-    - Define repository interfaces for each entity.
-    - Add custom queries for filtering by provider, date ranges, payment status, recurrence.
+6. **Define domain entities** ✅
+    - ✅Create `ServiceProvider` entity with fields: id, name, category, defaultPaymentMethod, isActive, comment
+    - ✅Create `PaymentMethod` entity with fields: id, name, type (CARD/BANK/CASH/OTHER), comment
+    - ✅Create `Bill` entity with fields: id, filename, filePath, uploadDate, status (PENDING/PROCESSING/APPROVED/REJECTED), ocrRawJson, extractedAmount, extractedDate, extractedProvider, userId
+    - ✅Create `Receipt` entity with fields: id, userId (representing the aggregated expense, potentially composed of one or more Receipts), billId (nullable FK to Bill)
+    - ✅Create `Payment` entity with fields: id, serviceProviderId, paymentMethodId, amount, currency, invoiceDate, paymentDate, billId, userId, comment
+    - ✅Define relationships: Receipt -> Bill (one-to-many), Bill -> User, Payment -> ServiceProvider/PaymentMethod/Bill/User, Attachment -> Payment/User
+    - ✅Add validation annotations for required fields and constraints
+    - ✅Ensure all entities are compatible with Spring Data JDBC (no JPA annotations)
+
+7. **Implement repository layer** ✅
+    - ✅Define repository interfaces for each entity.
+    - ✅Add basic CRUD queries.
+    - ✅Implement repository classes using JdbcTemplate following existing patterns.
+    - ✅Update JdbcConfig to register all new repository beans.
 
 ---
 
 ## File Ingestion & Inbox
-8. **Folder-watcher service**
-    - Develop a scheduled task that polls the inbox directory every 30 seconds.
-    - Detect new files (by filename or checksum) and move to app storage.
-    - Create a `Receipt` entity in “Pending” status with file metadata.
+8. **Folder-watcher service** ✅
+    - ✅Develop a scheduled task that polls the inbox directory every 30 seconds.
+    - ✅Detect new files (by filename or checksum) and move to app storage.
+    - ✅Create a `IncomingFile` entity in “Pending” status with file metadata. It will become either bill or receipt after ocr/accept
 
-9. **Web-UI upload endpoint**
-    - Build a multipart upload REST endpoint.
-    - On upload, save file to the same storage area and create a matching `Receipt` record.
-    - Return success/failure feedback to the user.
+9. **Web-UI upload endpoint** ✅
+    - ✅Build a multipart upload REST endpoint.
+    - ✅On upload, save file to the same storage area and create a matching `IncomingFile` record.
+    - ✅Return success/failure feedback to the user.
+    - ✅Create upload page template with drag-and-drop functionality.
+    - ✅Add controller mapping for upload page (/upload).
+
+## Inbox Review & Approval UI
+13. **Inbox list page** ✅
+    - ✅Create a Thymeleaf template showing a paginated grid with: thumbnail, filename, upload date, status badge for `IncomingFile`s
+    - ✅Implement file serving controller with secure access and thumbnail generation
+    - ✅Add status filtering (PENDING, PROCESSING, APPROVED, REJECTED) with live counts
+    - ✅Implement sorting by filename, upload date, and status
+    - ✅Add AJAX file operations (approve, reject, delete) with user feedback
+    - ✅Create modal image viewer with keyboard shortcuts
+    - ✅Fix critical bug with null status counts causing dashboard crashes
+
+14. **Receipt/Bill detail view** ✅
+    - ✅Design a split-pane template for `Receipt` detail view:
+        - ✅**Left pane**: zoomable receipt image viewer
+        - ✅**Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
+    - ✅Add “Associate with Bill” (link this receipt to an existing bill or create a new bill), “Accept as Payment” (approve & convert to Payment for standalone receipts), and “Save Draft” (persist edits) buttons.
+    - ✅Design a split-pane template for `Bill` detail view:
+        - ✅**Left pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
+        - ✅**Right pane**: Aggregated form fields for the Bill (provider, method, amount, dates, recurrence, custom fields).
+    - ✅Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
+
+36. **IncomingFile detail view** ✅
+    - ✅Design a comprehensive detail view template for `IncomingFile`:
+        - ✅**Left pane**: Large file viewer with support for images and PDFs
+        - ✅**Right pane**: Complete file metadata display with sections for:
+          - ✅File Information (filename, upload date, file size, status, checksum)
+          - ✅File Actions (approve, reject, delete) with proper status-based permissions
+          - ✅Technical Details (file ID, path, type detection)
+    - ✅Implement controller endpoints:
+        - ✅`GET /inbox/files/{fileId}` - HTML detail view page
+        - ✅`GET /inbox/api/files/{fileId}/detail` - JSON API endpoint
+    - ✅Add comprehensive test coverage for all detail view functionality
+    - ✅Update inbox template to link Detail button to new endpoint
+    - ✅Create `IncomingFileDetailDto` with computed fields and action permissions
+    - ✅Ensure proper user authentication and file ownership verification
+
+38. **Enhanced Panel Actions for IncomingFile**
+    - Remove "Approve File" button from actions panel
+    - Move "Send to OCR" button to actions panel (from OCR section)
+    - Add "Bill" button that converts IncomingFile to Bill entity in pending state
+    - Add "Receipt" button that converts IncomingFile to Receipt entity in pending state
+    - Update UI to show current entity type and available actions
+    - Implement manual type selection workflow before OCR processing
+    - When OCR is triggered with manual type selection, OCR should extract info without guessing type
+    - Add revert functionality to convert Bill/Receipt back to IncomingFile if user declines OCR results
+
+39. **Two-Tab Interface for Bill/Receipt Detail Views**
+    - When IncomingFile is converted to Bill or Receipt, change UI to show two tabs in left pane:
+      - **Bill/Receipt Tab**: Contains editable entity fields prefilled with OCR values
+        - Add Accept button to finalize the conversion
+        - Add Revert button to convert back to IncomingFile
+        - Form fields for provider, amount, date, currency, etc.
+      - **Information Tab**: Contains technical file details and metadata
+        - File information (filename, upload date, size, checksum)
+        - OCR processing history and raw data
+        - System technical details
+    - Preserve existing image viewer functionality in right pane
+    - Update navigation and breadcrumbs to reflect current entity type
+    - Ensure proper state management between IncomingFile ↔ Bill/Receipt transitions
+
+40. **Enhanced User Stories Implementation**
+    - **IncomingFile Creation**: When user uploads a file, it creates an IncomingFile entity
+    - **OCR Processing Options**:
+        - Automatic type detection: User sends to OCR, OCR guesses type and extracts info, converts to corresponding entity
+        - Manual type selection: User selects Bill/Receipt type, then sends to OCR for info extraction only
+    - **OCR Results Handling**: User can accept OCR results or decline and revert back to IncomingFile
+    - **Entity State Management**: Clear transitions between IncomingFile → Bill/Receipt → back to IncomingFile
+    - **UI State Synchronization**: Interface updates based on current entity type and processing state
+
+41. **OCR Attempts History System**
+    - Add OCR attempts history to all entities (IncomingFile, Bill, Receipt)
+    - Track: timestamp, OCR engine used, processing status, extracted data, error messages
+    - Store raw OCR responses for audit and debugging
+    - Display history in Information tab of detail views
+    - Allow users to view previous OCR attempts and results
+    - Maintain history across entity type transitions (IncomingFile → Bill/Receipt)
+
+42. **UI Navigation Improvements**
+    - Remove breadcrumbs from all pages
+    - Simplify navigation to focus on main actions
+    - Allow users to revert/fix errors at any time without restrictions
+    - Update page titles and headers to reflect current entity type
+
+
+## Workflow Requirements Summary
+
+**File Upload Workflow**:
+1. User uploads file → IncomingFile entity created
+2. User can either:
+    - Click "Send to OCR" → OCR guesses type and extracts info → converts to Bill/Receipt
+    - Click "Bill" → converts to Bill in pending state → can send to OCR for info extraction
+    - Click "Receipt" → converts to Receipt in pending state → can send to OCR for info extraction
+3. If user declines OCR results → entity reverts back to IncomingFile
+4. When entity is Bill/Receipt → UI shows two-tab interface (Bill/Receipt tab + Information tab)
+
+**User Interface Changes**:
+- Remove "Approve File" button from actions panel
+- Move "Send to OCR" button to actions panel
+- Add "Bill" and "Receipt" buttons to actions panel
+- Implement two-tab interface for Bill/Receipt detail views
+- Add Accept/Revert buttons in entity-specific tabs
+
+---
 
 ---
 
 ## OCR Integration
-10. **Define OCR abstraction**
-    - Create an `OcrEngine` interface with a method to accept a file and return standardized JSON.
+10. **Define OCR abstraction** ✅
+    - ✅Create an `OcrEngine` interface with a method to accept a file and return standardized JSON.
+    - ✅Create `OcrResult` data class with standardized fields (provider, amount, date, currency, rawJson).
+    - ✅Create `OcrRequest` data class for request validation and configuration.
 
-11. **Implement engine connectors**
-    - Build three beans for OpenAI, Claude, and Google AI.
+11. **Implement engine connectors** ✅
+    - ✅Build three beans for OpenAI, Claude, and Google AI.
     - Each bean handles authentication with its API key and parses the engine’s JSON response into the common format.
 
-12. **Dispatch logic**
-    - Upon `Receipt` creation, invoke the selected engine bean.
-    - Persist raw JSON and extract core fields (provider guess, amount, dates).
-    - Flag ambiguous or missing provider info for manual review.
+## Additional OCR Implementation Details (Items 10-11 Completed) ✅
+- ✅Created `OcrEngine` interface with `processFile()` method
+- ✅Implemented `OpenAiOcrEngine` using GPT-4 Vision API
+- ✅Implemented `ClaudeOcrEngine` using Anthropic Claude Vision API  
+- ✅Implemented `GoogleAiOcrEngine` using Google Gemini Vision API
+- ✅Added `OcrConfig` with conditional bean creation based on API key availability
+- ✅Created `OcrService` for orchestrating OCR processing with fallback mechanisms
+- ✅Added comprehensive test coverage including unit tests for all components
+- ✅Added coroutines support for async processing
+- ✅Implemented standardized `OcrResult` and `OcrRequest` data classes
 
----
-
-## Inbox Review & Approval UI
-13. **Inbox list page**
-    - Create a Thymeleaf template showing a paginated table with: thumbnail, filename, upload date, guessed provider, OCR engine, status badge.
-
-14. **Receipt detail view**
-    - Design a split-pane template:
-        - **Left pane**: zoomable receipt image viewer
-        - **Right pane**: form with OCR-populated fields (provider, method, amount, dates, recurrence, custom fields)
-    - Add “Accept” (approve & convert to Payment) and “Save Draft” (persist edits) buttons.
+12. **Dispatch logic** ✅
+    - ✅Upon `IncomingFile` creation, invoke the selected engine bean automatically.
+    - ✅Information sent to OCR: prompt, image, set of `ServiceProvider` and `PaymentMethod` as reference data
+    - ✅Persist raw JSON and extract core fields (provider, amount, dates, currency).
+    - ✅Fallback mechanisms implemented when no API keys are configured.
+    - ✅OCR information (provider, date, result, errors) accessible in UI through inbox and detail views
+    - ✅Automatic status management through PENDING → PROCESSING → APPROVED/REJECTED workflow
+    - ✅Comprehensive error handling with retry mechanisms
+    - ✅Dispatch logic to convert approved IncomingFiles to Bill entities
+    - ✅Complete UI integration with OCR action buttons ("Send to OCR", "Retry OCR", "Create Bill")
+    - ✅Real-time status indicators in inbox grid and detailed OCR section in file detail view
+    - ✅Enhanced API endpoints for manual OCR operations and statistics
+    
 
 ---
 
 ## Payments Module
 15. **Approve-to-Payment flow**
-    - In controller, map approved `Receipt` data into a new `Payment` entity, linking back to the original receipt.
+    - In controller, map approved `Bill` data into a new `Payment` entity, linking back to the original receipt.
 
 16. **Payments table view**
     - Build an Excel-style grid with sortable columns: Provider, Method, Amount, Currency, Invoice Date, Payment Date, Recurrent
@@ -173,19 +309,15 @@
 
 ---
 
-## Database Management
-36. **Replace Spring Data JPA with Spring Data JDBC and integrate Liquibase**
-    - ✅Update `build.gradle.kts` to include `liquibase-core`.
-    - ✅Adjust Model Classes (`User.kt`, `LoginEvent.kt`) for JDBC compatibility.
-    - ✅Configure Liquibase in `application.yaml` and `application-test.yaml`.
-    - ✅Create Liquibase Changelog Files (`db.changelog-master.yaml` and `001-initial-schema.yaml`).
-    - ✅Remove `schema.sql` for the main application.
-    - ✅Rewrote Liquibase changelog from YAML to SQL.
-37. **Rework repositories to use JdbcTemplate**
-    - ✅Modified `UserRepository` and `LoginEventRepository` interfaces.
-    - ✅Created `UserRepositoryImpl` and `LoginEventRepositoryImpl` using `JdbcTemplate`.
-    - ✅Removed `@Repository` annotations from implementation classes.
-    - ✅Removed `@Table` and `@Id` annotations from model classes.
-    - ✅Updated `build.gradle.kts` to use `spring-boot-starter-jdbc`.
-    - ✅Created `JdbcConfig` to define repository beans.
-    - ✅Configured `ReceiptApplication` and `ReceiptApplicationTests` to import `JdbcConfig`.
+5. **Audit logging framework**
+    - Add an interceptor or aspect to log all create/update/delete on Bills, Payments, Service Providers, Attachments.
+    - Store logs with: user ID, entity type, operation, timestamp, before/after data.
+
+
+
+---
+
+**rework e2e testing**
+ - rework authentication and make it possible to login from e2e test with custom user
+ - fix all disabled tests
+ - implement all new what is required to test app.

@@ -4,15 +4,17 @@
 | Version | Date       | Author            | Changes               |
 |---------|------------|-------------------|-----------------------|
 | 1.0     | 2025-07-02 | Product Manager   | Initial draft         |
+| 1.1     | 2025-07-06 | Claude            | Enhanced OCR processing |
 
 ## 2. Purpose & Scope
 **Purpose**  
-Enable individuals and families to digitize, review, and manage household (and other) expenses via receipt images, automated OCR extraction, manual approval, and rich reporting.
+Enable individuals and families to digitize, review, and manage household (and other) expenses via receipt and bill images, automated OCR extraction, manual approval, and rich reporting.
 
 **Scope**
-- Receipt ingestion (watch folder + web UI)
-- OCR via OpenAI, Claude, Google AI
-- Manual review & approval
+- Receipt and Bill ingestion (watch folder + web UI)
+- OCR via OpenAI, Claude, Google AI, or STUB for development
+- Manual review & approval for Receipts and Bills
+- Association of Receipts with Bills
 - Payment record management (one-off & recurring)
 - Attachments & comments
 - Reporting & exports (CSV/Excel)
@@ -24,12 +26,6 @@ Enable individuals and families to digitize, review, and manage household (and o
 - **Adoption**: 80% of users schedule at least one recurring payment tab
 - **Retention**: 70% monthly active users after 3 months
 
-## 4. Stakeholders & Roles
-- **Product Owner**: Defines vision & prioritizes features
-- **Engineering Lead**: Oversees architecture & implementation
-- **QA Lead**: Develops test plans & verifies acceptance
-- **End Users**: Individual household members & family heads
-
 ## 5. User Personas
 | Persona                    | Description                                      | Goals                                             |
 |----------------------------|--------------------------------------------------|---------------------------------------------------|
@@ -37,50 +33,92 @@ Enable individuals and families to digitize, review, and manage household (and o
 | Family Head                | Oversees family finances                         | Ensure all recurring bills are paid on time       |
 
 ## 6. User Scenarios & Stories
-1. **Ingest Receipt**
-    - *As a user*, I want to drop my receipt into a watched folder or upload via UI so that I don’t have to manually enter data.
+1. **Ingest Receipt/Bill**
+    - *As a user*, I want to drop my receipt or bill into a watched folder or upload via UI so that I don’t have to manually enter data.
 2. **Review Extraction**
-    - *As a user*, I want to edit or approve OCR-extracted data to ensure accuracy before payment.
-3. **Record a Payment**
-    - *As a user*, I want approved receipts to appear in a payments panel where I can mark them as paid later.
-4. **Manage Recurring Bills**
+    - *As a user*, I want to edit or approve OCR-extracted data from receipts or bills to ensure accuracy before payment.
+3. **Associate Receipt with Bill**
+    - *As a user*, I want to associate one or more receipts with a specific bill, or create a new bill from a receipt.
+4. **Record a Payment**
+    - *As a user*, I want approved bills (which may be composed of one or more receipts) to appear in a payments panel where I can mark them as paid later.
+5. **Manage Recurring Bills**
     - *As a user*, I want to create “tabs” per provider so I can see months with missing payments.
-5. **Attach Documents**
+6. **Attach Documents**
     - *As a user*, I want to upload PDFs or images to an existing payment and add comments for context.
-6. **Generate Reports**
+7. **Generate Reports**
     - *As a user*, I want to export monthly and yearly spend by provider to Excel for my records.
 
 ## 7. Functional Requirements
 
-### 7.1 Receipt Ingestion & Inbox
+### 7.1 Receipt and Bill Ingestion & Inbox
 - **Folder Watcher**
     - Poll a configurable path (e.g. `/data/inbox`) every 30 s
     - Supported file types: `.jpg`, `.png`, `.pdf`
+    - Ingested files type should be guessed by ocr
 - **Web UI Upload**
     - Drag-and-drop area + “Browse…” button
-    - Progress indicator and success/failure toast
+    - Synchronous OCR processing with modal progress indicator
+    - Non-closable modal during processing
+    - Success/failure feedback with retry options
+    - Ingested files type should be guessed by ocr
 
 ### 7.2 OCR Processing & Settings
-- **Engines**: OPENAI, CLAUDE, GOOGLE_AI
+- **Engines**: OPENAI, CLAUDE, GOOGLE_AI, STUB
 - **Settings Page**
     - Toggle engines on/off
     - Fields for API keys (stored encrypted)
     - Select default OCR engine
-- **Processing Workflow**
-    1. File lands in inbox → assigned to active engine
-    2. Response JSON parsed into fields
-    3. Guess `serviceProvider`; flag ambiguous
+    - STUB engine used automatically when no engines configured
+- **Processing Workflow** (Synchronous)
+    1. File upload triggers immediate OCR processing
+    2. Modal dialog shows progress indicator (non-closable)
+    3. Response JSON parsed into fields
+    4. Guess `serviceProvider`; handle unknown providers
+    5. If service provider unknown, show manual input dialog
+    6. Success/failure feedback with retry options
+    7. Open corresponding Bill or Receipt detail view immediately
 
-### 7.3 Receipt Review & Approval
-- **Inbox List View**
-    - Columns: Thumbnail, Filename, UploadedAt, Provider (if guessed), Status
-    - Click row opens Detail View
-- **Detail View**
+### 7.3 Receipt and Bill Review & Approval
+- **Tabbed Sidebar Interface**
+    - Left sidebar with navigation tabs: Inbox, Bills, Receipts, Service Provider tabs
+    - Right panel with unified table showing entities based on selected tab
+    - Dynamic service provider tabs for each provider with associated items
+- **Inbox Tab**
+    - Shows all NEW status items (IncomingFiles, Bills, Receipts) requiring user action
+    - Unified table with columns: Type, Thumbnail, Name, Provider, Amount, Date, Status
+- **Bills Tab**
+    - Shows all bills in all statuses (NEW, APPROVED, REJECTED)
+    - Same table structure with bill-specific data
+- **Receipts Tab**
+    - Shows all receipts in all statuses (NEW, APPROVED, REJECTED)
+    - Same table structure with receipt-specific data
+- **Service Provider Tabs**
+    - Dynamic tabs for each service provider with associated items
+    - Shows all entity types related to that provider
+    - Same unified table structure
+- **Table Features**
+    - Sortable columns, pagination, row selection
+    - Click row opens Detail View for the entity
+    - Responsive design for desktop/tablet
+- **Receipt Detail View**
     - **Left Pane**: Full-size receipt image (zoomable)
-    - **Right Pane**: Form with fields:
-        - Service Provider (autocomplete + icon)
+    - **Right Pane**: Form with OCR-populated fields:
+        - Service Provider (autocomplete + icon + "Edit Providers" button)
         - Payment Method (dropdown)
         - Amount, Currency
+        - Invoice Date, Payment Date
+        - Recurrent (checkbox)
+        - Custom Provider Fields
+    - Actions:
+        - **Associate with Bill**: Link this receipt to an existing bill or create a new bill.
+        - **Accept as Payment**: Approve and move to Payments (for standalone receipts).
+        - **Save Draft**: Persist edits, remain in Inbox.
+- **Bill Detail View**
+    - **Left Pane**: List of associated receipts with thumbnails (clickable to view Receipt Detail).
+    - **Right Pane**: Aggregated form fields for the Bill:
+        - Service Provider (autocomplete + icon + "Edit Providers" button)
+        - Payment Method (dropdown)
+        - Amount, Currency (aggregated from receipts or manually entered)
         - Invoice Date, Payment Date
         - Recurrent (checkbox)
         - Custom Provider Fields
@@ -100,10 +138,15 @@ Enable individuals and families to digitize, review, and manage household (and o
     - Display sum of filtered amounts at bottom
 
 ### 7.5 Recurring Payments & Tabs
-- **Create Tab**
-    - Left-sidebar button opens modal to select a Service Provider
-    - Creates persistent tab that lists all payments for that provider
-- **Tab View**
+- **Service Provider Tabs Integration**
+    - Service provider tabs are integrated into main inbox interface
+    - Dynamic tabs created automatically when providers have associated items
+    - Show all entity types (IncomingFiles, Bills, Receipts, Payments) for each provider
+- **Tab Management**
+    - Tabs appear/disappear based on provider activity
+    - Click tab to view all items associated with that provider
+    - Unified table interface consistent with other tabs
+- **Recurring Payment Features**
     - Calendar-style grid or table: highlight months with no `PaymentDate`
     - Option to mark expected payments as “Skipped”
 
@@ -129,27 +172,43 @@ Enable individuals and families to digitize, review, and manage household (and o
     - Folder paths for ingestion & attachments
 - **OCR**
     - Engine toggles, API key inputs
+    - STUB engine for development (always available)
 - **Database**
     - Select DB type: PostgreSQL (prod) or SQLite (dev)
 
+### 7.9 Service Provider Management
+- **Service Provider Unknown Dialog**
+    - Appears when OCR returns unknown service provider
+    - Manual service provider input field
+    - Options: "Send to OCR again" or "Save as Bill/Receipt"
+    - Interrupts normal OCR flow until resolved
+- **Service Provider Management Dialog**
+    - Accessible via "Edit Providers" button in Bill/Receipt detail views
+    - List all existing service providers
+    - Add new service provider functionality
+    - Edit existing service provider functionality
+    - Delete service provider functionality
+    - Form validation and persistence
+
 ## 8. Non-Functional Requirements
 
-| Category        | Requirement                                                      |
-|-----------------|------------------------------------------------------------------|
-| Performance     | Inbox listing ≤ 200 ms; 95th-percentile page load ≤ 1 s           |
-| Scalability     | Support up to 1 M receipts and 100 K payments                    |
-| Security        | OAuth2 via Google; encrypt API keys at rest; soft-delete only     |
-| Reliability     | 99.5% uptime; daily backups of DB & filesystem                   |
-| Maintainability | 80% unit test coverage; modular Spring beans for OCR engines     |
-| Usability       | WCAG AA accessibility; responsive to desktop/tablet              |
+| Category        | Requirement                                                   |
+|-----------------|---------------------------------------------------------------|
+| Performance     | Inbox listing ≤ 200 ms; 95th-percentile page load ≤ 1 s       |
+| Scalability     | Support up to 1 M receipts and bills and 100 K payments       |
+| Security        | OAuth2 via Google; encrypt API keys at rest; soft-delete only |
+| Reliability     | 99.5% uptime; daily backups of DB & filesystem                |
+| Maintainability | 80% unit test coverage; modular Spring beans for OCR engines  |
+| Usability       | WCAG AA accessibility; responsive to desktop/tablet           |
 
 ## 9. Data Model
 
-\`\`\`mermaid
+```mermaid
 erDiagram
 SERVICE_PROVIDER ||--o{ PAYMENT : provides
 PAYMENT_METHOD    ||--o{ PAYMENT : used_by
-RECEIPT           ||--|| PAYMENT : generates
+BILL           ||--o{ PAYMENT : generates
+RECEIPT        ||--o{ BILL : aggregates
 PAYMENT ||--o{ ATTACHMENT : has
 SERVICE_PROVIDER {
 UUID id PK
@@ -168,6 +227,7 @@ Text comments
 }
 RECEIPT {
 UUID id PK
+UUID billId FK
 String filePath
 Timestamp uploadedAt
 Enum ocrEngine
@@ -175,6 +235,9 @@ JSON ocrResult
 Boolean approved
 Timestamp approvedAt
 JSON correctedFields
+}
+BILL {
+UUID id PK
 }
 PAYMENT {
 UUID id PK
@@ -194,7 +257,7 @@ String filePath
 Text comment
 Timestamp uploadedAt
 }
-\`\`\`
+```
 
 ## 10. System Architecture
 
@@ -222,13 +285,15 @@ Browser
 
 ## 12. Acceptance Criteria & Test Cases
 
-### 12.1 Receipt Ingestion
+### 12.1 Bill Ingestion
 - Drop a JPEG into watch folder → appears in Inbox within 30 s
 - Upload via UI → success toast + new row
 
 ### 12.2 OCR & Review
 - OCR populates at least {serviceProvider, amount, date}
-- Ambiguous provider triggers user prompt
+- Unknown provider triggers service provider dialog
+- STUB engine provides random results when no engines configured
+- Bill/Receipt detail view opens immediately after OCR completion
 - “Accept” moves record to Payments; “Save Draft” does not
 
 ### 12.3 Payments & Recurrence
@@ -243,6 +308,12 @@ Browser
 ### 12.5 Reports & Export
 - CSV opens in Excel with correct headers
 - Monthly spend report matches sum of payments
+
+### 12.6 Service Provider Management
+- "Edit Providers" button opens service provider management dialog
+- Can add, edit, and delete service providers
+- Service provider unknown dialog appears for unknown providers
+- Manual provider input works with "Send to OCR again" option
 
 ## 13. Assumptions & Constraints
 - Users have a Google account for OAuth
