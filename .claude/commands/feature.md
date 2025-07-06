@@ -21,6 +21,7 @@ There are three types of tickets.
  - each change must contain definition of done - what user stories are now allowed
  - each plan should contain update documentation item
  - instead of 'test UserController' create detailed plan like 'test user create, user delete, user update...' 
+ - when create a plan item always describe why and what problem is solves.
 
 - think of a feature in terms of user stories. 
 
