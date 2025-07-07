@@ -41,6 +41,6 @@ There are three types of tickets.
  - Create a descriptive commit message show it but do not commit and do not stage files to git
 
 
-NEVER consider the task complete if even one test is failing
+NEVER consider the task complete if even one test is failing. Check all tests not only modified
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
