@@ -60,4 +60,47 @@ class LoginControllerTest {
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/dashboard"))
     }
+
+    @Test
+    @WithAnonymousUser
+    fun `given unauthenticated user when GET login with error param then should add error to model`() {
+        // given - unauthenticated user accessing login page with error parameter
+        // when - GET request to /login with error parameter
+        mockMvc.perform(get("/login").param("error", "login_failed"))
+            // then - returns login template with error message in model
+            .andExpect(status().isOk)
+            .andExpect(view().name("login"))
+            .andExpect(model().attributeExists("errorMessage"))
+            .andExpect(model().attribute("errorMessage", "Authentication failed. Please try again."))
+    }
+
+    @Test
+    @WithAnonymousUser
+    fun `given unauthenticated user when GET login with different error types then should handle various error messages`() {
+        // given - unauthenticated user accessing login page with different error types
+        
+        // when - GET request with access_denied error
+        mockMvc.perform(get("/login").param("error", "access_denied"))
+            // then - returns login template with access denied message
+            .andExpect(status().isOk)
+            .andExpect(view().name("login"))
+            .andExpect(model().attributeExists("errorMessage"))
+            .andExpect(model().attribute("errorMessage", "Access denied. Your email is not in the allowlist."))
+        
+        // when - GET request with invalid_request error
+        mockMvc.perform(get("/login").param("error", "invalid_request"))
+            // then - returns login template with invalid request message
+            .andExpect(status().isOk)
+            .andExpect(view().name("login"))
+            .andExpect(model().attributeExists("errorMessage"))
+            .andExpect(model().attribute("errorMessage", "Invalid request. Please try again."))
+        
+        // when - GET request with unknown error
+        mockMvc.perform(get("/login").param("error", "unknown_error"))
+            // then - returns login template with generic error message
+            .andExpect(status().isOk)
+            .andExpect(view().name("login"))
+            .andExpect(model().attributeExists("errorMessage"))
+            .andExpect(model().attribute("errorMessage", "An error occurred during login. Please try again."))
+    }
 }
