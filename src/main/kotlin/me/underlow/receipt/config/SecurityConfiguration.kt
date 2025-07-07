@@ -5,6 +5,7 @@ import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
@@ -15,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain
  */
 @Configuration
 @EnableWebSecurity
+@Profile("!test")
 class SecurityConfiguration(
     private val customOAuth2UserService: CustomOAuth2UserService,
     private val customAuthenticationSuccessHandler: CustomAuthenticationSuccessHandler,
@@ -23,7 +25,7 @@ class SecurityConfiguration(
 
     /**
      * Configures the security filter chain with OAuth2 login and URL access rules.
-     * 
+     *
      * @param http HttpSecurity to configure
      * @return SecurityFilterChain bean
      */
