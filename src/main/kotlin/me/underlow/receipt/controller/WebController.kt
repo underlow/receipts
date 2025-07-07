@@ -13,16 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class WebController {
 
-    /**
-     * Displays the login page.
-     * 
-     * @param model Spring MVC model for template rendering
-     * @return login template name
-     */
-    @GetMapping("/login")
-    fun login(model: Model): String {
-        return "login"
-    }
 
     /**
      * Displays the main dashboard page.
