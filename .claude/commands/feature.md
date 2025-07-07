@@ -19,7 +19,7 @@ read ./docs/prd.md
 
 - if there are UI changes check that there is enough description to implement change, do not invent these changes.
 - if there are user flow changes check that there is enough description to implement change, do not invent these changes.
-- if there are changes in business entitiyes check that there is enough description to implement change, do not invent these changes.
+- if there are changes in business entities check that there is enough description to implement change, do not invent these changes.
 
 - Reword the change: ask yourself how you understand the change. add all details you think should be implemented and show me the result
 elaborate it until the change is described and confirmed
