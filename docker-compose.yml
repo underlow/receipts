@@ -14,6 +14,9 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - GOOGLE_CLIENT_ID=your_google_client_id # Replace with your Google OAuth Client ID
       - GOOGLE_CLIENT_SECRET=your_google_client_secret # Replace with your Google OAuth Client Secret
+      - ALLOWED_EMAILS=user@example.com,admin@example.com # Comma-separated list of allowed email addresses
+      - SESSION_TIMEOUT=3600 # Session timeout in seconds (1 hour)
+      - LOG_LEVEL=INFO # Logging level for security events
       - OPENAI_API_KEY=your_openai_api_key # Replace with your OpenAI API Key
       - CLAUDE_API_KEY=your_claude_api_key # Replace with your Claude API Key
       - GOOGLE_AI_API_KEY=your_google_ai_api_key # Replace with your Google AI API Key
@@ -22,6 +25,12 @@ services:
     volumes:
       - ./data/inbox:/data/inbox
       - ./data/attachments:/data/attachments
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       - db
 
