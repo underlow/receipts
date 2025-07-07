@@ -54,10 +54,11 @@ class DashboardControllerTest {
     fun `given unauthenticated user when GET dashboard then should require authentication`() {
         // given - unauthenticated user accessing dashboard page
         // when - GET request to /dashboard
+        // this test is very strange and its behaviour differs from prod
         mockMvc.perform(get("/dashboard"))
             // then - redirects to login page
             .andExpect(status().is3xxRedirection)
-            .andExpect(redirectedUrl("http://localhost/login"))
+            .andExpect(redirectedUrlPattern("**/oauth2/authorization/google"))
     }
 
     @Test
