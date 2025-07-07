@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.security.test.context.support.WithAnonymousUser
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(LoginController::class)
 @Import(SecurityConfiguration::class)
+@TestPropertySource(properties = ["spring.profiles.active="])
 class LoginTemplateTest {
 
     @Autowired

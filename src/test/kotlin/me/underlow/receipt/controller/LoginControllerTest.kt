@@ -1,22 +1,22 @@
 package me.underlow.receipt.controller
 
-import org.junit.jupiter.api.BeforeEach
+import me.underlow.receipt.config.SecurityConfiguration
+import me.underlow.receipt.service.CustomAuthenticationFailureHandler
+import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
+import me.underlow.receipt.service.CustomOAuth2UserService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.context.annotation.Import
 import org.springframework.security.test.context.support.WithAnonymousUser
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import me.underlow.receipt.service.CustomOAuth2UserService
-import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
-import me.underlow.receipt.service.CustomAuthenticationFailureHandler
-import me.underlow.receipt.config.SecurityConfiguration
-import org.springframework.context.annotation.Import
 
 /**
  * Unit tests for LoginController.
@@ -25,18 +25,19 @@ import org.springframework.context.annotation.Import
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(LoginController::class)
 @Import(SecurityConfiguration::class)
+@TestPropertySource(properties = ["spring.profiles.active="])
 class LoginControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @MockBean
+    @MockitoBean
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
 
-    @MockBean
+    @MockitoBean
     private lateinit var customAuthenticationSuccessHandler: CustomAuthenticationSuccessHandler
 
-    @MockBean
+    @MockitoBean
     private lateinit var customAuthenticationFailureHandler: CustomAuthenticationFailureHandler
 
     @Test
@@ -78,7 +79,7 @@ class LoginControllerTest {
     @WithAnonymousUser
     fun `given unauthenticated user when GET login with different error types then should handle various error messages`() {
         // given - unauthenticated user accessing login page with different error types
-        
+
         // when - GET request with access_denied error
         mockMvc.perform(get("/login").param("error", "access_denied"))
             // then - returns login template with access denied message
@@ -86,7 +87,7 @@ class LoginControllerTest {
             .andExpect(view().name("login"))
             .andExpect(model().attributeExists("errorMessage"))
             .andExpect(model().attribute("errorMessage", "Access denied. Your email is not in the allowlist."))
-        
+
         // when - GET request with invalid_request error
         mockMvc.perform(get("/login").param("error", "invalid_request"))
             // then - returns login template with invalid request message
@@ -94,7 +95,7 @@ class LoginControllerTest {
             .andExpect(view().name("login"))
             .andExpect(model().attributeExists("errorMessage"))
             .andExpect(model().attribute("errorMessage", "Invalid request. Please try again."))
-        
+
         // when - GET request with unknown error
         mockMvc.perform(get("/login").param("error", "unknown_error"))
             // then - returns login template with generic error message

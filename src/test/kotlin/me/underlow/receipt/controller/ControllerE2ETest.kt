@@ -1,31 +1,29 @@
 package me.underlow.receipt.controller
 
+import me.underlow.receipt.service.CustomAuthenticationFailureHandler
+import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
+import me.underlow.receipt.service.CustomOAuth2UserService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.web.context.WebApplicationContext
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.security.test.context.support.WithAnonymousUser
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.ActiveProfiles
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import me.underlow.receipt.service.CustomOAuth2UserService
-import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
-import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.test.context.support.WithAnonymousUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
 /**
  * End-to-end tests for controller interactions and complete user flows.
@@ -36,11 +34,13 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 @ExtendWith(MockitoExtension::class)
 @ActiveProfiles("test")
 @Testcontainers
-@TestPropertySource(properties = [
-    "spring.security.oauth2.client.provider.google.issuer-uri=https://accounts.google.com",
-    "spring.security.oauth2.client.registration.google.client-id=test-client-id",
-    "spring.security.oauth2.client.registration.google.client-secret=test-secret"
-])
+@TestPropertySource(
+    properties = [
+        "spring.security.oauth2.client.provider.google.issuer-uri=https://accounts.google.com",
+        "spring.security.oauth2.client.registration.google.client-id=test-client-id",
+        "spring.security.oauth2.client.registration.google.client-secret=test-secret"
+    ]
+)
 class ControllerE2ETest {
 
     companion object {
@@ -51,7 +51,7 @@ class ControllerE2ETest {
             withUsername("test")
             withPassword("test")
         }
-        
+
         @JvmStatic
         @org.springframework.test.context.DynamicPropertySource
         fun configureProperties(registry: org.springframework.test.context.DynamicPropertyRegistry) {
@@ -61,13 +61,13 @@ class ControllerE2ETest {
         }
     }
 
-    @MockBean
+    @MockitoBean
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
 
-    @MockBean
+    @MockitoBean
     private lateinit var customAuthenticationSuccessHandler: CustomAuthenticationSuccessHandler
 
-    @MockBean
+    @MockitoBean
     private lateinit var customAuthenticationFailureHandler: CustomAuthenticationFailureHandler
 
     @Autowired
@@ -82,19 +82,19 @@ class ControllerE2ETest {
             // Then: redirects to login page
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("http://localhost/login"))
-        
+
         // When: accessing profile (should redirect to login)
         mockMvc.perform(get("/profile"))
             // Then: redirects to login page
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("http://localhost/login"))
-        
+
         // When: accessing settings (should redirect to login)
         mockMvc.perform(get("/settings"))
             // Then: redirects to login page
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("http://localhost/login"))
-        
+
         // When: accessing login page (should show login)
         mockMvc.perform(get("/login"))
             // Then: shows login page
@@ -106,14 +106,15 @@ class ControllerE2ETest {
     fun `given authenticated user when accessing login then should redirect to dashboard creating redirect chain`() {
         // Given: authenticated OAuth2 user
         val oAuth2User = createMockOAuth2User("test@example.com", "Test User", "https://example.com/avatar.jpg")
-        val authentication = OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
-        
+        val authentication =
+            OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
+
         // When: authenticated user tries to access login
         mockMvc.perform(get("/login").with(authentication(authentication)))
             // Then: redirects to dashboard
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/dashboard"))
-        
+
         // When: following redirect to dashboard
         mockMvc.perform(get("/dashboard").with(authentication(authentication)))
             // Then: shows dashboard page
@@ -125,8 +126,9 @@ class ControllerE2ETest {
     fun `given authenticated user when accessing various pages then should render templates with correct data`() {
         // Given: authenticated OAuth2 user with complete profile
         val oAuth2User = createMockOAuth2User("john.doe@example.com", "John Doe", "https://example.com/john.jpg")
-        val authentication = OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
-        
+        val authentication =
+            OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
+
         // When: accessing dashboard
         mockMvc.perform(get("/dashboard").with(authentication(authentication)))
             // Then: renders dashboard template with correct user data
@@ -135,7 +137,7 @@ class ControllerE2ETest {
             .andExpect(model().attribute("userName", "John Doe"))
             .andExpect(model().attribute("userEmail", "john.doe@example.com"))
             .andExpect(model().attribute("userAvatar", "https://example.com/john.jpg"))
-        
+
         // When: accessing profile page
         mockMvc.perform(get("/profile").with(authentication(authentication)))
             // Then: renders profile template with correct user data
@@ -144,7 +146,7 @@ class ControllerE2ETest {
             .andExpect(model().attribute("email", "john.doe@example.com"))
             .andExpect(model().attribute("name", "John Doe"))
             .andExpect(model().attributeExists("user"))
-        
+
         // When: accessing settings page
         mockMvc.perform(get("/settings").with(authentication(authentication)))
             // Then: renders settings template with correct user data
@@ -159,8 +161,9 @@ class ControllerE2ETest {
     fun `given authenticated user with incomplete profile when accessing pages then should handle missing data gracefully`() {
         // Given: authenticated OAuth2 user with missing profile attributes
         val oAuth2User = createMockOAuth2UserWithMissingAttributes("jane@example.com")
-        val authentication = OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
-        
+        val authentication =
+            OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
+
         // When: accessing dashboard
         mockMvc.perform(get("/dashboard").with(authentication(authentication)))
             // Then: renders dashboard template with fallback values
@@ -169,7 +172,7 @@ class ControllerE2ETest {
             .andExpect(model().attribute("userName", "Unknown User"))
             .andExpect(model().attribute("userEmail", "jane@example.com"))
             .andExpect(model().attribute("userAvatar", ""))
-        
+
         // When: accessing profile page
         mockMvc.perform(get("/profile").with(authentication(authentication)))
             // Then: renders profile template with available data
@@ -184,7 +187,7 @@ class ControllerE2ETest {
     @WithAnonymousUser
     fun `given various error scenarios when accessing login then should handle error scenarios gracefully`() {
         // Given: unauthenticated user encountering different error scenarios
-        
+
         // When: accessing login with access_denied error
         mockMvc.perform(get("/login").param("error", "access_denied"))
             // Then: shows login page with appropriate error message
@@ -192,7 +195,7 @@ class ControllerE2ETest {
             .andExpect(view().name("login"))
             .andExpect(model().attributeExists("errorMessage"))
             .andExpect(model().attribute("errorMessage", "Access denied. Your email is not in the allowlist."))
-        
+
         // When: accessing login with invalid_request error
         mockMvc.perform(get("/login").param("error", "invalid_request"))
             // Then: shows login page with appropriate error message
@@ -200,7 +203,7 @@ class ControllerE2ETest {
             .andExpect(view().name("login"))
             .andExpect(model().attributeExists("errorMessage"))
             .andExpect(model().attribute("errorMessage", "Invalid request. Please try again."))
-        
+
         // When: accessing login with login_failed error
         mockMvc.perform(get("/login").param("error", "login_failed"))
             // Then: shows login page with appropriate error message
@@ -208,7 +211,7 @@ class ControllerE2ETest {
             .andExpect(view().name("login"))
             .andExpect(model().attributeExists("errorMessage"))
             .andExpect(model().attribute("errorMessage", "Authentication failed. Please try again."))
-        
+
         // When: accessing login with unknown error
         mockMvc.perform(get("/login").param("error", "unknown_error"))
             // Then: shows login page with generic error message
@@ -222,28 +225,29 @@ class ControllerE2ETest {
     fun `given complex user journey when navigating through application then should maintain correct state throughout`() {
         // Given: authenticated OAuth2 user
         val oAuth2User = createMockOAuth2User("user@example.com", "Test User", "https://example.com/avatar.jpg")
-        val authentication = OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
-        
+        val authentication =
+            OAuth2AuthenticationToken(oAuth2User, listOf(SimpleGrantedAuthority("ROLE_USER")), "google")
+
         // When: user tries to access login (should redirect to dashboard)
         mockMvc.perform(get("/login").with(authentication(authentication)))
             // Then: redirects to dashboard
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/dashboard"))
-        
+
         // When: user accesses dashboard
         mockMvc.perform(get("/dashboard").with(authentication(authentication)))
             // Then: shows dashboard with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("dashboard"))
             .andExpect(model().attribute("userName", "Test User"))
-        
+
         // When: user navigates to profile
         mockMvc.perform(get("/profile").with(authentication(authentication)))
             // Then: shows profile with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("profile"))
             .andExpect(model().attribute("name", "Test User"))
-        
+
         // When: user navigates to settings
         mockMvc.perform(get("/settings").with(authentication(authentication)))
             // Then: shows settings with correct user data
