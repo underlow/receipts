@@ -16,6 +16,8 @@ import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.config.SecurityConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.security.oauth2.core.user.OAuth2User
+import org.mockito.Mockito.*
 
 /**
  * Unit tests for DashboardController.
@@ -58,5 +60,47 @@ class DashboardControllerTest {
             // then - redirects to login page
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("http://localhost/login"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given authenticated user when GET dashboard then should add user profile to model`() {
+        // given - authenticated user with profile information
+        // when - GET request to /dashboard
+        mockMvc.perform(get("/dashboard"))
+            // then - returns dashboard template with user profile in model
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(model().attributeExists("userName"))
+            .andExpect(model().attributeExists("userEmail"))
+            .andExpect(model().attributeExists("userAvatar"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given OAuth2 user principal when GET dashboard then should handle OAuth2User principal correctly`() {
+        // given - authenticated OAuth2 user with complete profile
+        // when - GET request to /dashboard
+        mockMvc.perform(get("/dashboard"))
+            // then - returns dashboard template and extracts user info from OAuth2User principal
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(model().attributeExists("userName"))
+            .andExpect(model().attributeExists("userEmail"))
+            .andExpect(model().attributeExists("userAvatar"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given OAuth2 user with missing attributes when GET dashboard then should handle missing user attributes gracefully`() {
+        // given - authenticated OAuth2 user with missing name and picture attributes
+        // when - GET request to /dashboard
+        mockMvc.perform(get("/dashboard"))
+            // then - returns dashboard template with fallback values for missing attributes
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(model().attributeExists("userName"))
+            .andExpect(model().attributeExists("userEmail"))
+            .andExpect(model().attributeExists("userAvatar"))
     }
 }
