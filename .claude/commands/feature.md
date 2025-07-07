@@ -1,19 +1,33 @@
 We need to add a new feature: $ARGUMENTS. 
 
-execute this plan step by step do not skip unless asked:
+execute this plan step by step do not skip unless asked, stop after each step and ask confirmation:
+before each step tell 'I'm executing <step name>
+after each step tell '<step name> completed, next step is: <step>'
+
+read ./docs/prd.md
+
+## Check existing requirements
+- Show me all requirements in @./docs/prd.md document which will be affected by this new feature. elaborate with me this
+- Show me all requirements in @./docs/prd.md document which will conflict with this new feature. elaborate with me this until all conflicts are resolved
+
 
 ## Understand the requirements
 
 - Understand the requirements described.
 - understand current state of the system.
 
-- Show me all requirements in @./docs/prd.md document which will be affected by this new feature. elaborate with me this
-- Show me all requirements in @./docs/prd.md document which will conflict with this new feature. elaborate with me this until all conflicts are resolved
+
+- if there are UI changes check that there is enough description to implement change, do not invent these changes.
+- if there are user flow changes check that there is enough description to implement change, do not invent these changes.
+- if there are changes in business entitiyes check that there is enough description to implement change, do not invent these changes.
+
+- Reword the change: ask yourself how you understand the change. add all details you think should be implemented and show me the result
+elaborate it until the change is described and confirmed
 
 
 ### Validate the requirement.
 
-read ./docs/prd.md
+repeat full Understand the requirements step until user agrees with it.  
 
 #### Main User Scenarios & Stories section
  - check if the new feature adds a new scenario?
