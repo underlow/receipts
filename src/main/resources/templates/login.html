@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Receipt Manager</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <p>Please log in to access the receipt management system.</p>
+    <a href="/oauth2/authorization/google">Login with Google</a>
+    
+    <div th:if="${param.error}" class="error">
+        <p>Authentication failed. Please try again.</p>
+    </div>
+</body>
+</html>
