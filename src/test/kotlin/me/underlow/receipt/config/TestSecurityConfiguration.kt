@@ -1,12 +1,19 @@
 package me.underlow.receipt.config
 
+import me.underlow.receipt.service.UserService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -44,22 +51,27 @@ class TestSecurityConfiguration {
      * Replaces OAuth2 login with form-based authentication.
      *
      * @param http HttpSecurity to configure
+     * @param testAuthenticationProvider Custom authentication provider for email allowlist validation
      * @return SecurityFilterChain bean for testing
      */
     @Bean
     @Primary
-    fun testSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun testSecurityFilterChain(
+        http: HttpSecurity,
+        testAuthenticationProvider: TestAuthenticationProvider
+    ): SecurityFilterChain {
         http
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/login", "/error", "/css/**", "/js/**", "/images/**").permitAll()
                     .anyRequest().authenticated()
             }
+            .authenticationProvider(testAuthenticationProvider)
             .formLogin { form ->
                 form
                     .loginPage("/login")
                     .defaultSuccessUrl("/dashboard", true)
-                    .failureUrl("/login?error=true")
+                    .failureUrl("/login?error=access_denied")
                     .usernameParameter("username")
                     .passwordParameter("password")
                     .permitAll()
@@ -129,5 +141,80 @@ class TestSecurityConfiguration {
         users.add(notAllowedUser)
 
         return InMemoryUserDetailsManager(users)
+    }
+
+    /**
+     * Custom authentication provider that validates credentials and email allowlist.
+     * Integrates form-based authentication with email allowlist validation from UserService.
+     *
+     * @param userDetailsService Service for loading user details
+     * @param passwordEncoder Password encoder for validation
+     * @param userService Service for email allowlist validation
+     */
+    @Bean
+    @Primary
+    fun testAuthenticationProvider(
+        userDetailsService: UserDetailsService,
+        passwordEncoder: PasswordEncoder,
+        userService: UserService
+    ): TestAuthenticationProvider {
+        return TestAuthenticationProvider(userDetailsService, passwordEncoder, userService)
+    }
+}
+
+/**
+ * Custom authentication provider for test environment.
+ * Validates both username/password and email allowlist.
+ */
+class TestAuthenticationProvider(
+    private val userDetailsService: UserDetailsService,
+    private val passwordEncoder: PasswordEncoder,
+    private val userService: UserService
+) : AuthenticationProvider {
+
+    /**
+     * Authenticates the user credentials and validates against email allowlist.
+     *
+     * @param authentication The authentication request
+     * @return Authenticated token if successful
+     * @throws BadCredentialsException if credentials are invalid or email not allowed
+     */
+    override fun authenticate(authentication: Authentication): Authentication {
+        val username = authentication.name
+        val password = authentication.credentials.toString()
+
+        // Load user details
+        val userDetails = try {
+            userDetailsService.loadUserByUsername(username)
+        } catch (e: Exception) {
+            throw BadCredentialsException("Invalid credentials")
+        }
+
+        // Validate password
+        if (!passwordEncoder.matches(password, userDetails.password)) {
+            throw BadCredentialsException("Invalid credentials")
+        }
+
+        // Validate email against allowlist
+        if (!userService.isEmailAllowed(username)) {
+            throw BadCredentialsException("Email $username is not in the allowlist")
+        }
+
+        // Return authenticated token
+        return UsernamePasswordAuthenticationToken(
+            userDetails,
+            password,
+            userDetails.authorities
+        )
+    }
+
+    /**
+     * Indicates whether this provider supports the given authentication type.
+     *
+     * @param authentication The authentication class
+     * @return true if this provider supports the authentication type
+     */
+    override fun supports(authentication: Class<*>): Boolean {
+        return UsernamePasswordAuthenticationToken::class.java.isAssignableFrom(authentication)
     }
 }

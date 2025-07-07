@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Receipt Manager (Test)</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .login-body {
+            padding: 40px 30px;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-primary {
+            padding: 12px 24px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-8 col-12">
+                <div class="login-container card">
+                    <div class="login-header text-center">
+                        <h1>Receipt Manager</h1>
+                        <p>Test Login Portal</p>
+                    </div>
+                    
+                    <div class="login-body">
+                        <div class="welcome-text text-center mb-4">
+                            <p>Test Mode: Use test credentials to sign in</p>
+                        </div>
+                        
+                        <!-- Error Messages -->
+                        <div th:if="${param.error}" class="alert alert-danger" role="alert" aria-live="polite">
+                            <strong>Authentication failed.</strong>
+                            <span th:if="${param.error[0] == 'access_denied'}">
+                                Access denied. Your email is not in the allowlist.
+                            </span>
+                            <span th:if="${param.error[0] == 'invalid_request'}">
+                                Invalid request. Please try again.
+                            </span>
+                            <span th:if="${param.error[0] == 'login_failed'}">
+                                Authentication failed. Please try again.
+                            </span>
+                            <span th:if="${param.error[0] != 'access_denied' && param.error[0] != 'invalid_request' && param.error[0] != 'login_failed'}">
+                                An error occurred during login. Please try again.
+                            </span>
+                        </div>
+                        
+                        <!-- Test Login Form -->
+                        <form th:action="@{/login}" method="post" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="username" name="username" required
+                                       placeholder="Enter your email address" aria-describedby="usernameHelp">
+                                <div class="invalid-feedback">
+                                    Please enter a valid email address.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required
+                                       placeholder="Enter your password" aria-describedby="passwordHelp">
+                                <div class="invalid-feedback">
+                                    Please enter your password.
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Sign In</button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                Test credentials:<br>
+                                Email: allowed1@example.com<br>
+                                Password: testpassword
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

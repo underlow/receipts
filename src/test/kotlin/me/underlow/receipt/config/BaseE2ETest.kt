@@ -70,10 +70,9 @@ abstract class BaseE2ETest {
     private var port: Int = 0
 
     /**
-     * Selenide configuration bean for browser setup.
+     * Selenide configuration is handled by TestConfiguration annotation.
+     * No need to autowire since we configure it directly in setUpE2ETest().
      */
-    @Autowired
-    private lateinit var selenideConfiguration: SelenideConfiguration
 
     /**
      * Sets up the test environment before each test.
@@ -192,8 +191,8 @@ abstract class BaseE2ETest {
      * Clicks logout button and waits for redirect to login page.
      */
     protected fun performLogout() {
-        if (Selenide.`$`("a[href='/logout']").exists()) {
-            Selenide.`$`("a[href='/logout']").click()
+        if (Selenide.`$`("button[type='submit']:contains('Logout')").exists()) {
+            Selenide.`$`("button[type='submit']:contains('Logout')").click()
             waitForPageLoad()
         }
     }
