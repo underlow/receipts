@@ -226,6 +226,62 @@
                 padding: 30px 20px;
             }
         }
+
+        /* Dashboard Layout Styles */
+        .dashboard-layout {
+            padding: 20px;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        .navigation-panel {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .navigation-panel .nav-link {
+            color: #333;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .navigation-panel .nav-link.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .navigation-panel .nav-link:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .content-area {
+            min-height: 400px;
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .navigation-panel {
+                margin-bottom: 20px;
+            }
+            
+            .navigation-panel .nav {
+                flex-direction: row;
+            }
+            
+            .navigation-panel .nav-link {
+                text-align: center;
+                margin-bottom: 0;
+                margin-right: 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -293,77 +349,97 @@
         </nav>
     </header>
 
-    <main class="container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1 class="welcome-title">Welcome to your Dashboard</h1>
-            <div class="user-info">
-                <div class="d-flex align-items-center">
-                    <img th:if="${userAvatar != null and userAvatar != ''}" 
-                         th:src="${userAvatar}" 
-                         th:alt="${userName + ' profile avatar'}"
-                         class="user-avatar">
-                    <div th:if="${userAvatar == null or userAvatar == ''}" 
-                         class="user-avatar-fallback"
-                         th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
-                         th:title="${userName}">
-                        U
+    <!-- Dashboard Layout with Three-Panel Structure -->
+    <main class="container-fluid dashboard-layout">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Welcome to your Dashboard</h1>
+                <div class="user-info">
+                    <div class="d-flex align-items-center">
+                        <img th:if="${userAvatar != null and userAvatar != ''}" 
+                             th:src="${userAvatar}" 
+                             th:alt="${userName + ' profile avatar'}"
+                             class="user-avatar">
+                        <div th:if="${userAvatar == null or userAvatar == ''}" 
+                             class="user-avatar-fallback"
+                             th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                             th:title="${userName}">
+                            U
+                        </div>
                     </div>
-                </div>
-                <div class="user-details">
-                    <div class="user-name" th:text="${userName ?: 'Unknown User'}">Unknown User</div>
-                    <div class="user-email" th:text="${userEmail ?: 'No email provided'}">No email provided</div>
+                    <div class="user-details">
+                        <div class="user-name" th:text="${userName ?: 'Unknown User'}">Unknown User</div>
+                        <div class="user-email" th:text="${userEmail ?: 'No email provided'}">No email provided</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Content -->
+        <!-- Three-Panel Layout -->
         <div class="row">
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card">
-                    <h5 class="card-title">Recent Receipts</h5>
-                    <p class="card-text">View and manage your recent receipt uploads and scans.</p>
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">📄</div>
-                        <p>Receipt management features will be available soon.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card">
-                    <h5 class="card-title">Analytics</h5>
-                    <p class="card-text">Track your spending patterns and receipt analytics.</p>
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">📊</div>
-                        <p>Analytics and reporting features coming soon.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card">
-                    <h5 class="card-title">Categories</h5>
-                    <p class="card-text">Organize your receipts by categories and tags.</p>
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">🏷️</div>
-                        <p>Category management features in development.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- Left Navigation Panel -->
+            <aside class="col-md-3 col-lg-2 navigation-panel">
+                <nav class="nav nav-pills nav-fill flex-column">
+                    <a class="nav-link active" href="#inbox" data-bs-toggle="tab">Inbox</a>
+                    <a class="nav-link" href="#bills" data-bs-toggle="tab">Bills</a>
+                    <a class="nav-link" href="#receipts" data-bs-toggle="tab">Receipts</a>
+                </nav>
+            </aside>
 
-        <!-- Additional Placeholder Content -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="placeholder-content">
-                    <div class="placeholder-icon">🚀</div>
-                    <h3>Receipt Management Dashboard</h3>
-                    <p class="lead">Your comprehensive receipt management solution is being built with care.</p>
-                    <p>This dashboard will soon include features for uploading, categorizing, and analyzing your receipts. Mobile-responsive design ensures you can access your data from any device.</p>
-                    <p class="text-muted">Features in development: OCR processing, expense tracking, tax categorization, and export capabilities.</p>
+            <!-- Main Content Area -->
+            <section class="col-md-9 col-lg-10 content-area">
+                <div class="tab-content">
+                    <!-- Inbox Tab -->
+                    <div class="tab-pane fade show active" id="inbox">
+                        <div class="dashboard-card">
+                            <h5 class="card-title">Inbox</h5>
+                            <p class="card-text">View and manage your recent document uploads and scans.</p>
+                            <div class="placeholder-content">
+                                <div class="placeholder-icon">📄</div>
+                                <p>Inbox management features will be available soon.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bills Tab -->
+                    <div class="tab-pane fade" id="bills">
+                        <div class="dashboard-card">
+                            <h5 class="card-title">Bills</h5>
+                            <p class="card-text">Track your spending patterns and bill analytics.</p>
+                            <div class="placeholder-content">
+                                <div class="placeholder-icon">📊</div>
+                                <p>Bill management features coming soon.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Receipts Tab -->
+                    <div class="tab-pane fade" id="receipts">
+                        <div class="dashboard-card">
+                            <h5 class="card-title">Receipts</h5>
+                            <p class="card-text">Organize your receipts by categories and tags.</p>
+                            <div class="placeholder-content">
+                                <div class="placeholder-icon">🏷️</div>
+                                <p>Receipt management features in development.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Additional Placeholder Content -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🚀</div>
+                            <h3>Receipt Management Dashboard</h3>
+                            <p class="lead">Your comprehensive receipt management solution is being built with care.</p>
+                            <p>This dashboard will soon include features for uploading, categorizing, and analyzing your receipts. Mobile-responsive design ensures you can access your data from any device.</p>
+                            <p class="text-muted">Features in development: OCR processing, expense tracking, tax categorization, and export capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
