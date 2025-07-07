@@ -12,7 +12,7 @@ There are three types of tickets.
 
 ## Plan 
 
- - each step of the plan should describe concrete set of changes. 
+ - each step of the plan should describe concrete set of changes. and contain user story it is implementing
  - if new class is added name, behaviour, members, and it's behaviour MUST be described
  - if existing class is modified each change and it's behaviour MUST be described
  - for each UI interface should be described what exactly should be added/removed/modified
