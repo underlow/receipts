@@ -193,10 +193,30 @@ abstract class BaseE2ETest {
      * Clicks logout button and waits for redirect to login page.
      */
     protected fun performLogout() {
-        if (Selenide.`$`("button[type='submit']:contains('Logout')").exists()) {
-            Selenide.`$`("button[type='submit']:contains('Logout')").click()
-            waitForPageLoad()
+        // First, open the user dropdown if it exists
+        val userDropdown = Selenide.`$`("#userDropdown")
+        if (userDropdown.exists()) {
+            userDropdown.click()
+            Thread.sleep(500) // Wait for dropdown to open
         }
+        
+        // Look for logout button with different possible selectors
+        val logoutButton = when {
+            Selenide.`$`("form[action='/logout'] button[type='submit']").exists() -> 
+                Selenide.`$`("form[action='/logout'] button[type='submit']")
+            
+            Selenide.`$`("button[type='submit']").exists() && 
+            Selenide.`$`("button[type='submit']").text().contains("Logout") -> 
+                Selenide.`$`("button[type='submit']")
+            
+            Selenide.`$`("a[href='/logout']").exists() -> 
+                Selenide.`$`("a[href='/logout']")
+            
+            else -> null
+        }
+        
+        logoutButton?.click()
+        waitForPageLoad()
     }
 
     /**

@@ -33,6 +33,7 @@ class DashboardController {
     /**
      * Extracts user profile information from OAuth2User principal and adds to model.
      * Handles missing attributes gracefully with fallback values.
+     * Also handles regular User principal for test environments.
      * 
      * @param model the model to add user profile attributes to
      * @param authentication the authentication object containing user principal
@@ -40,11 +41,13 @@ class DashboardController {
     private fun extractUserProfileToModel(model: Model, authentication: Authentication) {
         val userName = when (val principal = authentication.principal) {
             is OAuth2User -> principal.getAttribute<String>("name") ?: "Unknown User"
+            is org.springframework.security.core.userdetails.User -> principal.username
             else -> "Unknown User"
         }
         
         val userEmail = when (val principal = authentication.principal) {
             is OAuth2User -> principal.getAttribute<String>("email") ?: ""
+            is org.springframework.security.core.userdetails.User -> principal.username
             else -> ""
         }
         
