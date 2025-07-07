@@ -3,9 +3,12 @@ package me.underlow.receipt.controller
 import com.codeborne.selenide.Selenide
 import com.codeborne.selenide.Condition
 import me.underlow.receipt.config.BaseE2ETest
+import me.underlow.receipt.config.SelenideConfiguration
 import me.underlow.receipt.config.TestSecurityConfiguration
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.DisplayName
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.TestPropertySource
 
 /**
@@ -30,7 +33,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should redirect to login page
         waitForPageLoad()
         assert(isOnLoginPage()) { "User should be redirected to login page" }
-        
+
         // And: login page should contain required elements
         Selenide.`$`("input[name='username']").shouldBe(Condition.visible)
         Selenide.`$`("input[name='password']").shouldBe(Condition.visible)
@@ -50,7 +53,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should redirect to dashboard
         waitForPageLoad()
         assert(isOnDashboardPage()) { "User should be redirected to dashboard after successful login" }
-        
+
         // And: dashboard should show user information
         Selenide.`$`("h1").shouldHave(Condition.text("Dashboard"))
     }
@@ -68,7 +71,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should remain on login page with error
         waitForPageLoad()
         assert(isOnLoginPage()) { "User should remain on login page after failed login" }
-        
+
         // And: should show error message
         Selenide.`$`(".alert-danger").shouldBe(Condition.visible)
     }
@@ -86,7 +89,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should remain on login page with error
         waitForPageLoad()
         assert(isOnLoginPage()) { "User should remain on login page after access denied" }
-        
+
         // And: should show appropriate error message
         Selenide.`$`(".alert-danger").shouldBe(Condition.visible)
     }
@@ -104,7 +107,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should show dashboard with user information
         assert(isOnDashboardPage()) { "User should be on dashboard page" }
         Selenide.`$`("h1").shouldHave(Condition.text("Dashboard"))
-        
+
         // And: user profile information should be visible
         Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.ALLOWED_EMAIL_1))
     }
@@ -114,7 +117,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
     fun `given authenticated user when logging out then should redirect to login page`() {
         // Given: user is authenticated
         performLoginWithAllowedUser()
-        
+
         // When: user clicks logout
         performLogout()
 
@@ -128,10 +131,10 @@ class AuthenticationE2ETest : BaseE2ETest() {
     fun `given user logs out when accessing protected page then should redirect to login`() {
         // Given: user is authenticated
         performLoginWithAllowedUser()
-        
+
         // When: user logs out
         performLogout()
-        
+
         // And: tries to access protected page
         Selenide.open("/dashboard")
         waitForPageLoad()
@@ -195,7 +198,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
 
         // Then: second user should be authenticated
         assert(isOnDashboardPage()) { "Second user should be authenticated" }
-        
+
         // And: should show second user's email
         Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.ALLOWED_EMAIL_2))
     }
@@ -211,7 +214,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // When: user navigates to profile
         Selenide.open("/profile")
         waitForPageLoad()
-        
+
         // And: uses browser back button
         Selenide.back()
         waitForPageLoad()

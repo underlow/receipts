@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -34,6 +35,7 @@ import java.time.Duration
         "ALLOWED_EMAILS=allowed1@example.com,allowed2@example.com"
     ]
 )
+@Import(SelenideConfiguration::class)
 abstract class BaseE2ETest {
 
     companion object {
@@ -82,14 +84,14 @@ abstract class BaseE2ETest {
     fun setUpE2ETest() {
         // Configure Selenide with the dynamic server port
         Configuration.baseUrl = "http://localhost:$port"
-        
+
         // Ensure clean browser state for each test
         if (WebDriverRunner.hasWebDriverStarted()) {
             Selenide.clearBrowserCookies()
             Selenide.clearBrowserLocalStorage()
             Selenide.refresh()
         }
-        
+
         // Configure additional timeouts if needed
         Configuration.timeout = 8000
         Configuration.pageLoadTimeout = 10000
@@ -204,8 +206,8 @@ abstract class BaseE2ETest {
      * @return true if on login page, false otherwise
      */
     protected fun isOnLoginPage(): Boolean {
-        return Selenide.`$`("form").exists() && 
-               Selenide.`$`("input[name='username']").exists() && 
+        return Selenide.`$`("form").exists() &&
+               Selenide.`$`("input[name='username']").exists() &&
                Selenide.`$`("input[name='password']").exists()
     }
 
@@ -216,7 +218,7 @@ abstract class BaseE2ETest {
      * @return true if on dashboard page, false otherwise
      */
     protected fun isOnDashboardPage(): Boolean {
-        return Selenide.`$`("h1").exists() && 
+        return Selenide.`$`("h1").exists() &&
                Selenide.`$`("h1").text().contains("Dashboard")
     }
 
@@ -238,7 +240,7 @@ abstract class BaseE2ETest {
      * @return true if error message is displayed, false otherwise
      */
     protected fun isErrorMessageDisplayed(expectedMessage: String): Boolean {
-        return Selenide.`$`(".alert-danger").exists() && 
+        return Selenide.`$`(".alert-danger").exists() &&
                Selenide.`$`(".alert-danger").text().contains(expectedMessage)
     }
 }
