@@ -12,30 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping
  */
 @Controller
 class WebController {
-
-
-    /**
-     * Displays the main dashboard page.
-     * Requires authentication.
-     * 
-     * @param user authenticated OAuth2 user
-     * @param model Spring MVC model for template rendering
-     * @return dashboard template name
-     */
-    @GetMapping("/dashboard")
-    fun dashboard(@AuthenticationPrincipal user: OAuth2User?, model: Model): String {
-        user?.let {
-            model.addAttribute("user", it)
-            model.addAttribute("email", it.getAttribute<String>("email"))
-            model.addAttribute("name", it.getAttribute<String>("name"))
-        }
-        return "dashboard"
-    }
-
+    
     /**
      * Displays the user profile page.
      * Requires authentication.
-     * 
+     *
      * @param user authenticated OAuth2 user
      * @param model Spring MVC model for template rendering
      * @return profile template name
@@ -53,7 +34,7 @@ class WebController {
     /**
      * Displays the settings page.
      * Requires authentication.
-     * 
+     *
      * @param user authenticated OAuth2 user
      * @param model Spring MVC model for template rendering
      * @return settings template name
