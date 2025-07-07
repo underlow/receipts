@@ -4,21 +4,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Receipt Manager</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+            margin-right: 20px;
+        }
+        
+        .user-avatar-fallback {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            font-size: 2rem;
+            margin-right: 20px;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: white !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 400;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin: 0 0.25rem;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-details h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .user-details p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+        
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>User Profile</h1>
-    <div th:if="${user}">
-        <p>Name: <span th:text="${name}">User</span></p>
-        <p>Email: <span th:text="${email}">user@example.com</span></p>
-    </div>
-    
-    <nav>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/settings">Settings</a>
-        <form action="/logout" method="post" style="display: inline;">
-            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Logout</button>
-        </form>
-    </nav>
+    <!-- Header with Navigation -->
+    <header class="profile-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="/dashboard" aria-label="Receipt Manager Dashboard">
+                    Receipt Manager
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/profile" aria-current="page">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/settings">Settings</a>
+                        </li>
+                    </ul>
+                    
+                    <form action="/logout" method="post" class="d-inline">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <h1 class="mb-4">User Profile</h1>
+            
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <img th:if="${userAvatar != null and userAvatar != ''}" 
+                         th:src="${userAvatar}" 
+                         th:alt="${userName + ' profile avatar'}"
+                         class="user-avatar">
+                    <div th:if="${userAvatar == null or userAvatar == ''}" 
+                         class="user-avatar-fallback"
+                         th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                         th:title="${userName}">
+                        U
+                    </div>
+                </div>
+                <div class="user-details">
+                    <h2 th:text="${userName ?: 'Unknown User'}">Unknown User</h2>
+                    <p th:text="${userEmail ?: 'No email provided'}">No email provided</p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Account Information</h5>
+                    <p><strong>Name:</strong> <span th:text="${userName ?: 'Not provided'}">Not provided</span></p>
+                    <p><strong>Email:</strong> <span th:text="${userEmail ?: 'Not provided'}">Not provided</span></p>
+                    <p><strong>Avatar:</strong> <span th:text="${userAvatar != null and userAvatar != '' ? 'Set' : 'Not set'}">Not set</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Profile Actions</h5>
+                    <p>Profile information is automatically synced from your Google account.</p>
+                    <p>To update your profile information, please update it in your Google account settings.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

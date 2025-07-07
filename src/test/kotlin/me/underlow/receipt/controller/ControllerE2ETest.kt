@@ -143,18 +143,18 @@ class ControllerE2ETest {
             // Then: renders profile template with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("profile"))
-            .andExpect(model().attribute("email", "john.doe@example.com"))
-            .andExpect(model().attribute("name", "John Doe"))
-            .andExpect(model().attributeExists("user"))
+            .andExpect(model().attribute("userEmail", "john.doe@example.com"))
+            .andExpect(model().attribute("userName", "John Doe"))
+            .andExpect(model().attribute("userAvatar", "https://example.com/john.jpg"))
 
         // When: accessing settings page
         mockMvc.perform(get("/settings").with(authentication(authentication)))
             // Then: renders settings template with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("settings"))
-            .andExpect(model().attribute("email", "john.doe@example.com"))
-            .andExpect(model().attribute("name", "John Doe"))
-            .andExpect(model().attributeExists("user"))
+            .andExpect(model().attribute("userEmail", "john.doe@example.com"))
+            .andExpect(model().attribute("userName", "John Doe"))
+            .andExpect(model().attribute("userAvatar", "https://example.com/john.jpg"))
     }
 
     @Test
@@ -178,9 +178,9 @@ class ControllerE2ETest {
             // Then: renders profile template with available data
             .andExpect(status().isOk)
             .andExpect(view().name("profile"))
-            .andExpect(model().attribute("email", "jane@example.com"))
-            .andExpect(model().attribute("name", null))
-            .andExpect(model().attributeExists("user"))
+            .andExpect(model().attribute("userEmail", "jane@example.com"))
+            .andExpect(model().attribute("userName", "Unknown User"))
+            .andExpect(model().attribute("userAvatar", ""))
     }
 
     @Test
@@ -246,14 +246,18 @@ class ControllerE2ETest {
             // Then: shows profile with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("profile"))
-            .andExpect(model().attribute("name", "Test User"))
+            .andExpect(model().attribute("userName", "Test User"))
+            .andExpect(model().attribute("userEmail", "user@example.com"))
+            .andExpect(model().attribute("userAvatar", "https://example.com/avatar.jpg"))
 
         // When: user navigates to settings
         mockMvc.perform(get("/settings").with(authentication(authentication)))
             // Then: shows settings with correct user data
             .andExpect(status().isOk)
             .andExpect(view().name("settings"))
-            .andExpect(model().attribute("name", "Test User"))
+            .andExpect(model().attribute("userName", "Test User"))
+            .andExpect(model().attribute("userEmail", "user@example.com"))
+            .andExpect(model().attribute("userAvatar", "https://example.com/avatar.jpg"))
     }
 
     /**

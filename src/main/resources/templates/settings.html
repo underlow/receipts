@@ -4,25 +4,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Receipt Manager</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #667eea;
+            margin-right: 15px;
+        }
+        
+        .user-avatar-fallback {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: white !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 400;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin: 0 0.25rem;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .user-details h6 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+        
+        .user-details small {
+            color: #666;
+        }
+        
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+
+        .setting-section {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .setting-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Settings</h1>
-    <div th:if="${user}">
-        <p>User: <span th:text="${name}">User</span></p>
-        <p>Email: <span th:text="${email}">user@example.com</span></p>
-    </div>
-    
-    <nav>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/profile">Profile</a>
-        <form action="/logout" method="post" style="display: inline;">
-            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Logout</button>
-        </form>
-    </nav>
-    
-    <main>
-        <p>Application settings content goes here.</p>
+    <!-- Header with Navigation -->
+    <header class="settings-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="/dashboard" aria-label="Receipt Manager Dashboard">
+                    Receipt Manager
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/profile">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/settings" aria-current="page">Settings</a>
+                        </li>
+                    </ul>
+                    
+                    <form action="/logout" method="post" class="d-inline">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- User Info Section -->
+        <div class="settings-card">
+            <h1 class="mb-4">Settings</h1>
+            
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <img th:if="${userAvatar != null and userAvatar != ''}" 
+                         th:src="${userAvatar}" 
+                         th:alt="${userName + ' avatar'}"
+                         class="user-avatar">
+                    <div th:if="${userAvatar == null or userAvatar == ''}" 
+                         class="user-avatar-fallback"
+                         th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                         th:title="${userName}">
+                        U
+                    </div>
+                </div>
+                <div class="user-details">
+                    <h6 th:text="${userName ?: 'Unknown User'}">Unknown User</h6>
+                    <small th:text="${userEmail ?: 'No email provided'}">No email provided</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Sections -->
+        <div class="settings-card">
+            <div class="setting-section">
+                <h5>Account Settings</h5>
+                <p class="text-muted">Your account information is managed through your Google account. Changes made in your Google profile will be reflected here automatically.</p>
+                
+                <div class="row">
+                    <div class="col-sm-3"><strong>Name:</strong></div>
+                    <div class="col-sm-9" th:text="${userName ?: 'Not provided'}">Not provided</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-sm-3"><strong>Email:</strong></div>
+                    <div class="col-sm-9" th:text="${userEmail ?: 'Not provided'}">Not provided</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-sm-3"><strong>Avatar:</strong></div>
+                    <div class="col-sm-9" th:text="${userAvatar != null and userAvatar != '' ? 'Connected from Google' : 'No avatar set'}">No avatar set</div>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <h5>Application Preferences</h5>
+                <p class="text-muted">Customize how the application works for you.</p>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="emailNotifications" checked disabled>
+                    <label class="form-check-label" for="emailNotifications">
+                        Email notifications (Coming soon)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="darkMode" disabled>
+                    <label class="form-check-label" for="darkMode">
+                        Dark mode (Coming soon)
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <h5>Data & Privacy</h5>
+                <p class="text-muted">Manage your data and privacy settings.</p>
+                
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-outline-primary" type="button" disabled>Export Data (Coming soon)</button>
+                    <button class="btn btn-outline-danger" type="button" disabled>Delete Account (Coming soon)</button>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <h5>Help & Support</h5>
+                <p class="text-muted">Get help with using the Receipt Manager application.</p>
+                
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-outline-info" type="button" disabled>Contact Support (Coming soon)</button>
+                    <button class="btn btn-outline-secondary" type="button" disabled>View Documentation (Coming soon)</button>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
