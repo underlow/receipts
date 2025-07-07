@@ -264,7 +264,7 @@
                                  class="user-avatar">
                             <div th:if="${userAvatar == null or userAvatar == ''}" 
                                  class="user-avatar-fallback"
-                                 th:text="${userName != null ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                                 th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
                                  th:title="${userName}">
                                 U
                             </div>
@@ -280,7 +280,7 @@
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="/logout" method="post" class="d-inline">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <button type="submit" class="dropdown-item text-danger">
                                         <i class="fas fa-sign-out-alt me-2"></i> Logout
                                     </button>
@@ -305,7 +305,7 @@
                          class="user-avatar">
                     <div th:if="${userAvatar == null or userAvatar == ''}" 
                          class="user-avatar-fallback"
-                         th:text="${userName != null ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                         th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
                          th:title="${userName}">
                         U
                     </div>
