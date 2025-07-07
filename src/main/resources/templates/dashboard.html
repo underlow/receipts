@@ -4,25 +4,370 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Receipt Manager</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: white !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 400;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin: 0 0.25rem;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            margin-right: 10px;
+        }
+        
+        .user-avatar-fallback {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-weight: 500;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+        
+        .welcome-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-title {
+            color: #333;
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .user-details {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .user-name {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .user-email {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-title {
+            color: #333;
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .card-text {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+        
+        .placeholder-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .placeholder-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+        }
+        
+        .dropdown-item {
+            padding: 10px 15px;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 15px 0;
+            }
+            
+            .welcome-section {
+                padding: 20px;
+            }
+            
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .dashboard-card {
+                padding: 20px;
+            }
+            
+            .navbar-nav {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 10px;
+                margin-top: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .welcome-section {
+                padding: 15px;
+            }
+            
+            .dashboard-card {
+                padding: 15px;
+            }
+            
+            .placeholder-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Dashboard</h1>
-    <div th:if="${user}">
-        <p>Welcome, <span th:text="${name}">User</span>!</p>
-        <p>Email: <span th:text="${email}">user@example.com</span></p>
-    </div>
-    
-    <nav>
-        <a href="/profile">Profile</a>
-        <a href="/settings">Settings</a>
-        <form action="/logout" method="post" style="display: inline;">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Logout</button>
-        </form>
-    </nav>
-    
-    <main>
-        <p>Receipt management dashboard content goes here.</p>
+    <!-- Dashboard Header with Navigation -->
+    <header class="dashboard-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="/dashboard" aria-label="Receipt Manager Dashboard">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNMTAgMTBIMjJWMjJIMTBWMTBaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K" alt="Receipt Manager Logo" class="d-inline-block align-text-top me-2" style="width: 32px; height: 32px;">
+                    Receipt Manager
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/dashboard" aria-current="page">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/profile">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/settings">Settings</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- User Dropdown Menu -->
+                    <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle d-flex align-items-center text-white text-decoration-none" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                            <img th:if="${userAvatar != null and userAvatar != ''}" 
+                                 th:src="${userAvatar}" 
+                                 th:alt="${userName + ' avatar'}"
+                                 class="user-avatar">
+                            <div th:if="${userAvatar == null or userAvatar == ''}" 
+                                 class="user-avatar-fallback"
+                                 th:text="${userName != null ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                                 th:title="${userName}">
+                                U
+                            </div>
+                            <span class="d-none d-md-inline ms-2" th:text="${userName ?: 'User'}">User</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/profile">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="/settings">
+                                <i class="fas fa-cog me-2"></i> Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="/logout" method="post" class="d-inline">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome to your Dashboard</h1>
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <img th:if="${userAvatar != null and userAvatar != ''}" 
+                         th:src="${userAvatar}" 
+                         th:alt="${userName + ' profile avatar'}"
+                         class="user-avatar">
+                    <div th:if="${userAvatar == null or userAvatar == ''}" 
+                         class="user-avatar-fallback"
+                         th:text="${userName != null ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                         th:title="${userName}">
+                        U
+                    </div>
+                </div>
+                <div class="user-details">
+                    <div class="user-name" th:text="${userName ?: 'Unknown User'}">Unknown User</div>
+                    <div class="user-email" th:text="${userEmail ?: 'No email provided'}">No email provided</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="row">
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card">
+                    <h5 class="card-title">Recent Receipts</h5>
+                    <p class="card-text">View and manage your recent receipt uploads and scans.</p>
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">📄</div>
+                        <p>Receipt management features will be available soon.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card">
+                    <h5 class="card-title">Analytics</h5>
+                    <p class="card-text">Track your spending patterns and receipt analytics.</p>
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">📊</div>
+                        <p>Analytics and reporting features coming soon.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card">
+                    <h5 class="card-title">Categories</h5>
+                    <p class="card-text">Organize your receipts by categories and tags.</p>
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">🏷️</div>
+                        <p>Category management features in development.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Placeholder Content -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">🚀</div>
+                    <h3>Receipt Management Dashboard</h3>
+                    <p class="lead">Your comprehensive receipt management solution is being built with care.</p>
+                    <p>This dashboard will soon include features for uploading, categorizing, and analyzing your receipts. Mobile-responsive design ensures you can access your data from any device.</p>
+                    <p class="text-muted">Features in development: OCR processing, expense tracking, tax categorization, and export capabilities.</p>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
