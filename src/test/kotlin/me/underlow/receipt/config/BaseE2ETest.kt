@@ -118,7 +118,7 @@ abstract class BaseE2ETest {
                     Selenide.clearBrowserCookies()
                     Selenide.clearBrowserLocalStorage()
                     // Note: We don't close the WebDriver completely to improve performance
-                    // Selenide.closeWebDriver() - commented out for performance
+                     Selenide.closeWebDriver() //- commented out for performance
                 }
             } catch (e: Exception) {
                 // Ignore cleanup errors
@@ -199,22 +199,22 @@ abstract class BaseE2ETest {
             userDropdown.click()
             Thread.sleep(500) // Wait for dropdown to open
         }
-        
+
         // Look for logout button with different possible selectors
         val logoutButton = when {
-            Selenide.`$`("form[action='/logout'] button[type='submit']").exists() -> 
+            Selenide.`$`("form[action='/logout'] button[type='submit']").exists() ->
                 Selenide.`$`("form[action='/logout'] button[type='submit']")
-            
-            Selenide.`$`("button[type='submit']").exists() && 
-            Selenide.`$`("button[type='submit']").text().contains("Logout") -> 
+
+            Selenide.`$`("button[type='submit']").exists() &&
+            Selenide.`$`("button[type='submit']").text().contains("Logout") ->
                 Selenide.`$`("button[type='submit']")
-            
-            Selenide.`$`("a[href='/logout']").exists() -> 
+
+            Selenide.`$`("a[href='/logout']").exists() ->
                 Selenide.`$`("a[href='/logout']")
-            
+
             else -> null
         }
-        
+
         logoutButton?.click()
         waitForPageLoad()
     }
