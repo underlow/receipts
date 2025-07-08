@@ -29,36 +29,30 @@ class BillsE2ETest : BaseE2ETest() {
         // given - user is authenticated and on dashboard
         assertTrue(isOnDashboardPage())
 
-        // when - user clicks on Bills tab or navigates to bills
-        val billsTab = `$`("[data-tab='bills']")
-        if (billsTab.exists()) {
-            billsTab.click()
-        } else {
-            // Alternative navigation if tab structure is different
-            val billsLink = `$`("a[href*='bills']")
-            if (billsLink.exists()) {
-                billsLink.click()
-            }
-        }
-        waitForPageLoad()
+        // when - user navigates to bills tab
+        navigateToBills()
 
         // then - should display bills table with headers
-        val table = `$`("table")
-        assertTrue(table.exists())
+        val table = `$`("#bills table")
+        table.shouldBe(Condition.visible, Duration.ofSeconds(10))
 
-        // Verify table headers are present
-        assertTrue(`$`("th").text().contains("Bill Date") ||
-                  `$$`("th").any { it.text().contains("Bill Date") })
-        assertTrue(`$`("th").text().contains("Service Provider") ||
-                  `$$`("th").any { it.text().contains("Service Provider") })
-        assertTrue(`$`("th").text().contains("Amount") ||
-                  `$$`("th").any { it.text().contains("Amount") })
-        assertTrue(`$`("th").text().contains("Description") ||
-                  `$$`("th").any { it.text().contains("Description") })
-        assertTrue(`$`("th").text().contains("Created Date") ||
-                  `$$`("th").any { it.text().contains("Created Date") })
-        assertTrue(`$`("th").text().contains("Actions") ||
-                  `$$`("th").any { it.text().contains("Actions") })
+        // Verify table headers are present within the Bills tab
+        val headers = `$$`("#bills th")
+        
+        // Check for expected headers (case-insensitive)
+        val expectedHeaders = listOf("BILL DATE", "SERVICE PROVIDER", "AMOUNT", "DESCRIPTION", "CREATED DATE", "ACTIONS")
+        val allHeadersText = headers.map { it.text() }.joinToString(", ")
+        
+        // Check if we have at least the minimum number of headers
+        assertTrue(headers.size() >= 6, "Expected at least 6 headers, found ${headers.size()}: $allHeadersText")
+        
+        // Check each expected header exists (case-insensitive)
+        expectedHeaders.forEach { expectedHeader ->
+            val headerExists = headers.any { header ->
+                header.text().uppercase().contains(expectedHeader.uppercase())
+            }
+            assertTrue(headerExists, "Expected header '$expectedHeader' not found in Bills table. Found headers: $allHeadersText")
+        }
     }
 
     @Test
@@ -365,7 +359,7 @@ class BillsE2ETest : BaseE2ETest() {
         navigateToBills()
 
         // when - checking accessibility attributes
-        val table = `$`("table")
+        val table = `$`("#bills table")
         assertTrue(table.exists())
 
         // then - should have proper accessibility features
@@ -376,18 +370,20 @@ class BillsE2ETest : BaseE2ETest() {
         assertTrue(tableRole == "table" || tableAriaLabel?.isNotEmpty() == true)
 
         // Check table headers contain expected text content (ignore sort icons)
-        val headers = `$$`("th")
+        val headers = `$$`("#bills th")
         val expectedHeaders = listOf("Bill Date", "Service Provider", "Amount", "Description", "Created Date", "Actions")
 
+        val allHeadersText = headers.map { it.text() }.joinToString(", ")
+
         // Verify we have the expected number of headers
-        assertTrue(headers.size() >= expectedHeaders.size)
+        assertTrue(headers.size() >= expectedHeaders.size, "Expected at least ${expectedHeaders.size} headers but found ${headers.size()}: $allHeadersText")
 
         // Verify each expected header exists in the table
         expectedHeaders.forEach { expectedHeader ->
             val headerExists = headers.any { header ->
-                header.text().contains(expectedHeader)
+                header.text().contains(expectedHeader, ignoreCase = true)
             }
-            assertTrue(headerExists, "Expected header '$expectedHeader' not found in table")
+            assertTrue(headerExists, "Expected header '$expectedHeader' not found in table. Found headers: $allHeadersText")
         }
 
         // Verify headers have proper scope attributes for accessibility
@@ -401,7 +397,7 @@ class BillsE2ETest : BaseE2ETest() {
         }
 
         // Action buttons should have proper accessibility attributes (if any exist)
-        val actionButtons = `$$`("button")
+        val actionButtons = `$$`("#bills button")
         if (actionButtons.size() > 0) {
             actionButtons.forEach { button ->
                 val hasTitle = button.attr("title")?.isNotEmpty() == true
