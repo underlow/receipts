@@ -1,172 +1,288 @@
-# Design System for Refero
+# Design System
 
-This design system document provides implementation-ready specifications for building the Refero UI with Bootstrap and custom CSS. It covers color palette, typography, spacing, elevation (shadows), and common components.
+## Overview
+This document outlines the design system for the Receipt Dashboard application, including table styling, component patterns, and visual guidelines.
 
----
+## Table Design System
 
-## 1. Color Palette
+### Modern Table Architecture
+The application uses a modern table design system that provides a clean, professional appearance with enhanced usability.
 
-| Token Name      | Hex                      | Usage                                   | Bootstrap Variable   |
-|-----------------|--------------------------|-----------------------------------------|----------------------|
-| Primary         | `#4A3AFF`                | Buttons, links, accents                 | `$primary`           |
-| Secondary       | `#F4F2FF`                | Background highlights                   | `$secondary`         |
-| Surface         | `#FFFFFF`                | Card backgrounds, panels                | `$body-bg`           |
-| Surface Light   | `#F9F9FB`                | Hover states, input backgrounds         | —                    |
-| Border          | `#E3E1E8`                | Dividers, borders                       | `$gray-200`          |
-| Text Primary    | `#13131A`                | Main body text                          | `$gray-900`          |
-| Text Secondary  | `#52525B`                | Subdued labels, metadata                | `$gray-600`          |
-| Text Tertiary   | `#8F8F9B`                | Disabled text                           | `$gray-400`          |
-| Interactive BG  | `#F2F0FF`                | Interactive input focus/hover           | —                    |
-| Shadow Color    | `rgba(18, 15, 68, 0.04)` | Card shadows                            | —                    |
+#### Visual Characteristics
+- **Clean Layout**: White background with subtle shadows and rounded corners
+- **Consistent Spacing**: 16px-20px padding for comfortable reading
+- **Subtle Borders**: Light gray separators between rows
+- **Hover Effects**: Smooth transitions on interactive elements
+- **Responsive Design**: Adapts to different screen sizes
 
----
+### Table Components
 
-## 2. Typography
+#### 1. Table Wrapper
+**Class**: `.modern-table-wrapper`
+- Background: White
+- Border radius: 8px
+- Box shadow: `0 2px 4px rgba(0, 0, 0, 0.05)`
+- Overflow: Hidden for clean corners
 
-- **Font Family:** `Inter, sans-serif`  
-- **Base Font Size:** 16px (`1rem`)  
-- **Line Height:** 1.5
+#### 2. Table Structure
+**Class**: `.modern-table`
+- Width: 100%
+- Border collapse: Collapsed
+- Font size: 0.875rem (14px)
 
-| Style Name    | Bootstrap Class | Font Size | Line Height | Weight | Letter Spacing |
-|---------------|-----------------|-----------|-------------|--------|----------------|
-| Display Title | `.h1`           | 28px      | 36px        | 600    | normal         |
-| Heading       | `.h3`           | 20px      | 28px        | 600    | normal         |
-| Body Large    | `.lead`         | 16px      | 24px        | 400    | normal         |
-| Body Regular  | `.body-text`¹   | 14px      | 20px        | 400    | normal         |
-| Label         | `.small`        | 12px      | 16px        | 500    | normal         |
-| Mono Code     | `.code`         | 14px      | 20px        | 400    | normal         |
+#### 3. Table Header
+**Class**: `.modern-table-header`
+- Background: Light gray (`#f8f9fa`)
+- Border bottom: 2px solid `#e9ecef`
+- Font weight: 600
+- Color: `#495057`
 
-¹ Define utility:
-\`\`\`css
-.body-text {
-  font-size: 0.875rem;
-  line-height: 1.4286;
+**Header Cells**:
+- Padding: 16px-20px
+- Text align: Left
+- No border
+- White space: nowrap
+
+**Sortable Headers**:
+- Cursor: pointer
+- User select: none
+- Hover background: `#e9ecef`
+- Transition: background-color 0.2s ease
+
+#### 4. Table Body
+**Class**: `.modern-table-body`
+- Background: White
+
+**Table Rows**:
+- **Class**: `.modern-table-row`
+- Border bottom: 1px solid `#f1f3f4`
+- Hover background: `#f8f9fa`
+- Transition: background-color 0.2s ease
+
+**Table Cells**:
+- **Class**: `.modern-table-cell`
+- Padding: 16px-20px
+- Vertical align: middle
+- Color: `#212529`
+- Font size: 0.875rem
+
+### Status Indicators
+
+#### Design Pattern
+Status indicators use a unified visual system with colored backgrounds and icons.
+
+#### Status Types
+
+##### Done Status
+**Class**: `.status-done`
+- Background: `#d4edda` (light green)
+- Color: `#155724` (dark green)
+- Icon: Green dot (`�`)
+- Usage: Completed items, processed documents
+
+##### In Progress Status
+**Class**: `.status-in-progress`
+- Background: `#fff3cd` (light yellow)
+- Color: `#856404` (dark yellow)
+- Icon: Yellow star (``)
+- Usage: Pending items, processing documents
+
+#### Implementation
+```html
+<span class="status-indicator status-done">Done</span>
+<span class="status-indicator status-in-progress">In Process</span>
+```
+
+### Action Buttons
+
+#### Design Pattern
+Action buttons follow a consistent design with proper spacing and hover effects.
+
+#### Button Types
+
+##### Primary Action Button
+**Class**: `.action-btn-primary`
+- Background: `#007bff` (blue)
+- Color: White
+- Border: `#007bff`
+- Hover: `#0056b3`
+
+##### Danger Action Button
+**Class**: `.action-btn-danger`
+- Background: `#dc3545` (red)
+- Color: White
+- Border: `#dc3545`
+- Hover: `#c82333`
+
+##### Default Action Button
+**Class**: `.action-btn`
+- Background: White
+- Color: `#495057`
+- Border: `#dee2e6`
+- Hover: `#f8f9fa`
+
+#### Button Container
+**Class**: `.action-buttons`
+- Display: flex
+- Gap: 8px
+- Align items: center
+
+#### Dropdown Toggle
+**Class**: `.dropdown-toggle-btn`
+- Background: none
+- Border: none
+- Color: `#6c757d`
+- Hover: `#f8f9fa`
+- Icon: `�` (vertical dots)
+
+### Empty State
+
+#### Design Pattern
+Empty states provide clear communication when no data is available.
+
+#### Structure
+**Class**: `.empty-state-cell`
+- Padding: 60px 20px
+- Background: `#fafbfc`
+- Text align: center
+
+**Content Container**:
+- **Class**: `.empty-state-content`
+- Display: flex column
+- Align items: center
+- Gap: 12px
+
+**Icon**: `.empty-state-icon`
+- Font size: 2.5rem
+- Color: `#adb5bd`
+
+**Title**: `.empty-state-title`
+- Font size: 1.125rem
+- Font weight: 600
+- Color: `#495057`
+
+**Text**: `.empty-state-text`
+- Color: `#6c757d`
+
+### Pagination
+
+#### Design Pattern
+Pagination follows a clean, modern design with proper spacing and hover effects.
+
+#### Styling
+- Margin top: 20px
+- Page links: 8px-12px padding
+- Border radius: 4px
+- Font size: 0.875rem
+
+#### States
+- **Default**: `#495057` color, `#dee2e6` border
+- **Active**: `#007bff` background, white text
+- **Hover**: `#f8f9fa` background
+
+### Responsive Design
+
+#### Mobile Breakpoints
+**768px and below**:
+- Horizontal scrolling enabled
+- Reduced padding (12px-16px)
+- Smaller font sizes (0.8125rem)
+- Stacked action buttons
+
+#### Implementation
+```css
+@media (max-width: 768px) {
+    .modern-table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .modern-table-header th,
+    .modern-table-cell {
+        padding: 12px 16px;
+        font-size: 0.8125rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
 }
-\`\`\`
+```
 
----
+### Color System
 
-## 3. Spacing
+#### Primary Colors
+- **Primary Blue**: `#007bff`
+- **Success Green**: `#28a745`
+- **Warning Yellow**: `#ffc107`
+- **Danger Red**: `#dc3545`
 
-Refer to the Bootstrap spacing scale and supplement with custom variables where needed.
+#### Neutral Colors
+- **Dark Gray**: `#495057`
+- **Medium Gray**: `#6c757d`
+- **Light Gray**: `#adb5bd`
+- **Border Gray**: `#dee2e6`
+- **Background Gray**: `#f8f9fa`
 
-| Name                | Bootstrap Class   | Pixels |
-|---------------------|-------------------|--------|
-| Spacing XS          | `.p-1` / `.m-1`   | 4px    |
-| Spacing SM          | `.p-2` / `.m-2`   | 8px    |
-| Spacing MD          | `.p-3` / `.m-3`   | 16px   |
-| Spacing LG          | `.p-4` / `.m-4`   | 24px   |
-| Spacing XL          | `.p-5` / `.m-5`   | 32px   |
-| Horizontal Gutter   | `.gx-4`           | 24px   |
-| Vertical Gutter     | `.gy-3`           | 16px   |
+#### Status Colors
+- **Success Background**: `#d4edda`
+- **Success Text**: `#155724`
+- **Warning Background**: `#fff3cd`
+- **Warning Text**: `#856404`
 
-Custom CSS variables:
-\`\`\`css
-:root {
-  --spacing-xxs: 2px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-}
-\`\`\`
+### Typography
 
----
+#### Font Stack
+- Primary: 'Roboto', sans-serif
+- Weight: 300, 400, 500, 600, 700
 
-## 4. Elevation & Shadows
+#### Font Sizes
+- **Large**: 1.125rem (18px)
+- **Normal**: 0.875rem (14px)
+- **Small**: 0.8125rem (13px)
 
-| Level             | CSS Class      | Shadow                                        |
-|-------------------|----------------|-----------------------------------------------|
-| Card (Default)    | `.shadow-sm`   | `0 1px 2px rgba(18, 15, 68, 0.04)`            |
-| Modal / Overlay   | `.shadow`      | `0 4px 8px rgba(18, 15, 68, 0.08)`            |
-| Top App Bar       | `.shadow-none` | none                                          |
+### Implementation Files
 
-Custom shadow mixin:
-\`\`\`scss
-@mixin card-shadow {
-  box-shadow: 0 1px 2px rgba(18, 15, 68, 0.04);
-}
-\`\`\`
+#### Templates
+- `/src/main/resources/templates/fragments/table.html` - Main table template
+- `/src/main/resources/templates/dashboard.html` - Dashboard with embedded styles
 
----
+#### Kotlin Components
+- `/src/main/kotlin/me/underlow/receipt/dashboard/BaseTable.kt` - Base table functionality
+- `/src/main/kotlin/me/underlow/receipt/dashboard/BillsView.kt` - Bills table implementation
+- `/src/main/kotlin/me/underlow/receipt/dashboard/InboxView.kt` - Inbox table implementation
 
-## 5. Component Specifications
+### Usage Guidelines
 
-### 5.1 Navbar (Top Bar)
+#### When to Use
+- All data tables in the application
+- Bills and inbox listing pages
+- Any tabular data presentation
 
-- **Structure:** `.navbar`, `.navbar-expand`, `.bg-white`, `.shadow-none`
-- **Height:** 64px  
-- **Padding:** `0 var(--spacing-md)` (0 16px)  
-- **Logo:** 24px height, aligned left  
-- **Navigation Items:** `.nav-link text-secondary`, 14px, bold on hover  
-- **Search Input:** `.form-control`, width: 240px, height: 36px
+#### Customization
+- Status indicators can be extended with new types
+- Action buttons can be configured per table
+- Column sorting can be enabled/disabled per column
+- Search functionality is optional per table
 
-### 5.2 Sidebar (Vertical Nav)
+#### Best Practices
+- Always provide empty state messaging
+- Use consistent status indicators across tables
+- Implement hover states for interactive elements
+- Ensure responsive behavior on mobile devices
+- Maintain consistent spacing and typography
 
-- **Width:** 240px  
-- **Background:** `$surface (#FFFFFF)`  
-- **Items:** flex-col, gap `--spacing-md`  
-- **Icon + Label:** icon size 20px, label `.small text-secondary`  
-- **Active Item:** `.text-primary font-semibold`
+### Future Enhancements
 
-### 5.3 Cards & Panels
+#### Planned Features
+- Drag handle indicators for reorderable rows
+- Bulk selection checkboxes
+- Column customization options
+- Export functionality integration
+- Advanced filtering controls
 
-**Base Card:**
-\`\`\`html
-<div class="card shadow-sm border-0">
-  <div class="card-body p-4">
-    <!-- Content -->
-  </div>
-</div>
-\`\`\`
-- **Border Radius:** 8px  
-- **Padding:** `--spacing-md` (16px)  
-- **Background:** `$surface`  
-- **Shadow:** card-shadow mixin
-
-**Org Chart Panel:**
-- **Title:** `.h5` (16px, 24px, weight 600)  
-- **Import Button:** `.btn btn-outline-primary btn-sm`  
-- **List Items:** `.list-group` with `.list-group-item d-flex align-items-center`  
-- **Avatar:** 32×32px, border-radius: 50%  
-- **Role Text:** `.body-text ms-2`
-
-### 5.4 Jobs Panel
-
-- **Structure:** same as Org Chart Panel  
-- **Job Item:** `.list-group-item` with title `.body-text font-medium` and subtitle `.small text-secondary`  
-- **Button:** `.btn btn-outline-secondary btn-sm`
-
-### 5.5 Share Panel (Embed & Links)
-
-- **Tab Nav:** `.nav nav-tabs border-0`  
-- **Input Group:** `.input-group`  
-- **Copy Button:** `.btn btn-primary btn-sm`  
-- **Tab Content Padding:** `--spacing-md`
-
----
-
-## 6. Utility Classes
-
-\`\`\`css
-.text-primary       { color: #4A3AFF !important; }
-.text-secondary     { color: #52525B !important; }
-.bg-surface         { background-color: #FFFFFF !important; }
-.bg-surface-light   { background-color: #F9F9FB !important; }
-.border-default     { border-color: #E3E1E8 !important; }
-.rounded-md         { border-radius: 8px !important; }
-.shadow-card        { box-shadow: 0 1px 2px rgba(18, 15, 68, 0.04) !important; }
-\`\`\`
-
----
-
-## 7. Accessibility & States
-
-- **Focus State:** `outline: 2px solid #4A3AFF` on inputs and buttons  
-- **Hover State:** lighten backgrounds by 8% (`#F2F0FF`) on interactive elements  
-- **Disabled State:** `.opacity-50 cursor-not-allowed`
-
----
-
-*Document version: 1.0. Last updated: 2025-07-08.*  
+#### Accessibility
+- ARIA labels for screen readers
+- Keyboard navigation support
+- High contrast mode compatibility
+- Focus indicators for interactive elements

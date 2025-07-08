@@ -55,6 +55,19 @@
             border: 2px solid white;
             margin-right: 10px;
         }
+
+        /* Additional shadcn/ui utility classes */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         
         .user-avatar-fallback {
             width: 40px;
@@ -280,6 +293,351 @@
                 text-align: center;
                 margin-bottom: 0;
                 margin-right: 5px;
+            }
+        }
+
+        /* Modern Table Styles - Enhanced with shadcn/ui design */
+        .modern-table-wrapper {
+            background: white;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .modern-table-header {
+            background-color: #fafafa;
+            border-bottom: 1px solid #e4e4e7;
+        }
+
+        .modern-table-header th {
+            padding: 12px 16px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: #71717a;
+            text-align: left;
+            border: none;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            height: 48px;
+        }
+
+        .modern-table-header th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .modern-table-header th.sortable:hover {
+            background-color: #f4f4f5;
+        }
+
+        .modern-table-header .header-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modern-table-body {
+            background-color: white;
+        }
+
+        .modern-table-row {
+            border-bottom: 1px solid #f4f4f5;
+            transition: background-color 0.2s ease;
+        }
+
+        .modern-table-row:hover {
+            background-color: #f9f9f9;
+        }
+
+        .modern-table-row:last-child {
+            border-bottom: none;
+        }
+
+        .modern-table-cell {
+            padding: 14px 16px;
+            border: none;
+            vertical-align: middle;
+            color: #09090b;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+
+        .modern-table-cell:first-child {
+            font-weight: 500;
+        }
+
+        /* Checkbox styles */
+        .modern-table-cell-select {
+            width: 48px;
+            padding: 12px 16px;
+        }
+
+        .form-check-input {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #d4d4d8;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .form-check-input:hover {
+            border-color: #3b82f6;
+        }
+
+        /* Actions column */
+        .modern-table-cell-actions {
+            width: 60px;
+            padding: 12px 16px;
+            text-align: right;
+        }
+
+        .actions-dropdown {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .dropdown-toggle-btn {
+            background: none;
+            border: none;
+            color: #71717a;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .dropdown-toggle-btn:hover {
+            background-color: #f4f4f5;
+            color: #09090b;
+        }
+
+        /* Status indicators - shadcn/ui tags style */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: none;
+            white-space: nowrap;
+            line-height: 1.5;
+            min-height: 20px;
+        }
+
+        .status-done {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-done::before {
+            content: "●";
+            color: #22c55e;
+            font-size: 8px;
+            margin-right: 2px;
+        }
+
+        .status-in-progress {
+            background-color: #fef3c7;
+            color: #a16207;
+            border: 1px solid #fde68a;
+        }
+
+        .status-in-progress::before {
+            content: "☆";
+            color: #f59e0b;
+            font-size: 10px;
+            margin-right: 2px;
+        }
+
+        .status-pending {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-pending::before {
+            content: "●";
+            color: #94a3b8;
+            font-size: 8px;
+            margin-right: 2px;
+        }
+
+        /* Action buttons - shadcn/ui style */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #e4e4e7;
+            border-radius: 6px;
+            background: white;
+            color: #09090b;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background-color: #f4f4f5;
+            border-color: #d4d4d8;
+        }
+
+        .action-btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .action-btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .action-btn-danger {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .action-btn-danger:hover {
+            background-color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* Empty state - shadcn/ui style */
+        .empty-state-cell {
+            padding: 80px 20px;
+            text-align: center;
+            background-color: #fafafa;
+            border: none;
+        }
+
+        .empty-state-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #a1a1aa;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #09090b;
+        }
+
+        .empty-state-text {
+            color: #71717a;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        /* Pagination - shadcn/ui style */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination .page-link {
+            color: #09090b;
+            border: 1px solid #e4e4e7;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #f4f4f5;
+            border-color: #d4d4d8;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #a1a1aa;
+            background-color: #f9f9f9;
+            border-color: #e4e4e7;
+            cursor: not-allowed;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .modern-table-wrapper {
+                overflow-x: auto;
+                border-radius: 6px;
+            }
+            
+            .modern-table-header th,
+            .modern-table-cell {
+                padding: 10px 12px;
+            }
+            
+            .modern-table-header th {
+                font-size: 0.75rem;
+            }
+            
+            .modern-table-cell {
+                font-size: 0.8125rem;
+            }
+            
+            .modern-table-cell-select {
+                width: 40px;
+                padding: 8px 12px;
+            }
+            
+            .modern-table-cell-actions {
+                width: 50px;
+                padding: 8px 12px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
             }
         }
     </style>
@@ -726,9 +1084,9 @@
             
             // Add table wrapper
             html += `
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover" role="table" aria-label="Data table">
-                        <thead class="table-dark">
+                <div class="modern-table-wrapper">
+                    <table class="modern-table" role="table" aria-label="Data table">
+                        <thead class="modern-table-header">
                             <tr>
             `;
             
@@ -741,8 +1099,10 @@
                 
                 html += `
                     <th scope="col" class="${sortClass}" ${column.sortable ? `data-sort="${column.key}"` : ''}>
-                        ${column.label}
-                        ${column.sortable ? `<i class="fas ${sortIcon} ms-1"></i>` : ''}
+                        <div class="header-content">
+                            ${column.label}
+                            ${column.sortable ? `<i class="fas ${sortIcon} ms-1"></i>` : ''}
+                        </div>
                     </th>
                 `;
             });
@@ -750,23 +1110,25 @@
             html += `
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="modern-table-body">
             `;
             
             // Add data rows or empty state
             if (data.data.length === 0) {
                 html += `
                     <tr>
-                        <td colspan="${data.columns.length}" class="text-center text-muted py-4">
-                            <i class="fas fa-inbox fa-3x mb-3"></i>
-                            <div class="h5">No data available</div>
-                            <p class="mb-0">There are no items to display at the moment.</p>
+                        <td colspan="${data.columns.length}" class="empty-state-cell">
+                            <div class="empty-state-content">
+                                <i class="fas fa-inbox empty-state-icon"></i>
+                                <div class="empty-state-title">No data available</div>
+                                <p class="empty-state-text">There are no items to display at the moment.</p>
+                            </div>
                         </td>
                     </tr>
                 `;
             } else {
                 data.data.forEach(row => {
-                    html += '<tr>';
+                    html += '<tr class="modern-table-row">';
                     data.columns.forEach(column => {
                         const cellValue = row[column.key] || '';
                         let formattedValue = cellValue;
@@ -781,7 +1143,7 @@
                             formattedValue = formatBillsActions(cellValue, row.id);
                         }
                         
-                        html += `<td>${formattedValue}</td>`;
+                        html += `<td class="modern-table-cell">${formattedValue}</td>`;
                     });
                     html += '</tr>';
                 });
@@ -851,33 +1213,46 @@
         
         // Function to format status badges for inbox table
         function formatStatusBadge(statusText) {
-            const badges = {
-                'Pending': 'bg-warning',
-                'Processed': 'bg-success', 
-                'Failed': 'bg-danger',
-                'Approved': 'bg-primary'
+            const statusMappings = {
+                'Pending': 'status-pending',
+                'Processed': 'status-done',
+                'Done': 'status-done',
+                'Failed': 'status-pending',
+                'Approved': 'status-done',
+                'In Process': 'status-in-progress'
             };
             
-            const badgeClass = badges[statusText] || 'bg-secondary';
-            return `<span class="badge ${badgeClass}">${statusText}</span>`;
+            const statusClass = statusMappings[statusText] || 'status-pending';
+            return `<span class="status-indicator ${statusClass}">${statusText}</span>`;
         }
         
         // Function to format action buttons for bills table
         function formatBillsActions(actionsText, billId) {
             if (actionsText === 'Edit | Remove') {
                 return `
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editBill('${billId}')" title="Edit bill">
-                        Edit
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="removeBill('${billId}')" title="Remove bill">
-                        Remove
-                    </button>
+                    <div class="action-buttons">
+                        <button class="action-btn action-btn-primary" onclick="editBill('${billId}')" title="Edit bill">
+                            Edit
+                        </button>
+                        <button class="action-btn action-btn-danger" onclick="removeBill('${billId}')" title="Remove bill">
+                            Remove
+                        </button>
+                        <button class="dropdown-toggle-btn" onclick="toggleActions('${billId}')" title="More actions">
+                            ⋮
+                        </button>
+                    </div>
                 `;
             } else if (actionsText === 'Removed') {
                 return `<span class="text-muted">Removed</span>`;
             } else {
                 return actionsText;
             }
+        }
+        
+        // Function to toggle dropdown actions
+        function toggleActions(billId) {
+            console.log(`Toggle actions for bill ${billId}`);
+            // TODO: Implement dropdown toggle functionality
         }
     </script>
 </body>
