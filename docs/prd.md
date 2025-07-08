@@ -16,7 +16,8 @@ Enable individuals and families to digitize, review, and manage household (and o
 
 ## Main User Scenarios & Stories
 1. **Ingest Receipt/Bill**
-    - *As a user*, I want to upload via UI so that I don’t have to manually enter data.
+    - *As a user*, I want to upload images via UI (upload button or drag-and-drop) so that I don't have to manually enter data.
+    - *As a user*, I want to edit (resize/crop) my images before upload so that I can optimize them for processing.
 2. **Review Extraction**
     - *As a user*, I want to edit or approve OCR-extracted data from receipts or bills to ensure accuracy before payment.
 3. **Associate Receipt with Bill**
@@ -98,6 +99,19 @@ Bills represent financial obligations that users need to track and manage:
 - System MUST provide secure session management
 - System MUST provide logout functionality
 
+### Image Upload & File Management
+- System MUST support file upload via upload button and drag-and-drop interface
+- System MUST accept image files in JPEG, PNG, GIF, and WebP formats
+- System MUST validate file size limits (maximum 20MB per file)
+- System MUST provide client-side image processing capabilities (resize, crop, undo)
+- System MUST store uploaded images in filesystem directory defined by INBOX_PATH configuration
+- System MUST create InboxEntity records only upon successful upload confirmation
+- System MUST provide secure file storage with proper access controls
+- System MUST generate unique filenames to prevent conflicts
+- System MUST validate file types and reject malicious files
+- System MUST provide progress feedback during file upload
+- System MUST handle upload errors gracefully with user-friendly error messages
+
 ## UI Requirements
 
 ### Login Interface
@@ -151,4 +165,18 @@ Bills represent financial obligations that users need to track and manage:
 - As a user, I want to be automatically redirected to the dashboard after successful login so that I can start using the system
 - As a user, I want to logout securely so that my session is properly terminated
 - As a system administrator, I want to control who can access the system by configuring allowed email addresses
+
+### Image Upload Stories
+- As a user, I want to click a green "Upload" button in the topbar so that I can easily start uploading receipt images
+- As a user, I want to drag and drop image files into the inbox area so that I can upload receipts quickly without clicking buttons
+- As a user, I want to see a preview of my selected image in an upload dialog so that I can confirm I selected the correct file
+- As a user, I want to resize my uploaded image so that I can optimize it for processing and storage
+- As a user, I want to crop my uploaded image so that I can focus on the important parts of the receipt
+- As a user, I want to undo my resize and crop operations so that I can correct mistakes without starting over
+- As a user, I want to confirm my upload with an "Upload" button so that I can save the processed image
+- As a user, I want to cancel my upload with a "Cancel" button so that I can abort if I change my mind
+- As a user, I want visual feedback when dragging files over the drop area so that I know where to drop them
+- As a user, I want the system to accept common image formats (JPEG, PNG, GIF, WebP) so that I can upload receipts from various sources
+- As a user, I want uploaded images to be stored securely in the filesystem so that my data is preserved
+- As a user, I want an InboxEntity to be created only when I confirm the upload so that cancelled uploads don't create unnecessary records
 
