@@ -769,7 +769,19 @@
                     html += '<tr>';
                     data.columns.forEach(column => {
                         const cellValue = row[column.key] || '';
-                        html += `<td>${cellValue}</td>`;
+                        let formattedValue = cellValue;
+                        
+                        // Special formatting for status column in inbox table
+                        if (data.tableId === 'inbox' && column.key === 'status') {
+                            formattedValue = formatStatusBadge(cellValue);
+                        }
+                        
+                        // Special formatting for actions column in bills table
+                        if (data.tableId === 'bills' && column.key === 'actions') {
+                            formattedValue = formatBillsActions(cellValue, row.id);
+                        }
+                        
+                        html += `<td>${formattedValue}</td>`;
                     });
                     html += '</tr>';
                 });
@@ -835,6 +847,37 @@
         function renderBillsTable(data) {
             // Any bills-specific rendering logic can go here
             console.log('Rendering bills table with data:', data);
+        }
+        
+        // Function to format status badges for inbox table
+        function formatStatusBadge(statusText) {
+            const badges = {
+                'Pending': 'bg-warning',
+                'Processed': 'bg-success', 
+                'Failed': 'bg-danger',
+                'Approved': 'bg-primary'
+            };
+            
+            const badgeClass = badges[statusText] || 'bg-secondary';
+            return `<span class="badge ${badgeClass}">${statusText}</span>`;
+        }
+        
+        // Function to format action buttons for bills table
+        function formatBillsActions(actionsText, billId) {
+            if (actionsText === 'Edit | Remove') {
+                return `
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editBill('${billId}')" title="Edit bill">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeBill('${billId}')" title="Remove bill">
+                        Remove
+                    </button>
+                `;
+            } else if (actionsText === 'Removed') {
+                return `<span class="text-muted">Removed</span>`;
+            } else {
+                return actionsText;
+            }
         }
     </script>
 </body>

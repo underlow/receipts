@@ -251,7 +251,7 @@ class BillsE2ETest : BaseE2ETest() {
 
             // Verify provider information includes creation source
             val hasSource = `$$`("td").any {
-                it.text().contains("From inbox") || it.text().contains("manual entry")
+                it.text().contains("from inbox") || it.text().contains("manual entry")
             }
             assertTrue(hasSource)
         }

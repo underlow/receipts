@@ -78,6 +78,7 @@ class BillsView(private val baseTable: BaseTable) {
      */
     fun convertEntityToRowData(entity: BillEntity): Map<String, String> {
         return mapOf(
+            "id" to entity.id,
             "billDate" to entity.billDate.format(DATE_FORMATTER),
             "serviceProvider" to formatServiceProviderWithSource(entity.serviceProviderId, entity.inboxEntityId),
             "amount" to formatAmount(entity.amount),
