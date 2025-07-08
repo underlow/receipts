@@ -29,11 +29,11 @@ class SelenideConfiguration {
         const val SCREENSHOTS_FOLDER = "build/reports/tests/selenide"
         const val REPORTS_FOLDER = "build/reports/tests/selenide"
         const val DOWNLOADS_FOLDER = "build/reports/tests/selenide/downloads"
-        
+
         // Test environment configuration
         const val DEFAULT_BASE_URL = "http://localhost"
         const val HEADLESS_MODE = true
-        
+
         // Chrome options for CI/CD
         private val CI_CD_CHROME_OPTIONS = listOf(
             "--no-sandbox",
@@ -63,7 +63,7 @@ class SelenideConfiguration {
     @Bean
     fun configureSelenide(): SelenideConfiguration {
         // WebDriverManager setup handled by Selenide automatically
-        
+
         // Configure Selenide settings
         Configuration.browser = "chrome"
         Configuration.headless = HEADLESS_MODE
@@ -77,47 +77,48 @@ class SelenideConfiguration {
         Configuration.savePageSource = true
         Configuration.reportsFolder = REPORTS_FOLDER
         Configuration.downloadsFolder = DOWNLOADS_FOLDER
-        
+        Configuration.holdBrowserOpen = false;
+
         // Configure Chrome options for CI/CD
         Configuration.browserCapabilities = createChromeOptions()
-        
+
         // Configure base URL (will be overridden in tests with random port)
         Configuration.baseUrl = DEFAULT_BASE_URL
-        
+
         // Enable detailed logging for better test reporting
-        // SelenideLogger.addListener("selenide", 
+        // SelenideLogger.addListener("selenide",
         //     com.codeborne.selenide.logevents.PrettyReportCreator()
         // )
-        
+
         return this
     }
 
     /**
      * Creates Chrome options optimized for CI/CD environments.
      * Includes options for headless mode, performance, and stability.
-     * 
+     *
      * @return ChromeOptions configured for testing
      */
     private fun createChromeOptions(): ChromeOptions {
         val options = ChromeOptions()
-        
+
         // Add all CI/CD specific options
         options.addArguments(CI_CD_CHROME_OPTIONS)
-        
+
         // Additional performance and stability options
         options.addArguments("--disable-blink-features=AutomationControlled")
         options.addArguments("--disable-features=VizDisplayCompositor")
         options.addArguments("--enable-features=NetworkService,NetworkServiceLogging")
         options.addArguments("--log-level=3")
         options.addArguments("--silent")
-        
+
         // Set user agent to avoid detection
         options.addArguments("--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-        
+
         // Memory and performance optimizations
         options.addArguments("--memory-pressure-off")
         options.addArguments("--max_old_space_size=4096")
-        
+
         // Set preferences for downloads and file handling
         val prefs = mapOf(
             "profile.default_content_settings.popups" to 0,
@@ -130,18 +131,18 @@ class SelenideConfiguration {
             "safebrowsing.enabled" to false
         )
         options.setExperimentalOption("prefs", prefs)
-        
+
         // Disable various features for stability
         options.setExperimentalOption("excludeSwitches", listOf("enable-automation"))
         options.setExperimentalOption("useAutomationExtension", false)
-        
+
         return options
     }
 
     /**
      * Configures test-specific timeouts and retry settings.
      * Sets up appropriate timeouts for different types of operations.
-     * 
+     *
      * @return Duration-based timeout configuration
      */
     @Bean
@@ -159,10 +160,10 @@ class SelenideConfiguration {
     /**
      * Configures test data and environment settings.
      * Sets up test users and base URLs for E2E testing.
-     * 
+     *
      * @return Test environment configuration map
      */
-    @Bean 
+    @Bean
     fun configureTestEnvironment(): Map<String, String> {
         return mapOf(
             "baseUrl" to DEFAULT_BASE_URL,
