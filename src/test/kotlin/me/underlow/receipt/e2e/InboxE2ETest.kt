@@ -72,7 +72,7 @@ class InboxE2ETest : BaseE2ETest() {
         assertTrue(tableRows.size() > 0)
         
         // Verify different OCR status badges exist
-        val statusBadges = `$$`(".badge")
+        val statusBadges = `$$`(".status-indicator")
         assertTrue(statusBadges.size() > 0)
         
         // Check for different status types
@@ -272,7 +272,7 @@ class InboxE2ETest : BaseE2ETest() {
         }
         
         // Test status indicators
-        val statusBadges = `$$`(".badge")
+        val statusBadges = `$$`(".status-indicator")
         assertTrue(statusBadges.size() >= 0) // Should not cause errors
         
         // Test action buttons
