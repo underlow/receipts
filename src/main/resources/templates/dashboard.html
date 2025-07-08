@@ -505,10 +505,11 @@
                     if (!response.ok) {
                         throw new Error('Failed to load inbox data');
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(html => {
-                    document.getElementById('inbox-content').innerHTML = html;
+                .then(data => {
+                    renderInboxTable(data);
+                    document.getElementById('inbox-content').innerHTML = getRenderedTable(data);
                     
                     // Set up event listeners for the loaded content
                     setupTableEventListeners();
@@ -530,7 +531,7 @@
         // Set up event listeners for table interactions
         function setupTableEventListeners() {
             // Search functionality
-            const searchInput = document.getElementById('table-search');
+            const searchInput = document.getElementById('inbox-search');
             if (searchInput) {
                 searchInput.addEventListener('input', function(e) {
                     const searchTerm = e.target.value;
@@ -619,10 +620,11 @@
                     if (!response.ok) {
                         throw new Error('Failed to load bills data');
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(html => {
-                    document.getElementById('bills-content').innerHTML = html;
+                .then(data => {
+                    renderBillsTable(data);
+                    document.getElementById('bills-content').innerHTML = getRenderedTable(data);
                     
                     // Set up event listeners for the loaded content
                     setupBillsTableEventListeners();
@@ -644,7 +646,7 @@
         // Set up event listeners for bills table interactions
         function setupBillsTableEventListeners() {
             // Search functionality
-            const searchInput = document.getElementById('table-search');
+            const searchInput = document.getElementById('bills-search');
             if (searchInput) {
                 searchInput.addEventListener('input', function(e) {
                     const searchTerm = e.target.value;
@@ -702,6 +704,137 @@
                 console.log(`Removing bill ${billId}`);
                 alert(`Bill ${billId} removed. (Functionality not yet implemented)`);
             }
+        }
+        
+        // Function to render table from JSON data
+        function getRenderedTable(data) {
+            let html = '<div class="table-container">';
+            
+            // Add search box if enabled
+            if (data.searchEnabled) {
+                html += `
+                    <div class="search-container mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="${data.tableId}-search" placeholder="Search..." aria-label="Search table data">
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add table wrapper
+            html += `
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" role="table" aria-label="Data table">
+                        <thead class="table-dark">
+                            <tr>
+            `;
+            
+            // Add column headers
+            data.columns.forEach(column => {
+                const sortClass = column.sortable ? 'sortable' : '';
+                const sortIcon = column.sortable && data.sortKey === column.key ? 
+                    (data.sortDirection === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 
+                    (column.sortable ? 'fa-sort' : '');
+                
+                html += `
+                    <th scope="col" class="${sortClass}" ${column.sortable ? `data-sort="${column.key}"` : ''}>
+                        ${column.label}
+                        ${column.sortable ? `<i class="fas ${sortIcon} ms-1"></i>` : ''}
+                    </th>
+                `;
+            });
+            
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Add data rows or empty state
+            if (data.data.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="${data.columns.length}" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <div class="h5">No data available</div>
+                            <p class="mb-0">There are no items to display at the moment.</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.data.forEach(row => {
+                    html += '<tr>';
+                    data.columns.forEach(column => {
+                        const cellValue = row[column.key] || '';
+                        html += `<td>${cellValue}</td>`;
+                    });
+                    html += '</tr>';
+                });
+            }
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            // Add pagination if configured
+            if (data.paginationConfig) {
+                html += `
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination justify-content-center">
+                `;
+                
+                // Previous button
+                const prevDisabled = data.paginationConfig.currentPage <= 1 ? 'disabled' : '';
+                html += `
+                    <li class="page-item ${prevDisabled}">
+                        <a class="page-link" href="#" data-page="${data.paginationConfig.currentPage - 1}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            Previous
+                        </a>
+                    </li>
+                `;
+                
+                // Page numbers
+                for (let page = 1; page <= data.totalPages; page++) {
+                    const activeClass = page === data.paginationConfig.currentPage ? 'active' : '';
+                    html += `
+                        <li class="page-item ${activeClass}">
+                            <a class="page-link" href="#" data-page="${page}">${page}</a>
+                        </li>
+                    `;
+                }
+                
+                // Next button
+                const nextDisabled = data.paginationConfig.currentPage >= data.totalPages ? 'disabled' : '';
+                html += `
+                    <li class="page-item ${nextDisabled}">
+                        <a class="page-link" href="#" data-page="${data.paginationConfig.currentPage + 1}" aria-label="Next">
+                            Next
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                        </ul>
+                    </nav>
+                `;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function renderInboxTable(data) {
+            // Any inbox-specific rendering logic can go here
+            console.log('Rendering inbox table with data:', data);
+        }
+        
+        function renderBillsTable(data) {
+            // Any bills-specific rendering logic can go here
+            console.log('Rendering bills table with data:', data);
         }
     </script>
 </body>

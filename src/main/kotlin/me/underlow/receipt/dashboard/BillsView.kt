@@ -24,26 +24,26 @@ class BillsView(private val baseTable: BaseTable) {
     }
 
     /**
-     * Renders the bills view with the provided bill data.
+     * Prepares the bills view data for template rendering.
      * 
      * @param billsData the list of bill entities to display
      * @param paginationConfig optional pagination configuration
      * @param searchEnabled whether to show search functionality
      * @param sortKey optional current sort key
      * @param sortDirection optional current sort direction
-     * @return HTML string containing the rendered bills table
+     * @return TableViewData object for template rendering
      */
-    fun render(
+    fun prepareTableViewData(
         billsData: List<BillEntity>,
         paginationConfig: PaginationConfig? = null,
         searchEnabled: Boolean = false,
         sortKey: String? = null,
         sortDirection: SortDirection = SortDirection.ASC
-    ): String {
+    ): TableViewData {
         val columns = getTableColumns()
         val rowData = billsData.map { convertEntityToRowData(it) }
         
-        return baseTable.render(
+        return baseTable.prepareTableViewData(
             columns = columns,
             data = rowData,
             tableId = "bills",
@@ -101,10 +101,10 @@ class BillsView(private val baseTable: BaseTable) {
      * Formats the service provider for display based on provider ID.
      * 
      * @param serviceProviderId the service provider ID
-     * @return HTML string with service provider display
+     * @return formatted service provider name
      */
     fun formatServiceProvider(serviceProviderId: String): String {
-        val providerName = when (serviceProviderId) {
+        return when (serviceProviderId) {
             "electric_company_123" -> "Electric Company"
             "gas_company_456" -> "Gas Company"
             "water_company_789" -> "Water Company"
@@ -114,12 +114,6 @@ class BillsView(private val baseTable: BaseTable) {
                 it.lowercase().replaceFirstChar { char -> char.uppercase() }
             }
         }
-        
-        return """
-            <div>
-                <span class="fw-semibold">$providerName</span>
-            </div>
-        """.trimIndent()
     }
 
     /**
@@ -127,38 +121,12 @@ class BillsView(private val baseTable: BaseTable) {
      * 
      * @param serviceProviderId the service provider ID
      * @param inboxEntityId optional inbox entity ID for creation source indication
-     * @return HTML string with service provider display and creation source
+     * @return formatted service provider with source indication
      */
     private fun formatServiceProviderWithSource(serviceProviderId: String, inboxEntityId: String?): String {
-        val providerName = when (serviceProviderId) {
-            "electric_company_123" -> "Electric Company"
-            "gas_company_456" -> "Gas Company"
-            "water_company_789" -> "Water Company"
-            "internet_provider_101" -> "Internet Provider"
-            "phone_provider_202" -> "Phone Provider"
-            else -> serviceProviderId.replace("_", " ").split(" ").joinToString(" ") { 
-                it.lowercase().replaceFirstChar { char -> char.uppercase() }
-            }
-        }
-        
-        val creationSource = if (inboxEntityId != null) {
-            """<small class="text-muted d-block">
-                <i class="fas fa-inbox me-1"></i>
-                From inbox
-            </small>"""
-        } else {
-            """<small class="text-muted d-block">
-                <i class="fas fa-keyboard me-1"></i>
-                manual entry
-            </small>"""
-        }
-        
-        return """
-            <div>
-                <span class="fw-semibold">$providerName</span>
-                $creationSource
-            </div>
-        """.trimIndent()
+        val providerName = formatServiceProvider(serviceProviderId)
+        val sourceIndicator = if (inboxEntityId != null) " (from inbox)" else " (manual)"
+        return providerName + sourceIndicator
     }
 
     /**
@@ -169,12 +137,11 @@ class BillsView(private val baseTable: BaseTable) {
      */
     fun formatDescription(description: String?): String {
         return if (description.isNullOrBlank()) {
-            """<span class="text-muted">-</span>"""
+            "-"
         } else if (description.length <= DESCRIPTION_MAX_LENGTH) {
             description
         } else {
-            val truncated = description.substring(0, DESCRIPTION_MAX_LENGTH)
-            """<span title="$description">$truncated...</span>"""
+            description.substring(0, DESCRIPTION_MAX_LENGTH) + "..."
         }
     }
 
@@ -183,33 +150,12 @@ class BillsView(private val baseTable: BaseTable) {
      * 
      * @param state the current bill state
      * @param entityId the entity ID for action buttons
-     * @return HTML string with appropriate action buttons
+     * @return formatted action description
      */
     fun formatActions(state: BillState, entityId: String): String {
         return when (state) {
-            BillState.CREATED -> """
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                            onclick="editBill('$entityId')" 
-                            title="Edit Bill">
-                        <i class="fas fa-edit me-1"></i>
-                        Edit
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                            onclick="removeBill('$entityId')" 
-                            title="Remove Bill">
-                        <i class="fas fa-trash me-1"></i>
-                        Remove
-                    </button>
-                </div>
-            """.trimIndent()
-            
-            BillState.REMOVED -> """
-                <span class="text-muted">
-                    <i class="fas fa-trash me-1"></i>
-                    Removed
-                </span>
-            """.trimIndent()
+            BillState.CREATED -> "Edit | Remove"
+            BillState.REMOVED -> "Removed"
         }
     }
 

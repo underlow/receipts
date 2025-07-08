@@ -16,7 +16,7 @@ import kotlin.test.assertFalse
 class BaseTableTest {
 
     @Test
-    fun `given base table when rendered with data then should display table with correct columns`() {
+    fun `given base table when preparing view data then should return correct table view data`() {
         // given - base table component with sample data
         val baseTable = BaseTable()
         val columns = listOf(
@@ -29,21 +29,19 @@ class BaseTableTest {
             mapOf("id" to "2", "name" to "Item 2", "date" to "2025-01-02")
         )
         
-        // when - rendering table with data
-        val html = baseTable.render(columns, data)
+        // when - preparing table view data
+        val tableViewData = baseTable.prepareTableViewData(columns, data)
         
-        // then - should display table with correct columns
-        assertNotNull(html)
-        assertTrue(html.contains("table"))
-        assertTrue(html.contains("ID"))
-        assertTrue(html.contains("Name"))
-        assertTrue(html.contains("Date"))
-        assertTrue(html.contains("Item 1"))
-        assertTrue(html.contains("Item 2"))
+        // then - should return correct table view data
+        assertNotNull(tableViewData)
+        assertEquals(columns, tableViewData.columns)
+        assertEquals(data, tableViewData.data)
+        assertEquals("default", tableViewData.tableId)
+        assertEquals(false, tableViewData.searchEnabled)
     }
 
     @Test
-    fun `given base table when rendered with empty data then should display empty state`() {
+    fun `given base table when preparing view data with empty data then should return empty data in view data`() {
         // given - base table component with empty data
         val baseTable = BaseTable()
         val columns = listOf(
@@ -52,17 +50,17 @@ class BaseTableTest {
         )
         val data = emptyList<Map<String, String>>()
         
-        // when - rendering table with empty data
-        val html = baseTable.render(columns, data)
+        // when - preparing table view data with empty data
+        val tableViewData = baseTable.prepareTableViewData(columns, data)
         
-        // then - should display empty state
-        assertNotNull(html)
-        assertTrue(html.contains("table"))
-        assertTrue(html.contains("No data"))
+        // then - should return empty data in view data
+        assertNotNull(tableViewData)
+        assertEquals(columns, tableViewData.columns)
+        assertTrue(tableViewData.data.isEmpty())
     }
 
     @Test
-    fun `given base table when rendered with sortable columns then should include sorting functionality`() {
+    fun `given base table when preparing view data with sortable columns then should include sorting configuration`() {
         // given - base table component with sortable columns
         val baseTable = BaseTable()
         val columns = listOf(
@@ -74,17 +72,18 @@ class BaseTableTest {
             mapOf("id" to "1", "name" to "Item 1", "date" to "2025-01-01")
         )
         
-        // when - rendering table with sortable columns
-        val html = baseTable.render(columns, data)
+        // when - preparing table view data with sortable columns and sort key
+        val tableViewData = baseTable.prepareTableViewData(columns, data, sortKey = "name", sortDirection = SortDirection.DESC)
         
-        // then - should include sorting functionality for sortable columns
-        assertNotNull(html)
-        assertTrue(html.contains("sortable"))
-        assertTrue(html.contains("data-sort"))
+        // then - should include sorting configuration
+        assertNotNull(tableViewData)
+        assertEquals("name", tableViewData.sortKey)
+        assertEquals(SortDirection.DESC, tableViewData.sortDirection)
+        assertTrue(tableViewData.columns.any { it.sortable })
     }
 
     @Test
-    fun `given base table when rendered with pagination then should display pagination controls`() {
+    fun `given base table when preparing view data with pagination then should include pagination configuration`() {
         // given - base table component with pagination configuration
         val baseTable = BaseTable()
         val columns = listOf(
@@ -94,19 +93,17 @@ class BaseTableTest {
         val data = (1..25).map { mapOf("id" to it.toString(), "name" to "Item $it") }
         val paginationConfig = PaginationConfig(pageSize = 10, currentPage = 1, totalItems = 25)
         
-        // when - rendering table with pagination
-        val html = baseTable.render(columns, data, paginationConfig = paginationConfig)
+        // when - preparing table view data with pagination
+        val tableViewData = baseTable.prepareTableViewData(columns, data, paginationConfig = paginationConfig)
         
-        // then - should display pagination controls
-        assertNotNull(html)
-        assertTrue(html.contains("pagination"))
-        assertTrue(html.contains("Previous"))
-        assertTrue(html.contains("Next"))
-        assertTrue(html.contains("page-link"))
+        // then - should include pagination configuration
+        assertNotNull(tableViewData)
+        assertEquals(paginationConfig, tableViewData.paginationConfig)
+        assertEquals(3, tableViewData.totalPages)
     }
 
     @Test
-    fun `given base table when rendered with search functionality then should include search box`() {
+    fun `given base table when preparing view data with search functionality then should include search configuration`() {
         // given - base table component with search functionality enabled
         val baseTable = BaseTable()
         val columns = listOf(
@@ -118,14 +115,12 @@ class BaseTableTest {
             mapOf("id" to "2", "name" to "Item 2")
         )
         
-        // when - rendering table with search functionality
-        val html = baseTable.render(columns, data, searchEnabled = true)
+        // when - preparing table view data with search functionality
+        val tableViewData = baseTable.prepareTableViewData(columns, data, searchEnabled = true)
         
-        // then - should include search box
-        assertNotNull(html)
-        assertTrue(html.contains("search"))
-        assertTrue(html.contains("input"))
-        assertTrue(html.contains("placeholder"))
+        // then - should include search configuration
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.searchEnabled)
     }
 
     @Test
@@ -206,7 +201,7 @@ class BaseTableTest {
     }
 
     @Test
-    fun `given base table when rendered then should include proper CSS classes for styling`() {
+    fun `given base table when preparing view data with custom table id then should include custom table id`() {
         // given - base table component
         val baseTable = BaseTable()
         val columns = listOf(
@@ -217,14 +212,12 @@ class BaseTableTest {
             mapOf("id" to "1", "name" to "Item 1")
         )
         
-        // when - rendering table
-        val html = baseTable.render(columns, data)
+        // when - preparing table view data with custom table id
+        val tableViewData = baseTable.prepareTableViewData(columns, data, tableId = "custom-table")
         
-        // then - should include proper CSS classes for styling
-        assertNotNull(html)
-        assertTrue(html.contains("table"))
-        assertTrue(html.contains("table-striped"))
-        assertTrue(html.contains("table-responsive"))
+        // then - should include custom table id
+        assertNotNull(tableViewData)
+        assertEquals("custom-table", tableViewData.tableId)
     }
 
     @Test
@@ -261,7 +254,7 @@ class BaseTableTest {
     }
 
     @Test
-    fun `given base table when rendered with accessibility features then should include proper attributes`() {
+    fun `given base table when preparing view data with all parameters then should include all configurations`() {
         // given - base table component
         val baseTable = BaseTable()
         val columns = listOf(
@@ -271,14 +264,28 @@ class BaseTableTest {
         val data = listOf(
             mapOf("id" to "1", "name" to "Item 1")
         )
+        val paginationConfig = PaginationConfig(pageSize = 10, currentPage = 1, totalItems = 1)
         
-        // when - rendering table
-        val html = baseTable.render(columns, data)
+        // when - preparing table view data with all parameters
+        val tableViewData = baseTable.prepareTableViewData(
+            columns = columns,
+            data = data,
+            tableId = "test-table",
+            paginationConfig = paginationConfig,
+            searchEnabled = true,
+            sortKey = "id",
+            sortDirection = SortDirection.ASC
+        )
         
-        // then - should include proper accessibility attributes
-        assertNotNull(html)
-        assertTrue(html.contains("role=\"table\""))
-        assertTrue(html.contains("aria-label"))
-        assertTrue(html.contains("scope=\"col\""))
+        // then - should include all configurations
+        assertNotNull(tableViewData)
+        assertEquals(columns, tableViewData.columns)
+        assertEquals(data, tableViewData.data)
+        assertEquals("test-table", tableViewData.tableId)
+        assertEquals(paginationConfig, tableViewData.paginationConfig)
+        assertEquals(1, tableViewData.totalPages)
+        assertTrue(tableViewData.searchEnabled)
+        assertEquals("id", tableViewData.sortKey)
+        assertEquals(SortDirection.ASC, tableViewData.sortDirection)
     }
 }
