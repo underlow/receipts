@@ -35,6 +35,32 @@ User do not have states.
 #### User behaviour
 User can log in into system only if its email in the list of allowed emails.
 
+### InboxEntity
+#### InboxEntity data
+ - id: unique identifier for the inbox item
+ - uploadedImage: path to the uploaded image file
+ - uploadDate: timestamp when the document was uploaded
+ - ocrResults: OCR extracted text results (nullable)
+ - linkedEntityId: ID of the created bill or receipt entity (nullable)
+ - linkedEntityType: type of entity created (BILL or RECEIPT, nullable)
+ - state: current state of the inbox item (InboxState)
+ - failureReason: reason for OCR failure (nullable)
+#### InboxEntity state
+InboxEntity can be in the following states:
+ - CREATED: Just uploaded, OCR processing pending
+ - PROCESSED: OCR processing completed successfully
+ - FAILED: OCR processing failed
+ - APPROVED: User approved, bill or receipt created
+#### InboxEntity behaviour
+InboxEntity represents uploaded documents in the processing workflow:
+ - InboxEntity can be created when user uploads an image
+ - InboxEntity transitions from CREATED to PROCESSED after successful OCR
+ - InboxEntity transitions from CREATED to FAILED when OCR fails
+ - InboxEntity transitions from PROCESSED to APPROVED when user approves
+ - InboxEntity transitions from FAILED back to CREATED for retry
+ - InboxEntity validates state transitions (canApprove, canRetry)
+ - InboxEntity links to created bills or receipts via linkedEntityId
+
 ### Bill
 #### Bill data
  - id: unique identifier for the bill
@@ -86,6 +112,22 @@ Bills represent financial obligations that users need to track and manage:
 - Dashboard MUST display as placeholder page for authenticated users
 - Dashboard MUST show user profile information
 - Dashboard MUST provide logout functionality
+
+### Image Upload Interface
+- Topbar MUST display a green "Upload" button for image uploading
+- Inbox table MUST provide drag-and-drop area below records for image upload
+- Upload dialog MUST open when upload button is clicked or image is dropped
+- Upload dialog MUST display the selected/dropped image for preview
+- Upload dialog MUST provide image resize functionality with preview
+- Upload dialog MUST provide image crop functionality with preview
+- Upload dialog MUST provide undo functionality for resize/crop operations
+- Upload dialog MUST have "Upload" button to confirm and save the image
+- Upload dialog MUST have "Cancel" button to abort the upload process
+- Upload dialog MUST create InboxEntity only when "Upload" is clicked
+- Upload dialog MUST NOT create InboxEntity when "Cancel" is clicked
+- Drag-and-drop area MUST provide visual feedback during drag operations
+- Drag-and-drop area MUST accept common image formats (JPEG, PNG, GIF, WebP)
+- Upload system MUST store images in filesystem directory defined in properties
 
 ### Bills Management Interface
 - Bills view MUST display bills in a table format with sortable columns
