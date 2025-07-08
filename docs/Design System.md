@@ -1,172 +1,330 @@
-# Design System for Refero
+# Design System
 
-This design system document provides implementation-ready specifications for building the Refero UI with Bootstrap and custom CSS. It covers color palette, typography, spacing, elevation (shadows), and common components.
+## Overview
+This document outlines the design system for the Receipt Dashboard application, which follows the shadcn/ui design principles. The system provides a consistent, modern, and accessible user interface across all components.
 
----
+## Design Philosophy
 
-## 1. Color Palette
+### Core Principles
+- **Consistency**: All components follow the same design patterns and color scheme
+- **Accessibility**: Proper contrast ratios and semantic HTML structure
+- **Responsiveness**: Components adapt seamlessly to different screen sizes
+- **Modern Aesthetics**: Clean, minimal design with subtle shadows and borders
+- **User-Centered**: Focus on usability and clear information hierarchy
 
-| Token Name      | Hex                      | Usage                                   | Bootstrap Variable   |
-|-----------------|--------------------------|-----------------------------------------|----------------------|
-| Primary         | `#4A3AFF`                | Buttons, links, accents                 | `$primary`           |
-| Secondary       | `#F4F2FF`                | Background highlights                   | `$secondary`         |
-| Surface         | `#FFFFFF`                | Card backgrounds, panels                | `$body-bg`           |
-| Surface Light   | `#F9F9FB`                | Hover states, input backgrounds         | —                    |
-| Border          | `#E3E1E8`                | Dividers, borders                       | `$gray-200`          |
-| Text Primary    | `#13131A`                | Main body text                          | `$gray-900`          |
-| Text Secondary  | `#52525B`                | Subdued labels, metadata                | `$gray-600`          |
-| Text Tertiary   | `#8F8F9B`                | Disabled text                           | `$gray-400`          |
-| Interactive BG  | `#F2F0FF`                | Interactive input focus/hover           | —                    |
-| Shadow Color    | `rgba(18, 15, 68, 0.04)` | Card shadows                            | —                    |
+### Visual Language
+- **Minimalist**: Clean layouts with purposeful whitespace
+- **Subtle Depth**: Light shadows and borders instead of heavy effects
+- **Neutral Colors**: Professional color palette with accent colors for actions
+- **Typography**: Modern font stack with appropriate weights and sizes
 
----
+## Color System
 
-## 2. Typography
+### CSS Custom Properties
+The design system uses HSL color values defined as CSS custom properties for consistent theming:
 
-- **Font Family:** `Inter, sans-serif`  
-- **Base Font Size:** 16px (`1rem`)  
-- **Line Height:** 1.5
-
-| Style Name    | Bootstrap Class | Font Size | Line Height | Weight | Letter Spacing |
-|---------------|-----------------|-----------|-------------|--------|----------------|
-| Display Title | `.h1`           | 28px      | 36px        | 600    | normal         |
-| Heading       | `.h3`           | 20px      | 28px        | 600    | normal         |
-| Body Large    | `.lead`         | 16px      | 24px        | 400    | normal         |
-| Body Regular  | `.body-text`¹   | 14px      | 20px        | 400    | normal         |
-| Label         | `.small`        | 12px      | 16px        | 500    | normal         |
-| Mono Code     | `.code`         | 14px      | 20px        | 400    | normal         |
-
-¹ Define utility:
-\`\`\`css
-.body-text {
-  font-size: 0.875rem;
-  line-height: 1.4286;
-}
-\`\`\`
-
----
-
-## 3. Spacing
-
-Refer to the Bootstrap spacing scale and supplement with custom variables where needed.
-
-| Name                | Bootstrap Class   | Pixels |
-|---------------------|-------------------|--------|
-| Spacing XS          | `.p-1` / `.m-1`   | 4px    |
-| Spacing SM          | `.p-2` / `.m-2`   | 8px    |
-| Spacing MD          | `.p-3` / `.m-3`   | 16px   |
-| Spacing LG          | `.p-4` / `.m-4`   | 24px   |
-| Spacing XL          | `.p-5` / `.m-5`   | 32px   |
-| Horizontal Gutter   | `.gx-4`           | 24px   |
-| Vertical Gutter     | `.gy-3`           | 16px   |
-
-Custom CSS variables:
-\`\`\`css
+```css
 :root {
-  --spacing-xxs: 2px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
+    --background: 0 0% 100%;           /* Pure white */
+    --foreground: 222.2 84% 4.9%;      /* Near black */
+    --card: 0 0% 100%;                 /* White cards */
+    --card-foreground: 222.2 84% 4.9%; /* Dark text on cards */
+    --popover: 0 0% 100%;              /* White popover backgrounds */
+    --popover-foreground: 222.2 84% 4.9%; /* Dark text on popovers */
+    --primary: 222.2 47.4% 11.2%;      /* Dark blue for primary actions */
+    --primary-foreground: 210 40% 98%; /* Light text on primary */
+    --secondary: 210 40% 96%;          /* Light gray for secondary elements */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark text on secondary */
+    --muted: 210 40% 96%;              /* Muted backgrounds */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Muted text */
+    --accent: 210 40% 96%;             /* Accent backgrounds */
+    --accent-foreground: 222.2 47.4% 11.2%; /* Dark text on accent */
+    --destructive: 0 84.2% 60.2%;      /* Red for destructive actions */
+    --destructive-foreground: 210 40% 98%; /* Light text on destructive */
+    --border: 214.3 31.8% 91.4%;       /* Light gray borders */
+    --input: 214.3 31.8% 91.4%;        /* Input field borders */
+    --ring: 222.2 84% 4.9%;            /* Focus ring color */
+    --radius: 0.5rem;                  /* Standard border radius */
 }
-\`\`\`
+```
 
----
+### Color Usage
+- **Primary**: Main action buttons, active navigation states
+- **Secondary**: Less prominent buttons, secondary actions
+- **Muted**: Backgrounds, disabled states, placeholder text
+- **Destructive**: Delete buttons, error states
+- **Border**: Separators, component outlines
 
-## 4. Elevation & Shadows
+### Status Colors
+- **Success/Done**: `hsl(142.1 76.2% 36.3%)` - Green for completed states
+- **Warning/In Progress**: `hsl(47.9 95.8% 53.1%)` - Yellow for pending states
+- **Error/Failed**: `hsl(var(--destructive))` - Red for error states
 
-| Level             | CSS Class      | Shadow                                        |
-|-------------------|----------------|-----------------------------------------------|
-| Card (Default)    | `.shadow-sm`   | `0 1px 2px rgba(18, 15, 68, 0.04)`            |
-| Modal / Overlay   | `.shadow`      | `0 4px 8px rgba(18, 15, 68, 0.08)`            |
-| Top App Bar       | `.shadow-none` | none                                          |
+## Typography
 
-Custom shadow mixin:
-\`\`\`scss
-@mixin card-shadow {
-  box-shadow: 0 1px 2px rgba(18, 15, 68, 0.04);
-}
-\`\`\`
+### Font Stack
+```css
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+```
 
----
+### Font Sizes
+- **Large Headings**: 1.875rem (30px)
+- **Medium Headings**: 1.25rem (20px)
+- **Body Text**: 0.875rem (14px)
+- **Small Text**: 0.75rem (12px)
 
-## 5. Component Specifications
+### Font Weights
+- **Light**: 300 (rarely used)
+- **Regular**: 400 (body text)
+- **Medium**: 500 (emphasis, buttons)
+- **Semi-bold**: 600 (headings, important text)
 
-### 5.1 Navbar (Top Bar)
+## Layout System
 
-- **Structure:** `.navbar`, `.navbar-expand`, `.bg-white`, `.shadow-none`
-- **Height:** 64px  
-- **Padding:** `0 var(--spacing-md)` (0 16px)  
-- **Logo:** 24px height, aligned left  
-- **Navigation Items:** `.nav-link text-secondary`, 14px, bold on hover  
-- **Search Input:** `.form-control`, width: 240px, height: 36px
+### Spacing Scale
+All spacing follows a consistent scale using rem units:
+- **Extra Small**: 0.25rem (4px)
+- **Small**: 0.5rem (8px)
+- **Medium**: 0.75rem (12px)
+- **Large**: 1rem (16px)
+- **Extra Large**: 1.5rem (24px)
+- **XXL**: 2rem (32px)
 
-### 5.2 Sidebar (Vertical Nav)
+### Grid System
+- **Container**: Full-width fluid container
+- **Content Area**: 1.5rem padding on all sides
+- **Component Spacing**: 1.5rem margin between major components
 
-- **Width:** 240px  
-- **Background:** `$surface (#FFFFFF)`  
-- **Items:** flex-col, gap `--spacing-md`  
-- **Icon + Label:** icon size 20px, label `.small text-secondary`  
-- **Active Item:** `.text-primary font-semibold`
+## Component Design System
 
-### 5.3 Cards & Panels
+### Cards
+**Class**: `.dashboard-card`
+- Background: `hsl(var(--card))`
+- Border: `1px solid hsl(var(--border))`
+- Border radius: `var(--radius)`
+- Padding: `1.5rem`
+- Hover effect: Subtle shadow lift
 
-**Base Card:**
-\`\`\`html
-<div class="card shadow-sm border-0">
-  <div class="card-body p-4">
-    <!-- Content -->
-  </div>
-</div>
-\`\`\`
-- **Border Radius:** 8px  
-- **Padding:** `--spacing-md` (16px)  
-- **Background:** `$surface`  
-- **Shadow:** card-shadow mixin
+### Buttons
 
-**Org Chart Panel:**
-- **Title:** `.h5` (16px, 24px, weight 600)  
-- **Import Button:** `.btn btn-outline-primary btn-sm`  
-- **List Items:** `.list-group` with `.list-group-item d-flex align-items-center`  
-- **Avatar:** 32×32px, border-radius: 50%  
-- **Role Text:** `.body-text ms-2`
+#### Primary Button
+**Class**: `.action-btn-primary`
+- Background: `hsl(var(--primary))`
+- Color: `hsl(var(--primary-foreground))`
+- Border radius: `calc(var(--radius) - 2px)`
+- Padding: `0.375rem 0.75rem`
 
-### 5.4 Jobs Panel
+#### Secondary Button
+**Class**: `.action-btn`
+- Background: `hsl(var(--background))`
+- Color: `hsl(var(--foreground))`
+- Border: `1px solid hsl(var(--border))`
+- Hover: `hsl(var(--muted))`
 
-- **Structure:** same as Org Chart Panel  
-- **Job Item:** `.list-group-item` with title `.body-text font-medium` and subtitle `.small text-secondary`  
-- **Button:** `.btn btn-outline-secondary btn-sm`
+#### Destructive Button
+**Class**: `.action-btn-danger`
+- Background: `hsl(var(--destructive))`
+- Color: `hsl(var(--destructive-foreground))`
+- Hover: Opacity reduction
 
-### 5.5 Share Panel (Embed & Links)
+### Navigation
 
-- **Tab Nav:** `.nav nav-tabs border-0`  
-- **Input Group:** `.input-group`  
-- **Copy Button:** `.btn btn-primary btn-sm`  
-- **Tab Content Padding:** `--spacing-md`
+#### Header Navigation
+**Class**: `.dashboard-header`
+- Background: `hsl(var(--card))`
+- Border bottom: `1px solid hsl(var(--border))`
+- Padding: `0.75rem 1.5rem`
 
----
+#### Navigation Links
+**Class**: `.navbar-nav .nav-link`
+- Color: `hsl(var(--muted-foreground))`
+- Hover: `hsl(var(--muted))` background
+- Active: `hsl(var(--primary))` background
 
-## 6. Utility Classes
+#### Sidebar Navigation
+**Class**: `.navigation-panel`
+- Background: `hsl(var(--card))`
+- Border: `1px solid hsl(var(--border))`
+- Padding: `1rem`
 
-\`\`\`css
-.text-primary       { color: #4A3AFF !important; }
-.text-secondary     { color: #52525B !important; }
-.bg-surface         { background-color: #FFFFFF !important; }
-.bg-surface-light   { background-color: #F9F9FB !important; }
-.border-default     { border-color: #E3E1E8 !important; }
-.rounded-md         { border-radius: 8px !important; }
-.shadow-card        { box-shadow: 0 1px 2px rgba(18, 15, 68, 0.04) !important; }
-\`\`\`
+## Table Design System
 
----
+### Table Structure
+**Class**: `.modern-table-wrapper`
+- Background: `hsl(var(--card))`
+- Border: `1px solid hsl(var(--border))`
+- Border radius: `var(--radius)`
+- Overflow: Hidden
 
-## 7. Accessibility & States
+### Table Header
+**Class**: `.modern-table-header`
+- Background: `hsl(var(--muted))`
+- Border bottom: `1px solid hsl(var(--border))`
+- Font weight: 500
+- Text transform: Uppercase
+- Letter spacing: 0.025em
 
-- **Focus State:** `outline: 2px solid #4A3AFF` on inputs and buttons  
-- **Hover State:** lighten backgrounds by 8% (`#F2F0FF`) on interactive elements  
-- **Disabled State:** `.opacity-50 cursor-not-allowed`
+### Table Rows
+**Class**: `.modern-table-row`
+- Border bottom: `1px solid hsl(var(--border))`
+- Hover: `hsl(var(--muted))` background
+- Transition: `background-color 0.2s ease`
 
----
+### Table Cells
+**Class**: `.modern-table-cell`
+- Padding: `0.875rem 1rem`
+- Vertical align: Middle
+- Font size: `0.875rem`
 
-*Document version: 1.0. Last updated: 2025-07-08.*  
+### Status Indicators
+**Class**: `.status-indicator`
+- Display: Inline flex
+- Padding: `0.125rem 0.5rem`
+- Border radius: `calc(var(--radius) - 2px)`
+- Font size: `0.75rem`
+- Font weight: 500
+
+#### Status Types
+- **Done**: Green background with white text
+- **In Progress**: Yellow background with dark text
+- **Pending**: Secondary background with muted text
+
+### Form Elements
+
+#### Input Fields
+**Class**: `.form-control`
+- Border: `1px solid hsl(var(--border))`
+- Border radius: `var(--radius)`
+- Padding: `0.5rem 0.75rem`
+- Focus: Ring color with shadow
+
+#### Checkboxes
+**Class**: `.form-check-input`
+- Size: `1rem × 1rem`
+- Border: `2px solid hsl(var(--border))`
+- Border radius: `calc(var(--radius) / 2)`
+- Checked: `hsl(var(--primary))` background
+
+### Dropdown Menus
+**Class**: `.dropdown-menu`
+- Background: `hsl(var(--popover))`
+- Border: `1px solid hsl(var(--border))`
+- Border radius: `var(--radius)`
+- Shadow: `0 4px 12px -4px rgba(0, 0, 0, 0.1)`
+- Padding: `0.25rem`
+
+### Empty States
+**Class**: `.empty-state-cell`
+- Padding: `5rem 1.25rem`
+- Background: `hsl(var(--muted))`
+- Text align: Center
+
+**Content Structure**:
+- Icon: `3rem` font size, muted color
+- Title: `1.25rem` font size, semibold
+- Description: `0.875rem` font size, muted color
+
+### Pagination
+**Class**: `.pagination`
+- Gap: `0.5rem`
+- Margin top: `1.25rem`
+
+**Page Links**:
+- Border: `1px solid hsl(var(--border))`
+- Border radius: `calc(var(--radius) - 2px)`
+- Padding: `0.5rem 0.75rem`
+- Active: Primary background
+
+## Responsive Design
+
+### Breakpoints
+- **Mobile**: ≤ 576px
+- **Tablet**: 577px - 768px
+- **Desktop**: ≥ 769px
+
+### Mobile Adaptations
+- Reduced padding: `0.75rem`
+- Smaller font sizes
+- Stacked navigation
+- Horizontal scrolling for tables
+- Collapsed action buttons
+
+### Tablet Adaptations
+- Medium padding: `1rem`
+- Flexible navigation layout
+- Maintained table structure
+
+## Accessibility
+
+### Color Contrast
+- All text meets WCAG 2.1 AA standards
+- Minimum 4.5:1 ratio for normal text
+- Minimum 3:1 ratio for large text
+
+### Keyboard Navigation
+- All interactive elements focusable
+- Visible focus indicators
+- Logical tab order
+
+### Semantic HTML
+- Proper heading hierarchy
+- Descriptive link text
+- Form labels and ARIA attributes
+
+### Screen Reader Support
+- ARIA labels for complex components
+- Status announcements
+- Table headers properly associated
+
+## Implementation Guidelines
+
+### CSS Architecture
+- Use CSS custom properties for colors
+- Maintain component-based structure
+- Follow BEM naming convention where appropriate
+- Use relative units (rem, em) for scalability
+
+### Component Development
+- Start with base styles
+- Add component-specific modifications
+- Ensure responsive behavior
+- Include hover and focus states
+
+### Color Usage
+- Always use CSS custom properties
+- Never hard-code color values
+- Test in both light and dark contexts
+- Consider colorblind accessibility
+
+### Typography
+- Use the established font stack
+- Maintain consistent line heights
+- Apply appropriate font weights
+- Ensure proper heading hierarchy
+
+## File Structure
+
+### Templates
+- `src/main/resources/templates/dashboard.html` - Main dashboard with embedded styles
+- `src/main/resources/templates/fragments/table.html` - Reusable table components
+
+### Styles
+- Embedded CSS in dashboard.html using CSS custom properties
+- Component-specific styles organized by functionality
+- Responsive styles using media queries
+
+## Future Enhancements
+
+### Planned Features
+- Dark mode support using CSS custom properties
+- Additional component variants
+- Animation and transition improvements
+- Enhanced accessibility features
+
+### Maintenance
+- Regular accessibility audits
+- Performance optimization
+- Browser compatibility testing
+- Design system documentation updates
+
+This design system ensures consistency, accessibility, and maintainability across the entire Receipt Dashboard application while following modern web design principles.

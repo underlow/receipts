@@ -36,6 +36,28 @@ enum class SortDirection {
 }
 
 /**
+ * Represents table view data for template rendering.
+ * 
+ * @param columns the list of table columns to display
+ * @param data the data to display in the table
+ * @param tableId unique identifier for the table to avoid ID conflicts
+ * @param paginationConfig optional pagination configuration with total pages
+ * @param searchEnabled whether to show search functionality
+ * @param sortKey optional current sort key
+ * @param sortDirection optional current sort direction
+ */
+data class TableViewData(
+    val columns: List<TableColumn>,
+    val data: List<Map<String, String>>,
+    val tableId: String = "default",
+    val paginationConfig: PaginationConfig? = null,
+    val totalPages: Int = 1,
+    val searchEnabled: Boolean = false,
+    val sortKey: String? = null,
+    val sortDirection: SortDirection = SortDirection.ASC
+)
+
+/**
  * BaseTable component providing common table functionality for all entity views.
  * This component provides reusable table functionality including sorting, pagination,
  * search/filter capabilities, and proper empty state handling.
@@ -44,7 +66,7 @@ enum class SortDirection {
 class BaseTable {
 
     /**
-     * Renders a data table with the provided columns and data.
+     * Prepares table view data for template rendering.
      * 
      * @param columns the list of table columns to display
      * @param data the data to display in the table
@@ -53,9 +75,9 @@ class BaseTable {
      * @param searchEnabled whether to show search functionality
      * @param sortKey optional current sort key
      * @param sortDirection optional current sort direction
-     * @return HTML string containing the rendered table
+     * @return TableViewData object for template rendering
      */
-    fun render(
+    fun prepareTableViewData(
         columns: List<TableColumn>,
         data: List<Map<String, String>>,
         tableId: String = "default",
@@ -63,179 +85,23 @@ class BaseTable {
         searchEnabled: Boolean = false,
         sortKey: String? = null,
         sortDirection: SortDirection = SortDirection.ASC
-    ): String {
-        return buildString {
-            append("""
-                <div class="table-container">
-            """.trimIndent())
-            
-            // Add search box if enabled
-            if (searchEnabled) {
-                append(renderSearchBox(tableId))
-            }
-            
-            // Add table wrapper for responsiveness
-            append("""
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover" role="table" aria-label="Data table">
-                            <thead class="table-dark">
-                                <tr>
-            """.trimIndent())
-            
-            // Render column headers
-            columns.forEach { column ->
-                val sortClass = if (column.sortable) "sortable" else ""
-                val sortIcon = if (column.sortable && sortKey == column.key) {
-                    when (sortDirection) {
-                        SortDirection.ASC -> "fa-sort-up"
-                        SortDirection.DESC -> "fa-sort-down"
-                    }
-                } else if (column.sortable) {
-                    "fa-sort"
-                } else ""
-                
-                append("""
-                                    <th scope="col" class="$sortClass" ${if (column.sortable) "data-sort=\"${column.key}\"" else ""}>
-                                        ${column.label}
-                                        ${if (column.sortable) "<i class=\"fas $sortIcon ms-1\"></i>" else ""}
-                                    </th>
-                """.trimIndent())
-            }
-            
-            append("""
-                                </tr>
-                            </thead>
-                            <tbody>
-            """.trimIndent())
-            
-            // Render data rows or empty state
-            if (data.isEmpty()) {
-                append(renderEmptyState(columns.size))
-            } else {
-                data.forEach { row ->
-                    append("""
-                                <tr>
-                    """.trimIndent())
-                    
-                    columns.forEach { column ->
-                        val cellValue = row[column.key] ?: ""
-                        append("""
-                                    <td>$cellValue</td>
-                        """.trimIndent())
-                    }
-                    
-                    append("""
-                                </tr>
-                    """.trimIndent())
-                }
-            }
-            
-            append("""
-                            </tbody>
-                        </table>
-                    </div>
-            """.trimIndent())
-            
-            // Add pagination if configured
-            paginationConfig?.let { config ->
-                append(renderPagination(config))
-            }
-            
-            append("""
-                </div>
-            """.trimIndent())
-        }
-    }
-
-    /**
-     * Renders the search box for table filtering.
-     * 
-     * @param tableId unique identifier for the table to create unique search input ID
-     * @return HTML string containing the search box
-     */
-    private fun renderSearchBox(tableId: String): String {
-        return """
-            <div class="search-container mb-3">
-                <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control" id="${tableId}-search" placeholder="Search..." 
-                           aria-label="Search table data">
-                </div>
-            </div>
-        """.trimIndent()
-    }
-
-    /**
-     * Renders the empty state when no data is available.
-     * 
-     * @param columnCount the number of columns in the table
-     * @return HTML string containing the empty state
-     */
-    private fun renderEmptyState(columnCount: Int): String {
-        return """
-            <tr>
-                <td colspan="$columnCount" class="text-center text-muted py-4">
-                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                    <div class="h5">No data available</div>
-                    <p class="mb-0">There are no items to display at the moment.</p>
-                </td>
-            </tr>
-        """.trimIndent()
-    }
-
-    /**
-     * Renders pagination controls for the table.
-     * 
-     * @param config the pagination configuration
-     * @return HTML string containing pagination controls
-     */
-    private fun renderPagination(config: PaginationConfig): String {
-        val totalPages = calculateTotalPages(config.totalItems, config.pageSize)
-        val currentPage = config.currentPage
+    ): TableViewData {
+        val totalPages = paginationConfig?.let { 
+            calculateTotalPages(it.totalItems, it.pageSize)
+        } ?: 1
         
-        return buildString {
-            append("""
-                <nav aria-label="Table pagination">
-                    <ul class="pagination justify-content-center">
-            """.trimIndent())
-            
-            // Previous button
-            val prevDisabled = if (currentPage <= 1) "disabled" else ""
-            append("""
-                        <li class="page-item $prevDisabled">
-                            <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                                Previous
-                            </a>
-                        </li>
-            """.trimIndent())
-            
-            // Page numbers
-            for (page in 1..totalPages) {
-                val activeClass = if (page == currentPage) "active" else ""
-                append("""
-                        <li class="page-item $activeClass">
-                            <a class="page-link" href="#" data-page="$page">$page</a>
-                        </li>
-                """.trimIndent())
-            }
-            
-            // Next button
-            val nextDisabled = if (currentPage >= totalPages) "disabled" else ""
-            append("""
-                        <li class="page-item $nextDisabled">
-                            <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
-                                Next
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            """.trimIndent())
-        }
+        return TableViewData(
+            columns = columns,
+            data = data,
+            tableId = tableId,
+            paginationConfig = paginationConfig,
+            totalPages = totalPages,
+            searchEnabled = searchEnabled,
+            sortKey = sortKey,
+            sortDirection = sortDirection
+        )
     }
+
 
     /**
      * Applies sorting to the provided data.

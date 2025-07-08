@@ -238,8 +238,9 @@ abstract class BaseE2ETest {
      * @return true if on dashboard page, false otherwise
      */
     protected fun isOnDashboardPage(): Boolean {
-        return Selenide.`$`("h1").exists() &&
-               Selenide.`$`("h1").text().contains("Dashboard")
+        return Selenide.`$`(".dashboard-layout").exists() &&
+               Selenide.`$`(".navigation-panel").exists() &&
+               Selenide.`$`(".content-area").exists()
     }
 
     /**

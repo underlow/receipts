@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Navigation Panel Fragment -->
+    <nav th:fragment="navigationPanel(navigationData)" class="nav nav-pills nav-fill flex-column" role="navigation">
+        <th:block th:each="tab : ${navigationData.tabs}">
+            <a class="nav-link" 
+               th:classappend="${tab.active} ? 'active' : ''" 
+               th:href="'#' + ${tab.name.toLowerCase()}"
+               data-bs-toggle="tab" 
+               th:text="${tab.name}">Tab Name</a>
+        </th:block>
+    </nav>
+</body>
+</html>

@@ -19,26 +19,26 @@ class InboxView(private val baseTable: BaseTable) {
     }
 
     /**
-     * Renders the inbox view with the provided inbox data.
+     * Prepares the inbox view data for template rendering.
      * 
      * @param inboxData the list of inbox entities to display
      * @param paginationConfig optional pagination configuration
      * @param searchEnabled whether to show search functionality
      * @param sortKey optional current sort key
      * @param sortDirection optional current sort direction
-     * @return HTML string containing the rendered inbox table
+     * @return TableViewData object for template rendering
      */
-    fun render(
+    fun prepareTableViewData(
         inboxData: List<InboxEntity>,
         paginationConfig: PaginationConfig? = null,
         searchEnabled: Boolean = false,
         sortKey: String? = null,
         sortDirection: SortDirection = SortDirection.ASC
-    ): String {
+    ): TableViewData {
         val columns = getTableColumns()
         val rowData = inboxData.map { convertEntityToRowData(it) }
         
-        return baseTable.render(
+        return baseTable.prepareTableViewData(
             columns = columns,
             data = rowData,
             tableId = "inbox",
@@ -82,37 +82,14 @@ class InboxView(private val baseTable: BaseTable) {
      * Formats the OCR status for display based on the inbox state.
      * 
      * @param state the current inbox state
-     * @return HTML string with appropriate status indicator
+     * @return formatted status text
      */
     fun formatOCRStatus(state: InboxState): String {
         return when (state) {
-            InboxState.CREATED -> """
-                <span class="badge bg-warning text-dark">
-                    <i class="fas fa-clock me-1"></i>
-                    Pending
-                </span>
-            """.trimIndent()
-            
-            InboxState.PROCESSED -> """
-                <span class="badge bg-success">
-                    <i class="fas fa-check me-1"></i>
-                    Processed
-                </span>
-            """.trimIndent()
-            
-            InboxState.FAILED -> """
-                <span class="badge bg-danger">
-                    <i class="fas fa-times me-1"></i>
-                    Failed
-                </span>
-            """.trimIndent()
-            
-            InboxState.APPROVED -> """
-                <span class="badge bg-primary">
-                    <i class="fas fa-thumbs-up me-1"></i>
-                    Approved
-                </span>
-            """.trimIndent()
+            InboxState.CREATED -> "Pending"
+            InboxState.PROCESSED -> "Processed"
+            InboxState.FAILED -> "Failed"
+            InboxState.APPROVED -> "Approved"
         }
     }
 
@@ -121,49 +98,14 @@ class InboxView(private val baseTable: BaseTable) {
      * 
      * @param state the current inbox state
      * @param entityId the entity ID for action buttons
-     * @return HTML string with appropriate action buttons
+     * @return formatted action text
      */
     fun formatActions(state: InboxState, entityId: String): String {
         return when (state) {
-            InboxState.CREATED -> """
-                <span class="text-muted">
-                    <i class="fas fa-spinner fa-spin me-1"></i>
-                    Processing...
-                </span>
-            """.trimIndent()
-            
-            InboxState.PROCESSED -> """
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-sm btn-success" 
-                            onclick="approveItem('$entityId', 'BILL')" 
-                            title="Approve as Bill">
-                        <i class="fas fa-file-invoice me-1"></i>
-                        Approve as Bill
-                    </button>
-                    <button type="button" class="btn btn-sm btn-info" 
-                            onclick="approveItem('$entityId', 'RECEIPT')" 
-                            title="Approve as Receipt">
-                        <i class="fas fa-receipt me-1"></i>
-                        Approve as Receipt
-                    </button>
-                </div>
-            """.trimIndent()
-            
-            InboxState.FAILED -> """
-                <button type="button" class="btn btn-sm btn-warning" 
-                        onclick="retryItem('$entityId')" 
-                        title="Retry OCR Processing">
-                    <i class="fas fa-redo me-1"></i>
-                    Retry
-                </button>
-            """.trimIndent()
-            
-            InboxState.APPROVED -> """
-                <span class="text-success">
-                    <i class="fas fa-check-circle me-1"></i>
-                    Complete
-                </span>
-            """.trimIndent()
+            InboxState.CREATED -> "Processing..."
+            InboxState.PROCESSED -> "Approve as Bill | Approve as Receipt"
+            InboxState.FAILED -> "Retry"
+            InboxState.APPROVED -> "Complete"
         }
     }
 
@@ -171,20 +113,10 @@ class InboxView(private val baseTable: BaseTable) {
      * Formats image preview for display in the table.
      * 
      * @param imagePath the path to the image
-     * @return HTML string with image preview
+     * @return formatted image path
      */
     private fun formatImagePreview(imagePath: String): String {
-        return """
-            <div class="d-flex align-items-center">
-                <img src="/api/inbox/image/$imagePath" 
-                     class="img-thumbnail me-2" 
-                     style="width: 40px; height: 40px; object-fit: cover;" 
-                     alt="Document thumbnail"
-                     onclick="showImageModal('$imagePath')"
-                     style="cursor: pointer;">
-                <span class="text-muted small">$imagePath</span>
-            </div>
-        """.trimIndent()
+        return imagePath
     }
 
     /**

@@ -4,6 +4,7 @@ import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.dashboard.SortDirection
 import me.underlow.receipt.dashboard.PaginationConfig
+import me.underlow.receipt.dashboard.TableViewData
 import me.underlow.receipt.model.InboxEntity
 import me.underlow.receipt.model.InboxState
 import me.underlow.receipt.model.EntityType
@@ -144,19 +145,19 @@ class InboxIntegrationTest {
         // given - inbox view and mock service with test data
         val inboxData = mockInboxService.findAll()
 
-        // when - rendering inbox view with mock data
-        val renderedHtml = inboxView.render(inboxData)
+        // when - preparing table view data with mock data
+        val tableViewData = inboxView.prepareTableViewData(inboxData)
 
-        // then - should render complete table with all items
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare complete table data with all items
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify table structure is present
-        assertTrue(renderedHtml.contains("table"))
-        assertTrue(renderedHtml.contains("Upload Date"))
-        assertTrue(renderedHtml.contains("Image"))
-        assertTrue(renderedHtml.contains("OCR Status"))
-        assertTrue(renderedHtml.contains("Actions"))
+        assertEquals("inbox", tableViewData.tableId)
+        assertTrue(tableViewData.columns.any { it.label == "Upload Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Image" })
+        assertTrue(tableViewData.columns.any { it.label == "OCR Status" })
+        assertTrue(tableViewData.columns.any { it.label == "Actions" })
     }
 
     @Test
@@ -204,18 +205,19 @@ class InboxIntegrationTest {
         )
         val inboxData = mockInboxService.findAll(currentPage - 1, pageSize)
 
-        // when - rendering with pagination
-        val renderedHtml = inboxView.render(
+        // when - preparing table view data with pagination
+        val tableViewData = inboxView.prepareTableViewData(
             inboxData = inboxData,
             paginationConfig = paginationConfig
         )
 
-        // then - should render table with pagination controls
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare table data with pagination configuration
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify pagination integration
-        assertTrue(renderedHtml.contains("pagination") || renderedHtml.contains("page"))
+        assertEquals(paginationConfig, tableViewData.paginationConfig)
+        assertTrue(tableViewData.totalPages > 0)
     }
 
     @Test
@@ -225,19 +227,20 @@ class InboxIntegrationTest {
         val sortDirection = SortDirection.DESC
         val inboxData = mockInboxService.findAll(0, 20, sortKey, sortDirection.toString())
 
-        // when - rendering with sorting
-        val renderedHtml = inboxView.render(
+        // when - preparing table view data with sorting
+        val tableViewData = inboxView.prepareTableViewData(
             inboxData = inboxData,
             sortKey = sortKey,
             sortDirection = sortDirection
         )
 
-        // then - should render table with sorting indicators
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare table data with sorting configuration
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify sorting integration
-        assertTrue(renderedHtml.contains("sort") || renderedHtml.contains("sortable"))
+        assertEquals(sortKey, tableViewData.sortKey)
+        assertEquals(sortDirection, tableViewData.sortDirection)
     }
 
     @Test
@@ -330,18 +333,18 @@ class InboxIntegrationTest {
         // given - inbox view with empty data
         val emptyData = emptyList<InboxEntity>()
 
-        // when - rendering empty inbox
-        val renderedHtml = inboxView.render(emptyData)
+        // when - preparing table view data for empty inbox
+        val tableViewData = inboxView.prepareTableViewData(emptyData)
 
-        // then - should render empty state without errors
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare empty table data without errors
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isEmpty())
 
         // Should still contain table headers
-        assertTrue(renderedHtml.contains("Upload Date"))
-        assertTrue(renderedHtml.contains("Image"))
-        assertTrue(renderedHtml.contains("OCR Status"))
-        assertTrue(renderedHtml.contains("Actions"))
+        assertTrue(tableViewData.columns.any { it.label == "Upload Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Image" })
+        assertTrue(tableViewData.columns.any { it.label == "OCR Status" })
+        assertTrue(tableViewData.columns.any { it.label == "Actions" })
     }
 
     @Test

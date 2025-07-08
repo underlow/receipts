@@ -4,6 +4,7 @@ import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.dashboard.SortDirection
 import me.underlow.receipt.dashboard.PaginationConfig
+import me.underlow.receipt.dashboard.TableViewData
 import me.underlow.receipt.model.BillEntity
 import me.underlow.receipt.model.BillState
 import me.underlow.receipt.service.MockBillsService
@@ -183,21 +184,21 @@ class BillsIntegrationTest {
         // given - bills view and mock service with test data
         val billsData = mockBillsService.findAll()
 
-        // when - rendering bills view with mock data
-        val renderedHtml = billsView.render(billsData)
+        // when - preparing table view data with mock data
+        val tableViewData = billsView.prepareTableViewData(billsData)
 
-        // then - should render complete table with all items
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare complete table data with all items
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify table structure is present
-        assertTrue(renderedHtml.contains("table"))
-        assertTrue(renderedHtml.contains("Bill Date"))
-        assertTrue(renderedHtml.contains("Service Provider"))
-        assertTrue(renderedHtml.contains("Amount"))
-        assertTrue(renderedHtml.contains("Description"))
-        assertTrue(renderedHtml.contains("Created Date"))
-        assertTrue(renderedHtml.contains("Actions"))
+        assertEquals("bills", tableViewData.tableId)
+        assertTrue(tableViewData.columns.any { it.label == "Bill Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Service Provider" })
+        assertTrue(tableViewData.columns.any { it.label == "Amount" })
+        assertTrue(tableViewData.columns.any { it.label == "Description" })
+        assertTrue(tableViewData.columns.any { it.label == "Created Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Actions" })
     }
 
     @Test
@@ -237,18 +238,19 @@ class BillsIntegrationTest {
         )
         val billsData = mockBillsService.findAll(currentPage - 1, pageSize)
 
-        // when - rendering with pagination
-        val renderedHtml = billsView.render(
+        // when - preparing table view data with pagination
+        val tableViewData = billsView.prepareTableViewData(
             billsData = billsData,
             paginationConfig = paginationConfig
         )
 
-        // then - should render table with pagination controls
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare table data with pagination configuration
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify pagination integration
-        assertTrue(renderedHtml.contains("pagination") || renderedHtml.contains("page"))
+        assertEquals(paginationConfig, tableViewData.paginationConfig)
+        assertTrue(tableViewData.totalPages > 0)
     }
 
     @Test
@@ -258,19 +260,20 @@ class BillsIntegrationTest {
         val sortDirection = SortDirection.DESC
         val billsData = mockBillsService.findAll(0, 20, sortKey, sortDirection.toString())
 
-        // when - rendering with sorting
-        val renderedHtml = billsView.render(
+        // when - preparing table view data with sorting
+        val tableViewData = billsView.prepareTableViewData(
             billsData = billsData,
             sortKey = sortKey,
             sortDirection = sortDirection
         )
 
-        // then - should render table with sorting indicators
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare table data with sorting configuration
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
         // Verify sorting integration
-        assertTrue(renderedHtml.contains("sort") || renderedHtml.contains("sortable"))
+        assertEquals(sortKey, tableViewData.sortKey)
+        assertEquals(sortDirection, tableViewData.sortDirection)
     }
 
     @Test
@@ -323,7 +326,7 @@ class BillsIntegrationTest {
         val rowData = billsView.convertEntityToRowData(billFromInbox)
 
         // then - should display creation source correctly
-        assertTrue(rowData["serviceProvider"]?.contains("From inbox") == true)
+        assertTrue(rowData["serviceProvider"]?.contains("(from inbox)") == true)
     }
 
     @Test
@@ -382,12 +385,12 @@ class BillsIntegrationTest {
             assertNotNull(serviceProviderField)
             assertTrue(serviceProviderField.isNotEmpty())
             
-            // Should contain properly formatted service provider name
-            assertTrue(serviceProviderField.contains("class=\"fw-semibold\""))
+            // Should contain properly formatted service provider name without HTML
+            assertTrue(serviceProviderField.isNotEmpty())
             
             // Should indicate creation source
-            assertTrue(serviceProviderField.contains("From inbox") || 
-                      serviceProviderField.contains("manual entry"))
+            assertTrue(serviceProviderField.contains("(from inbox)") || 
+                      serviceProviderField.contains("(manual)"))
         }
     }
 
@@ -466,20 +469,20 @@ class BillsIntegrationTest {
         // given - bills view with empty data
         val emptyData = emptyList<BillEntity>()
 
-        // when - rendering empty bills view
-        val renderedHtml = billsView.render(emptyData)
+        // when - preparing table view data for empty bills view
+        val tableViewData = billsView.prepareTableViewData(emptyData)
 
-        // then - should render empty state without errors
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare empty table data without errors
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isEmpty())
 
         // Should still contain table headers
-        assertTrue(renderedHtml.contains("Bill Date"))
-        assertTrue(renderedHtml.contains("Service Provider"))
-        assertTrue(renderedHtml.contains("Amount"))
-        assertTrue(renderedHtml.contains("Description"))
-        assertTrue(renderedHtml.contains("Created Date"))
-        assertTrue(renderedHtml.contains("Actions"))
+        assertTrue(tableViewData.columns.any { it.label == "Bill Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Service Provider" })
+        assertTrue(tableViewData.columns.any { it.label == "Amount" })
+        assertTrue(tableViewData.columns.any { it.label == "Description" })
+        assertTrue(tableViewData.columns.any { it.label == "Created Date" })
+        assertTrue(tableViewData.columns.any { it.label == "Actions" })
     }
 
     @Test
@@ -514,17 +517,17 @@ class BillsIntegrationTest {
         // given - bills view with test data and search enabled
         val billsData = mockBillsService.findAll()
 
-        // when - rendering with search enabled
-        val renderedHtml = billsView.render(
+        // when - preparing table view data with search enabled
+        val tableViewData = billsView.prepareTableViewData(
             billsData = billsData,
             searchEnabled = true
         )
 
-        // then - should render table with search functionality
-        assertNotNull(renderedHtml)
-        assertTrue(renderedHtml.isNotEmpty())
+        // then - should prepare table data with search functionality
+        assertNotNull(tableViewData)
+        assertTrue(tableViewData.data.isNotEmpty())
 
-        // Should contain search-related elements
-        assertTrue(renderedHtml.contains("search") || renderedHtml.contains("filter"))
+        // Should have search enabled in configuration
+        assertTrue(tableViewData.searchEnabled)
     }
 }

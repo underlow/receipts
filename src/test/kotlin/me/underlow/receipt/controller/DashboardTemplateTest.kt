@@ -4,6 +4,7 @@ import me.underlow.receipt.config.SecurityConfiguration
 import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
+import me.underlow.receipt.dashboard.NavigationPanel
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
@@ -28,7 +29,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
  */
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(DashboardController::class)
-@Import(SecurityConfiguration::class, MockBillsService::class, MockInboxService::class, BillsView::class, InboxView::class, BaseTable::class)
+@Import(SecurityConfiguration::class, MockBillsService::class, MockInboxService::class, BillsView::class, InboxView::class, BaseTable::class, NavigationPanel::class)
 class DashboardTemplateTest {
 
     @Autowired
@@ -77,7 +78,6 @@ class DashboardTemplateTest {
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk)
             .andExpect(view().name("dashboard"))
-            .andExpect(content().string(containsString("Welcome")))
             .andExpect(content().string(containsString("Unknown User")))
             .andExpect(content().string(containsString("user")))
     }

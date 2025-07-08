@@ -2,8 +2,10 @@ package me.underlow.receipt.controller
 
 import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
+import me.underlow.receipt.dashboard.NavigationPanel
 import me.underlow.receipt.dashboard.PaginationConfig
 import me.underlow.receipt.dashboard.SortDirection
+import me.underlow.receipt.dashboard.TableViewData
 import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
 import org.springframework.http.ResponseEntity
@@ -25,7 +27,8 @@ class DashboardController(
     private val mockInboxService: MockInboxService,
     private val mockBillsService: MockBillsService,
     private val inboxView: InboxView,
-    private val billsView: BillsView
+    private val billsView: BillsView,
+    private val navigationPanel: NavigationPanel
 ) {
 
     /**
@@ -41,19 +44,24 @@ class DashboardController(
     @PreAuthorize("isAuthenticated()")
     fun dashboard(model: Model, authentication: Authentication): String {
         extractUserProfileToModel(model, authentication)
+        
+        // Add navigation data to model
+        val navigationData = navigationPanel.getNavigationData("Inbox") // Default to Inbox
+        model.addAttribute("navigationData", navigationData)
+        
         return "dashboard"
     }
 
     /**
      * API endpoint for inbox data with pagination and sorting support.
-     * Returns rendered HTML table for the inbox view.
+     * Returns table view data for template rendering.
      * 
      * @param page page number (0-based, default 0)
      * @param size page size (default 10)
      * @param sortBy sort field (default "uploadDate")
      * @param sortDirection sort direction (default "DESC")
      * @param search optional search term
-     * @return HTML table response
+     * @return table view data response
      */
     @GetMapping("/api/inbox")
     @PreAuthorize("isAuthenticated()")
@@ -64,7 +72,7 @@ class DashboardController(
         @RequestParam(defaultValue = "uploadDate") sortBy: String,
         @RequestParam(defaultValue = "DESC") sortDirection: String,
         @RequestParam(required = false) search: String?
-    ): ResponseEntity<String> {
+    ): ResponseEntity<TableViewData> {
         // Get paginated data from mock service
         val inboxData = mockInboxService.findAll(page, size, sortBy, sortDirection)
         val totalCount = mockInboxService.getTotalCount()
@@ -91,8 +99,8 @@ class DashboardController(
         // Convert sort direction
         val sortDir = if (sortDirection.uppercase() == "ASC") SortDirection.ASC else SortDirection.DESC
         
-        // Render the table
-        val tableHtml = inboxView.render(
+        // Prepare table view data
+        val tableViewData = inboxView.prepareTableViewData(
             inboxData = filteredData,
             paginationConfig = paginationConfig,
             searchEnabled = true,
@@ -100,19 +108,19 @@ class DashboardController(
             sortDirection = sortDir
         )
         
-        return ResponseEntity.ok(tableHtml)
+        return ResponseEntity.ok(tableViewData)
     }
 
     /**
      * API endpoint for bills data with pagination and sorting support.
-     * Returns rendered HTML table for the bills view.
+     * Returns table view data for template rendering.
      * 
      * @param page page number (0-based, default 0)
      * @param size page size (default 10)
      * @param sortBy sort field (default "billDate")
      * @param sortDirection sort direction (default "DESC")
      * @param search optional search term
-     * @return HTML table response
+     * @return table view data response
      */
     @GetMapping("/api/bills")
     @PreAuthorize("isAuthenticated()")
@@ -123,7 +131,7 @@ class DashboardController(
         @RequestParam(defaultValue = "billDate") sortBy: String,
         @RequestParam(defaultValue = "DESC") sortDirection: String,
         @RequestParam(required = false) search: String?
-    ): ResponseEntity<String> {
+    ): ResponseEntity<TableViewData> {
         // Get paginated data from mock service
         val billsData = mockBillsService.findAll(page, size, sortBy, sortDirection)
         val totalCount = mockBillsService.getTotalCount()
@@ -150,8 +158,8 @@ class DashboardController(
         // Convert sort direction
         val sortDir = if (sortDirection.uppercase() == "ASC") SortDirection.ASC else SortDirection.DESC
         
-        // Render the table
-        val tableHtml = billsView.render(
+        // Prepare table view data
+        val tableViewData = billsView.prepareTableViewData(
             billsData = filteredData,
             paginationConfig = paginationConfig,
             searchEnabled = true,
@@ -159,7 +167,7 @@ class DashboardController(
             sortDirection = sortDir
         )
         
-        return ResponseEntity.ok(tableHtml)
+        return ResponseEntity.ok(tableViewData)
     }
 
     /**
