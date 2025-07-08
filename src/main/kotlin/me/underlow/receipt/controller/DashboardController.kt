@@ -1,8 +1,10 @@
 package me.underlow.receipt.controller
 
+import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.PaginationConfig
 import me.underlow.receipt.dashboard.SortDirection
+import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -21,7 +23,9 @@ import org.springframework.web.bind.annotation.ResponseBody
 @Controller
 class DashboardController(
     private val mockInboxService: MockInboxService,
-    private val inboxView: InboxView
+    private val mockBillsService: MockBillsService,
+    private val inboxView: InboxView,
+    private val billsView: BillsView
 ) {
 
     /**
@@ -90,6 +94,65 @@ class DashboardController(
         // Render the table
         val tableHtml = inboxView.render(
             inboxData = filteredData,
+            paginationConfig = paginationConfig,
+            searchEnabled = true,
+            sortKey = sortBy,
+            sortDirection = sortDir
+        )
+        
+        return ResponseEntity.ok(tableHtml)
+    }
+
+    /**
+     * API endpoint for bills data with pagination and sorting support.
+     * Returns rendered HTML table for the bills view.
+     * 
+     * @param page page number (0-based, default 0)
+     * @param size page size (default 10)
+     * @param sortBy sort field (default "billDate")
+     * @param sortDirection sort direction (default "DESC")
+     * @param search optional search term
+     * @return HTML table response
+     */
+    @GetMapping("/api/bills")
+    @PreAuthorize("isAuthenticated()")
+    @ResponseBody
+    fun getBillsData(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "billDate") sortBy: String,
+        @RequestParam(defaultValue = "DESC") sortDirection: String,
+        @RequestParam(required = false) search: String?
+    ): ResponseEntity<String> {
+        // Get paginated data from mock service
+        val billsData = mockBillsService.findAll(page, size, sortBy, sortDirection)
+        val totalCount = mockBillsService.getTotalCount()
+        
+        // Apply search filter if provided
+        val filteredData = if (!search.isNullOrBlank()) {
+            billsData.filter { entity ->
+                entity.serviceProviderId.contains(search, ignoreCase = true) ||
+                entity.description?.contains(search, ignoreCase = true) == true ||
+                entity.amount.toString().contains(search, ignoreCase = true) ||
+                entity.state.name.contains(search, ignoreCase = true)
+            }
+        } else {
+            billsData
+        }
+        
+        // Create pagination config
+        val paginationConfig = PaginationConfig(
+            pageSize = size,
+            currentPage = page + 1, // Convert to 1-based
+            totalItems = totalCount
+        )
+        
+        // Convert sort direction
+        val sortDir = if (sortDirection.uppercase() == "ASC") SortDirection.ASC else SortDirection.DESC
+        
+        // Render the table
+        val tableHtml = billsView.render(
+            billsData = filteredData,
             paginationConfig = paginationConfig,
             searchEnabled = true,
             sortKey = sortBy,

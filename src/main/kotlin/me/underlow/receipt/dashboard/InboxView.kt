@@ -41,6 +41,7 @@ class InboxView(private val baseTable: BaseTable) {
         return baseTable.render(
             columns = columns,
             data = rowData,
+            tableId = "inbox",
             paginationConfig = paginationConfig,
             searchEnabled = searchEnabled,
             sortKey = sortKey,

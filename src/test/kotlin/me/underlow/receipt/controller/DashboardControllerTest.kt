@@ -1,11 +1,13 @@
 package me.underlow.receipt.controller
 
 import me.underlow.receipt.config.SecurityConfiguration
+import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
+import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -45,7 +47,13 @@ class DashboardControllerTest {
     private lateinit var mockInboxService: MockInboxService
 
     @MockitoBean
+    private lateinit var mockBillsService: MockBillsService
+
+    @MockitoBean
     private lateinit var inboxView: InboxView
+
+    @MockitoBean
+    private lateinit var billsView: BillsView
 
     @MockitoBean
     private lateinit var baseTable: BaseTable

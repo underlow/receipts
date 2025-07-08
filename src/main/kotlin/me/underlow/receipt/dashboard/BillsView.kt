@@ -46,6 +46,7 @@ class BillsView(private val baseTable: BaseTable) {
         return baseTable.render(
             columns = columns,
             data = rowData,
+            tableId = "bills",
             paginationConfig = paginationConfig,
             searchEnabled = searchEnabled,
             sortKey = sortKey,

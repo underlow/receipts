@@ -48,6 +48,7 @@ class BaseTable {
      * 
      * @param columns the list of table columns to display
      * @param data the data to display in the table
+     * @param tableId unique identifier for the table to avoid ID conflicts
      * @param paginationConfig optional pagination configuration
      * @param searchEnabled whether to show search functionality
      * @param sortKey optional current sort key
@@ -57,6 +58,7 @@ class BaseTable {
     fun render(
         columns: List<TableColumn>,
         data: List<Map<String, String>>,
+        tableId: String = "default",
         paginationConfig: PaginationConfig? = null,
         searchEnabled: Boolean = false,
         sortKey: String? = null,
@@ -69,7 +71,7 @@ class BaseTable {
             
             // Add search box if enabled
             if (searchEnabled) {
-                append(renderSearchBox())
+                append(renderSearchBox(tableId))
             }
             
             // Add table wrapper for responsiveness
@@ -148,16 +150,17 @@ class BaseTable {
     /**
      * Renders the search box for table filtering.
      * 
+     * @param tableId unique identifier for the table to create unique search input ID
      * @return HTML string containing the search box
      */
-    private fun renderSearchBox(): String {
+    private fun renderSearchBox(tableId: String): String {
         return """
             <div class="search-container mb-3">
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" class="form-control" id="table-search" placeholder="Search..." 
+                    <input type="text" class="form-control" id="${tableId}-search" placeholder="Search..." 
                            aria-label="Search table data">
                 </div>
             </div>

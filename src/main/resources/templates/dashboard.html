@@ -410,9 +410,12 @@
                         <div class="dashboard-card">
                             <h5 class="card-title">Bills</h5>
                             <p class="card-text">Track your spending patterns and bill analytics.</p>
-                            <div class="placeholder-content">
-                                <div class="placeholder-icon">📊</div>
-                                <p>Bill management features coming soon.</p>
+                            <div id="bills-content">
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -458,16 +461,29 @@
         let currentSort = 'uploadDate';
         let currentDirection = 'DESC';
         let currentSearch = '';
+        
+        // Bills tab state
+        let billsCurrentPage = 0;
+        let billsCurrentSort = 'billDate';
+        let billsCurrentDirection = 'DESC';
+        let billsCurrentSearch = '';
 
         // Load inbox data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadInboxData();
             
-            // Set up tab change event to refresh data when inbox tab is activated
+            // Set up tab change event to refresh data when tabs are activated
             const inboxTab = document.querySelector('a[href="#inbox"]');
             if (inboxTab) {
                 inboxTab.addEventListener('shown.bs.tab', function() {
                     loadInboxData();
+                });
+            }
+            
+            const billsTab = document.querySelector('a[href="#bills"]');
+            if (billsTab) {
+                billsTab.addEventListener('shown.bs.tab', function() {
+                    loadBillsData();
                 });
             }
         });
@@ -584,6 +600,112 @@
             // TODO: Implement image modal
             console.log(`Showing image modal for ${imagePath}`);
             alert(`Image viewer for ${imagePath}. (Functionality not yet implemented)`);
+        }
+
+        // Function to load bills data from the API
+        function loadBillsData(page = 0, search = '') {
+            billsCurrentPage = page;
+            billsCurrentSearch = search;
+            
+            const params = new URLSearchParams({
+                page: page,
+                size: 10,
+                sortBy: billsCurrentSort,
+                sortDirection: billsCurrentDirection
+            });
+            
+            if (search && search.trim() !== '') {
+                params.append('search', search.trim());
+            }
+            
+            fetch(`/api/bills?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load bills data');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('bills-content').innerHTML = html;
+                    
+                    // Set up event listeners for the loaded content
+                    setupBillsTableEventListeners();
+                })
+                .catch(error => {
+                    console.error('Error loading bills data:', error);
+                    document.getElementById('bills-content').innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load bills data. Please try again.
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadBillsData()">
+                                <i class="fas fa-redo me-1"></i> Retry
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        // Set up event listeners for bills table interactions
+        function setupBillsTableEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('table-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value;
+                    clearTimeout(searchInput.timeout);
+                    searchInput.timeout = setTimeout(() => {
+                        loadBillsData(0, searchTerm);
+                    }, 500);
+                });
+            }
+            
+            // Pagination
+            const paginationLinks = document.querySelectorAll('.pagination .page-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    if (!isNaN(page) && page > 0) {
+                        loadBillsData(page - 1, billsCurrentSearch); // Convert to 0-based
+                    }
+                });
+            });
+            
+            // Sorting
+            const sortableHeaders = document.querySelectorAll('th.sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.getAttribute('data-sort');
+                    if (sortKey) {
+                        // Toggle direction if same column, otherwise use DESC as default
+                        if (billsCurrentSort === sortKey) {
+                            billsCurrentDirection = billsCurrentDirection === 'ASC' ? 'DESC' : 'ASC';
+                        } else {
+                            billsCurrentSort = sortKey;
+                            billsCurrentDirection = 'DESC';
+                        }
+                        loadBillsData(0, billsCurrentSearch);
+                    }
+                });
+                
+                // Add cursor pointer style
+                header.style.cursor = 'pointer';
+            });
+        }
+
+        // Functions for bills action buttons
+        function editBill(billId) {
+            // TODO: Implement edit bill functionality
+            console.log(`Editing bill ${billId}`);
+            alert(`Edit bill ${billId}. (Functionality not yet implemented)`);
+        }
+
+        function removeBill(billId) {
+            if (confirm('Are you sure you want to remove this bill?')) {
+                // TODO: Implement remove bill functionality
+                console.log(`Removing bill ${billId}`);
+                alert(`Bill ${billId} removed. (Functionality not yet implemented)`);
+            }
         }
     </script>
 </body>
