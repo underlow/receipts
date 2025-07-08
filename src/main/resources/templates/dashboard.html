@@ -709,30 +709,6 @@
 
     <!-- Dashboard Layout with Three-Panel Structure -->
     <main class="container-fluid dashboard-layout">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="welcome-section">
-                <h1 class="welcome-title">Welcome to your Dashboard</h1>
-                <div class="user-info">
-                    <div class="d-flex align-items-center">
-                        <img th:if="${userAvatar != null and userAvatar != ''}" 
-                             th:src="${userAvatar}" 
-                             th:alt="${userName + ' profile avatar'}"
-                             class="user-avatar">
-                        <div th:if="${userAvatar == null or userAvatar == ''}" 
-                             class="user-avatar-fallback"
-                             th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
-                             th:title="${userName}">
-                            U
-                        </div>
-                    </div>
-                    <div class="user-details">
-                        <div class="user-name" th:text="${userName ?: 'Unknown User'}">Unknown User</div>
-                        <div class="user-email" th:text="${userEmail ?: 'No email provided'}">No email provided</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Three-Panel Layout -->
         <div class="row">
@@ -787,18 +763,6 @@
                     </div>
                 </div>
 
-                <!-- Additional Placeholder Content -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="placeholder-content">
-                            <div class="placeholder-icon">🚀</div>
-                            <h3>Receipt Management Dashboard</h3>
-                            <p class="lead">Your comprehensive receipt management solution is being built with care.</p>
-                            <p>This dashboard will soon include features for uploading, categorizing, and analyzing your receipts. Mobile-responsive design ensures you can access your data from any device.</p>
-                            <p class="text-muted">Features in development: OCR processing, expense tracking, tax categorization, and export capabilities.</p>
-                        </div>
-                    </div>
-                </div>
             </section>
         </div>
     </main>
