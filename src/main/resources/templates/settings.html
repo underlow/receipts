@@ -11,12 +11,43 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS -->
+    <!-- Custom CSS - shadcn/ui inspired design -->
     <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        * {
+            border-color: hsl(var(--border));
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
             min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .user-avatar {
@@ -24,7 +55,7 @@
             height: 60px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #667eea;
+            border: 2px solid hsl(var(--border));
             margin-right: 15px;
         }
         
@@ -32,97 +63,216 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #667eea;
+            background: hsl(var(--muted));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: hsl(var(--muted-foreground));
             font-weight: 500;
             font-size: 1.5rem;
             margin-right: 15px;
+            border: 2px solid hsl(var(--border));
         }
         
         .settings-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid hsl(var(--border));
+            transition: all 0.2s ease;
+        }
+
+        .settings-card:hover {
+            box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
         }
         
         .settings-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: hsl(var(--card));
+            color: hsl(var(--foreground));
+            padding: 0.75rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
         }
         
         .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: white !important;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: hsl(var(--foreground)) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-weight: 400;
+            color: hsl(var(--muted-foreground)) !important;
+            font-weight: 500;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+            margin: 0 0.125rem;
+            font-size: 0.875rem;
         }
         
         .navbar-nav .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white !important;
+            background-color: hsl(var(--muted));
+            color: hsl(var(--foreground)) !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground)) !important;
         }
         
         .user-info {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
+            padding: 1rem;
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
         }
         
         .user-details h6 {
-            color: #333;
-            font-size: 1.1rem;
-            margin-bottom: 2px;
+            color: hsl(var(--foreground));
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.125rem;
         }
         
         .user-details small {
-            color: #666;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
         }
         
         .btn-logout {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
+            background-color: hsl(var(--destructive));
+            border-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid hsl(var(--destructive));
         }
         
         .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
+            background-color: hsl(var(--destructive));
+            border-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            opacity: 0.9;
         }
 
         .setting-section {
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            border-bottom: 1px solid hsl(var(--border));
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.25rem;
         }
 
         .setting-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
+        }
+
+        .setting-section h5 {
+            color: hsl(var(--foreground));
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .setting-section .text-muted {
+            color: hsl(var(--muted-foreground)) !important;
+        }
+
+        .form-check-input {
+            border: 2px solid hsl(var(--border));
+            border-radius: calc(var(--radius) / 2);
+            background-color: hsl(var(--background));
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+        }
+
+        .form-check-input:hover {
+            border-color: hsl(var(--primary));
+        }
+
+        .btn-outline-primary {
+            color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            background-color: transparent;
+            border-radius: var(--radius);
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .btn-outline-danger {
+            color: hsl(var(--destructive));
+            border-color: hsl(var(--destructive));
+            background-color: transparent;
+            border-radius: var(--radius);
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: hsl(var(--destructive));
+            border-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .btn-outline-info {
+            color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            background-color: transparent;
+            border-radius: var(--radius);
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-info:hover {
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .btn-outline-secondary {
+            color: hsl(var(--secondary-foreground));
+            border-color: hsl(var(--border));
+            background-color: transparent;
+            border-radius: var(--radius);
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: hsl(var(--secondary));
+            border-color: hsl(var(--border));
+            color: hsl(var(--secondary-foreground));
         }
     </style>
 </head>

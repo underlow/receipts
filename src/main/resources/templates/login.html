@@ -11,114 +11,164 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS -->
+    <!-- Custom CSS - shadcn/ui inspired design -->
     <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        * {
+            border-color: hsl(var(--border));
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 1.25rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             width: 100%;
             max-width: 400px;
+            border: 1px solid hsl(var(--border));
         }
         
         .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            padding: 1.5rem;
             text-align: center;
+            border-bottom: 1px solid hsl(var(--border));
         }
         
         .login-header h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: hsl(var(--primary-foreground));
         }
         
         .login-header p {
-            font-size: 1rem;
+            font-size: 0.875rem;
             opacity: 0.9;
             margin-bottom: 0;
+            color: hsl(var(--primary-foreground));
         }
         
         .login-body {
-            padding: 40px 30px;
+            padding: 1.5rem;
         }
         
         .btn-google {
-            background-color: #4285f4;
-            border-color: #4285f4;
-            color: white;
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
             font-weight: 500;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
             width: 100%;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 2.5rem;
+            border: 1px solid hsl(var(--primary));
         }
         
         .btn-google:hover {
-            background-color: #3367d6;
-            border-color: #3367d6;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            opacity: 0.9;
         }
         
         .btn-google:focus {
-            background-color: #3367d6;
-            border-color: #3367d6;
-            color: white;
-            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+            background-color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            box-shadow: 0 0 0 2px hsl(var(--ring));
+            outline: none;
         }
         
         .google-icon {
             width: 20px;
             height: 20px;
-            margin-right: 10px;
             vertical-align: middle;
         }
         
         .alert {
-            border-radius: 8px;
-            margin-bottom: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border: 1px solid hsl(var(--border));
+        }
+
+        .alert-danger {
+            background-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            border-color: hsl(var(--destructive));
         }
         
         .welcome-text {
             text-align: center;
-            margin-bottom: 30px;
-            color: #666;
+            margin-bottom: 1.5rem;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
         }
         
         @media (max-width: 576px) {
+            body {
+                padding: 1rem;
+            }
+            
             .login-container {
-                margin: 10px;
-                border-radius: 10px;
+                border-radius: calc(var(--radius) - 2px);
             }
             
             .login-header {
-                padding: 20px;
+                padding: 1rem;
             }
             
             .login-header h1 {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
             }
             
             .login-body {
-                padding: 30px 20px;
+                padding: 1rem;
             }
         }
     </style>
