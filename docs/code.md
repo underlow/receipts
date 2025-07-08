@@ -52,6 +52,42 @@ Contains configuration classes for Spring Security and other framework configura
 ### me.underlow.receipt.dashboard
 Contains dashboard-related UI components.
 
+#### BaseTable
+Base table component providing common table functionality for all entity views.
+- **File**: `src/main/kotlin/me/underlow/receipt/dashboard/BaseTable.kt`
+- **Purpose**: Provides reusable table functionality including sorting, pagination, search/filter capabilities, and proper empty state handling
+- **Key Methods**:
+  - `render()`: Renders HTML table with columns and data
+  - `applySorting()`: Applies sorting to data
+  - `applyPagination()`: Applies pagination to data
+  - `applySearch()`: Applies search filtering to data
+
+#### InboxView
+Inbox view component for displaying inbox items in table format.
+- **File**: `src/main/kotlin/me/underlow/receipt/dashboard/InboxView.kt`
+- **Purpose**: Displays inbox items with OCR status indicators and state-based action buttons
+- **Integration**: Uses BaseTable component for common functionality
+
+#### BillsView
+Bills view component for displaying bills in table format.
+- **File**: `src/main/kotlin/me/underlow/receipt/dashboard/BillsView.kt`
+- **Purpose**: Displays bills with amount formatting, service provider display, and state-based action buttons
+- **Key Features**:
+  - Currency formatting for amounts
+  - Service provider name resolution
+  - Description truncation with tooltips
+  - Creation source indication (inbox vs manual)
+  - State-based action buttons (edit/remove for active bills)
+- **Integration**: Uses BaseTable component for common functionality
+- **Key Methods**:
+  - `render()`: Renders bills table view
+  - `getTableColumns()`: Defines table columns
+  - `convertEntityToRowData()`: Converts BillEntity to table row
+  - `formatAmount()`: Formats monetary amounts as currency
+  - `formatServiceProvider()`: Formats service provider display
+  - `formatDescription()`: Handles description truncation
+  - `formatActions()`: Creates state-based action buttons
+
 ## Entity Relationships
 
 ### Inbox to Bill Relationship
@@ -72,6 +108,18 @@ Tests follow the same package structure as main code under `src/test/kotlin/me/u
 ### Entity Test Files
 - `InboxEntityTest.kt`: Comprehensive tests for InboxEntity lifecycle and behavior
 - `BillEntityTest.kt`: Comprehensive tests for BillEntity lifecycle and behavior
+
+### Dashboard Component Test Files
+- `BaseTableTest.kt`: Tests for BaseTable component functionality
+- `InboxViewTest.kt`: Tests for InboxView component rendering and behavior
+- `BillsViewTest.kt`: Tests for BillsView component rendering and behavior
+  - Tests table column definitions
+  - Tests entity to row data conversion
+  - Tests amount formatting
+  - Tests service provider formatting
+  - Tests description truncation
+  - Tests action button generation
+  - Tests integration with BaseTable functionality
 
 ## Key Design Patterns
 

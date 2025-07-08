@@ -87,6 +87,19 @@ Bills represent financial obligations that users need to track and manage:
 - Dashboard MUST show user profile information
 - Dashboard MUST provide logout functionality
 
+### Bills Management Interface
+- Bills view MUST display bills in a table format with sortable columns
+- Bills table MUST show bill date, service provider, amount, description, created date, and actions
+- Bills table MUST format amounts as currency with proper formatting
+- Bills table MUST show service provider names with creation source indication
+- Bills table MUST truncate long descriptions with full text available on hover
+- Bills table MUST provide edit and remove actions for active bills
+- Bills table MUST show removed status for deleted bills
+- Bills table MUST support sorting by bill date, amount, and created date
+- Bills table MUST support pagination and search functionality
+- Bills table MUST show empty state when no bills are available
+- Bills table MUST integrate with BaseTable component for common functionality
+
 ## User Stories
 
 ### Authentication Stories
