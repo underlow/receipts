@@ -7,6 +7,8 @@
 
 - NEVER create copy of functionality in test classes
 
+kotlin code should never generate html. 
+
 # Bash commands
 
 - ./gradlew test: Run unit tests

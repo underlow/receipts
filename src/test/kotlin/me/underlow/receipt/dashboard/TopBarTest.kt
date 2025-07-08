@@ -19,7 +19,7 @@ import kotlin.test.assertFalse
 class TopBarTest {
 
     @Test
-    fun `given authenticated user with avatar when rendering top bar then should display user name and avatar`() {
+    fun `given authenticated user with avatar when getting user context then should provide user name and avatar`() {
         // given - authenticated user with complete profile information
         val user = User(
             email = "test@example.com",
@@ -28,18 +28,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
-        // then - should display user name and avatar
-        assertNotNull(html)
-        assertTrue(html.contains("John Doe"))
-        assertTrue(html.contains("https://example.com/avatar.jpg"))
-        assertTrue(html.contains("user-avatar"))
+        // then - should provide user name and avatar context
+        assertNotNull(context)
+        assertEquals("John Doe", context["userName"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("test@example.com", context["userEmail"])
+        assertEquals("J", context["userInitial"])
     }
 
     @Test
-    fun `given authenticated user without avatar when rendering top bar then should display user name with fallback avatar`() {
+    fun `given authenticated user without avatar when getting user context then should provide user name with fallback avatar`() {
         // given - authenticated user without avatar
         val user = User(
             email = "test@example.com",
@@ -48,19 +49,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
-        // then - should display user name with fallback avatar showing first initial
-        assertNotNull(html)
-        assertTrue(html.contains("Jane Smith"))
-        assertTrue(html.contains("J")) // first initial of name
-        assertTrue(html.contains("user-avatar-fallback"))
-        assertFalse(html.contains("img"))
+        // then - should provide user name with fallback avatar showing first initial
+        assertNotNull(context)
+        assertEquals("Jane Smith", context["userName"])
+        assertEquals("J", context["userInitial"])
+        assertEquals("", context["userAvatar"])
+        assertEquals("test@example.com", context["userEmail"])
     }
 
     @Test
-    fun `given authenticated user when rendering top bar then should display user menu with logout option`() {
+    fun `given authenticated user when getting user context then should provide complete user data`() {
         // given - authenticated user
         val user = User(
             email = "test@example.com",
@@ -69,19 +70,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
-        // then - should display user menu with logout functionality
-        assertNotNull(html)
-        assertTrue(html.contains("dropdown"))
-        assertTrue(html.contains("logout"))
-        assertTrue(html.contains("Profile"))
-        assertTrue(html.contains("Settings"))
+        // then - should provide complete user data for template
+        assertNotNull(context)
+        assertEquals("John Doe", context["userName"])
+        assertEquals("test@example.com", context["userEmail"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("J", context["userInitial"])
     }
 
     @Test
-    fun `given authenticated user when rendering top bar then should handle authentication state properly`() {
+    fun `given authenticated user when getting user context then should handle authentication state properly`() {
         // given - authenticated user
         val user = User(
             email = "test@example.com",
@@ -90,18 +91,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
         // then - should handle authentication state correctly
-        assertNotNull(html)
-        assertTrue(html.contains("user-dropdown"))
-        assertTrue(html.contains("dropdown-toggle"))
-        assertTrue(html.contains("test@example.com"))
+        assertNotNull(context)
+        assertEquals("John Doe", context["userName"])
+        assertEquals("test@example.com", context["userEmail"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("J", context["userInitial"])
     }
 
     @Test
-    fun `given user with empty name when rendering top bar then should display fallback text`() {
+    fun `given user with empty name when getting user context then should provide fallback text`() {
         // given - user with empty name
         val user = User(
             email = "test@example.com",
@@ -110,17 +112,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
-        // then - should display fallback text for empty name
-        assertNotNull(html)
-        assertTrue(html.contains("U")) // fallback initial
-        assertTrue(html.contains("user-avatar-fallback"))
+        // then - should provide fallback text for empty name
+        assertNotNull(context)
+        assertEquals("Unknown User", context["userName"])
+        assertEquals("U", context["userInitial"]) // fallback initial
+        assertEquals("", context["userAvatar"])
+        assertEquals("test@example.com", context["userEmail"])
     }
 
     @Test
-    fun `given user with long name when rendering top bar then should handle name truncation for mobile view`() {
+    fun `given user with long name when getting user context then should handle long names properly`() {
         // given - user with very long name
         val user = User(
             email = "test@example.com",
@@ -129,17 +133,19 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting user context for template
+        val context = topBar.getUserContext(user)
         
         // then - should handle long names properly
-        assertNotNull(html)
-        assertTrue(html.contains("John Jacob Jingleheimer Schmidt"))
-        assertTrue(html.contains("d-none d-md-inline")) // responsive display class
+        assertNotNull(context)
+        assertEquals("John Jacob Jingleheimer Schmidt", context["userName"])
+        assertEquals("J", context["userInitial"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("test@example.com", context["userEmail"])
     }
 
     @Test
-    fun `given user when rendering top bar then should include proper accessibility attributes`() {
+    fun `given user when getting welcome context then should provide complete user data`() {
         // given - authenticated user
         val user = User(
             email = "test@example.com",
@@ -148,33 +154,35 @@ class TopBarTest {
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting welcome context for template
+        val context = topBar.getWelcomeContext(user)
         
-        // then - should include proper accessibility attributes
-        assertNotNull(html)
-        assertTrue(html.contains("aria-label"))
-        assertTrue(html.contains("aria-expanded"))
-        assertTrue(html.contains("alt="))
+        // then - should provide complete user data for welcome section
+        assertNotNull(context)
+        assertEquals("John Doe", context["userName"])
+        assertEquals("test@example.com", context["userEmail"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("J", context["userInitial"])
     }
 
     @Test
-    fun `given user when rendering top bar then should include CSRF token in logout form`() {
-        // given - authenticated user
+    fun `given user with empty email when getting welcome context then should provide fallback email`() {
+        // given - authenticated user with empty email
         val user = User(
-            email = "test@example.com",
+            email = "",
             name = "John Doe",
             avatar = "https://example.com/avatar.jpg"
         )
         val topBar = TopBar()
         
-        // when - rendering top bar with user information
-        val html = topBar.render(user)
+        // when - getting welcome context for template
+        val context = topBar.getWelcomeContext(user)
         
-        // then - should include CSRF token in logout form
-        assertNotNull(html)
-        assertTrue(html.contains("csrf"))
-        assertTrue(html.contains("form"))
-        assertTrue(html.contains("method=\"post\""))
+        // then - should provide fallback email text
+        assertNotNull(context)
+        assertEquals("John Doe", context["userName"])
+        assertEquals("No email provided", context["userEmail"])
+        assertEquals("https://example.com/avatar.jpg", context["userAvatar"])
+        assertEquals("J", context["userInitial"])
     }
 }
