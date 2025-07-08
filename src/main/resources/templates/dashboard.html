@@ -395,9 +395,12 @@
                         <div class="dashboard-card">
                             <h5 class="card-title">Inbox</h5>
                             <p class="card-text">View and manage your recent document uploads and scans.</p>
-                            <div class="placeholder-content">
-                                <div class="placeholder-icon">📄</div>
-                                <p>Inbox management features will be available soon.</p>
+                            <div id="inbox-content">
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -445,5 +448,143 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- FontAwesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <!-- Dashboard JavaScript -->
+    <script>
+        let currentPage = 0;
+        let currentSort = 'uploadDate';
+        let currentDirection = 'DESC';
+        let currentSearch = '';
+
+        // Load inbox data when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInboxData();
+            
+            // Set up tab change event to refresh data when inbox tab is activated
+            const inboxTab = document.querySelector('a[href="#inbox"]');
+            if (inboxTab) {
+                inboxTab.addEventListener('shown.bs.tab', function() {
+                    loadInboxData();
+                });
+            }
+        });
+
+        // Function to load inbox data from the API
+        function loadInboxData(page = 0, search = '') {
+            currentPage = page;
+            currentSearch = search;
+            
+            const params = new URLSearchParams({
+                page: page,
+                size: 10,
+                sortBy: currentSort,
+                sortDirection: currentDirection
+            });
+            
+            if (search && search.trim() !== '') {
+                params.append('search', search.trim());
+            }
+            
+            fetch(`/api/inbox?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load inbox data');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('inbox-content').innerHTML = html;
+                    
+                    // Set up event listeners for the loaded content
+                    setupTableEventListeners();
+                })
+                .catch(error => {
+                    console.error('Error loading inbox data:', error);
+                    document.getElementById('inbox-content').innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load inbox data. Please try again.
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInboxData()">
+                                <i class="fas fa-redo me-1"></i> Retry
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        // Set up event listeners for table interactions
+        function setupTableEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('table-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value;
+                    clearTimeout(searchInput.timeout);
+                    searchInput.timeout = setTimeout(() => {
+                        loadInboxData(0, searchTerm);
+                    }, 500);
+                });
+            }
+            
+            // Pagination
+            const paginationLinks = document.querySelectorAll('.pagination .page-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    if (!isNaN(page) && page > 0) {
+                        loadInboxData(page - 1, currentSearch); // Convert to 0-based
+                    }
+                });
+            });
+            
+            // Sorting
+            const sortableHeaders = document.querySelectorAll('th.sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.getAttribute('data-sort');
+                    if (sortKey) {
+                        // Toggle direction if same column, otherwise use DESC as default
+                        if (currentSort === sortKey) {
+                            currentDirection = currentDirection === 'ASC' ? 'DESC' : 'ASC';
+                        } else {
+                            currentSort = sortKey;
+                            currentDirection = 'DESC';
+                        }
+                        loadInboxData(0, currentSearch);
+                    }
+                });
+                
+                // Add cursor pointer style
+                header.style.cursor = 'pointer';
+            });
+        }
+
+        // Functions for action buttons
+        function approveItem(itemId, entityType) {
+            if (confirm(`Approve this item as a ${entityType.toLowerCase()}?`)) {
+                // TODO: Implement approve functionality
+                console.log(`Approving item ${itemId} as ${entityType}`);
+                alert(`Item ${itemId} approved as ${entityType}. (Functionality not yet implemented)`);
+            }
+        }
+
+        function retryItem(itemId) {
+            if (confirm('Retry OCR processing for this item?')) {
+                // TODO: Implement retry functionality
+                console.log(`Retrying OCR for item ${itemId}`);
+                alert(`Retrying OCR for item ${itemId}. (Functionality not yet implemented)`);
+            }
+        }
+
+        function showImageModal(imagePath) {
+            // TODO: Implement image modal
+            console.log(`Showing image modal for ${imagePath}`);
+            alert(`Image viewer for ${imagePath}. (Functionality not yet implemented)`);
+        }
+    </script>
 </body>
 </html>

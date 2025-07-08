@@ -1,18 +1,28 @@
 package me.underlow.receipt.controller
 
+import me.underlow.receipt.dashboard.InboxView
+import me.underlow.receipt.dashboard.PaginationConfig
+import me.underlow.receipt.dashboard.SortDirection
+import me.underlow.receipt.service.MockInboxService
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 
 /**
  * Dashboard controller for authenticated users.
  * Provides dashboard page access with authentication requirements.
  */
 @Controller
-class DashboardController {
+class DashboardController(
+    private val mockInboxService: MockInboxService,
+    private val inboxView: InboxView
+) {
 
     /**
      * Displays the dashboard page for authenticated users.
@@ -28,6 +38,65 @@ class DashboardController {
     fun dashboard(model: Model, authentication: Authentication): String {
         extractUserProfileToModel(model, authentication)
         return "dashboard"
+    }
+
+    /**
+     * API endpoint for inbox data with pagination and sorting support.
+     * Returns rendered HTML table for the inbox view.
+     * 
+     * @param page page number (0-based, default 0)
+     * @param size page size (default 10)
+     * @param sortBy sort field (default "uploadDate")
+     * @param sortDirection sort direction (default "DESC")
+     * @param search optional search term
+     * @return HTML table response
+     */
+    @GetMapping("/api/inbox")
+    @PreAuthorize("isAuthenticated()")
+    @ResponseBody
+    fun getInboxData(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "uploadDate") sortBy: String,
+        @RequestParam(defaultValue = "DESC") sortDirection: String,
+        @RequestParam(required = false) search: String?
+    ): ResponseEntity<String> {
+        // Get paginated data from mock service
+        val inboxData = mockInboxService.findAll(page, size, sortBy, sortDirection)
+        val totalCount = mockInboxService.getTotalCount()
+        
+        // Apply search filter if provided
+        val filteredData = if (!search.isNullOrBlank()) {
+            inboxData.filter { entity ->
+                entity.ocrResults?.contains(search, ignoreCase = true) == true ||
+                entity.uploadedImage.contains(search, ignoreCase = true) ||
+                entity.state.name.contains(search, ignoreCase = true) ||
+                entity.failureReason?.contains(search, ignoreCase = true) == true
+            }
+        } else {
+            inboxData
+        }
+        
+        // Create pagination config
+        val paginationConfig = PaginationConfig(
+            pageSize = size,
+            currentPage = page + 1, // Convert to 1-based
+            totalItems = totalCount
+        )
+        
+        // Convert sort direction
+        val sortDir = if (sortDirection.uppercase() == "ASC") SortDirection.ASC else SortDirection.DESC
+        
+        // Render the table
+        val tableHtml = inboxView.render(
+            inboxData = filteredData,
+            paginationConfig = paginationConfig,
+            searchEnabled = true,
+            sortKey = sortBy,
+            sortDirection = sortDir
+        )
+        
+        return ResponseEntity.ok(tableHtml)
     }
 
     /**
