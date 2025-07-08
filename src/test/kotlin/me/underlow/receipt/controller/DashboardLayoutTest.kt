@@ -2,10 +2,12 @@ package me.underlow.receipt.controller
 
 import me.underlow.receipt.config.SecurityConfiguration
 import me.underlow.receipt.dashboard.BaseTable
+import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
+import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
 import org.hamcrest.CoreMatchers.containsString
 import org.junit.jupiter.api.Test
@@ -26,7 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
  */
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(DashboardController::class)
-@Import(SecurityConfiguration::class)
+@Import(SecurityConfiguration::class, MockBillsService::class, MockInboxService::class, BillsView::class, InboxView::class, BaseTable::class)
 class DashboardLayoutTest {
 
     @Autowired
@@ -41,13 +43,19 @@ class DashboardLayoutTest {
     @MockitoBean
     private lateinit var customAuthenticationFailureHandler: CustomAuthenticationFailureHandler
 
-    @MockitoBean
+    @Autowired
     private lateinit var mockInboxService: MockInboxService
 
-    @MockitoBean
+    @Autowired
+    private lateinit var mockBillsService: MockBillsService
+
+    @Autowired
     private lateinit var inboxView: InboxView
 
-    @MockitoBean
+    @Autowired
+    private lateinit var billsView: BillsView
+
+    @Autowired
     private lateinit var baseTable: BaseTable
 
     @Test
