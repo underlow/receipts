@@ -67,15 +67,15 @@ class BillsE2ETest : BaseE2ETest() {
         navigateToBills()
 
         // when - table is loaded
-        val table = `$`("table")
+        val table = `$`("#bills table")
         table.shouldBe(Condition.visible)
 
         // then - should display bills in different states
-        val tableRows = `$$`("tbody tr")
+        val tableRows = `$$`("#bills tbody tr")
         assertTrue(tableRows.size() > 0)
 
         // Verify different service providers exist
-        val hasProviders = `$$`("td").any {
+        val hasProviders = `$$`("#bills td").any {
             it.text().contains("Company") || it.text().contains("Provider") ||
             it.text().contains("Electric") || it.text().contains("Gas") ||
             it.text().contains("Water")
@@ -83,7 +83,7 @@ class BillsE2ETest : BaseE2ETest() {
         assertTrue(hasProviders)
 
         // Verify amounts are displayed as currency
-        val hasAmounts = `$$`("td").any { it.text().contains("$") }
+        val hasAmounts = `$$`("#bills td").any { it.text().contains("$") }
         assertTrue(hasAmounts)
     }
 
