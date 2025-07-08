@@ -4,14 +4,20 @@ import me.underlow.receipt.config.SecurityConfiguration
 import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.BaseTable
+import me.underlow.receipt.dashboard.NavigationPanel
+import me.underlow.receipt.dashboard.NavigationPanelData
+import me.underlow.receipt.dashboard.NavigationTab
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
 import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
@@ -57,6 +63,23 @@ class DashboardControllerTest {
 
     @MockitoBean
     private lateinit var baseTable: BaseTable
+
+    @MockitoBean
+    private lateinit var navigationPanel: NavigationPanel
+
+    @BeforeEach
+    fun setUp() {
+        // Setup navigation panel mock to return sample data
+        val sampleNavigationData = NavigationPanelData(
+            tabs = listOf(
+                NavigationTab("Inbox", "inbox", true),
+                NavigationTab("Bills", "file-invoice", false),
+                NavigationTab("Receipts", "receipt", false)
+            ),
+            activeTab = "Inbox"
+        )
+        whenever(navigationPanel.getNavigationData(any())).thenReturn(sampleNavigationData)
+    }
 
     @Test
     @WithMockUser

@@ -3,8 +3,25 @@ package me.underlow.receipt.dashboard
 import org.springframework.stereotype.Component
 
 /**
+ * Data class representing a navigation tab
+ */
+data class NavigationTab(
+    val name: String,
+    val icon: String,
+    val active: Boolean = false
+)
+
+/**
+ * Data class representing navigation panel data
+ */
+data class NavigationPanelData(
+    val tabs: List<NavigationTab>,
+    val activeTab: String
+)
+
+/**
  * NavigationPanel component for providing tabbed navigation between document types.
- * This component displays tabs for Inbox, Bills, and Receipts with proper tab selection
+ * This component provides data for tabs for Inbox, Bills, and Receipts with proper tab selection
  * and highlighting functionality.
  */
 @Component
@@ -14,48 +31,26 @@ class NavigationPanel {
     private val defaultTab = "Inbox"
 
     /**
-     * Renders the navigation panel HTML with tabs for different document types.
+     * Creates navigation panel data with tabs for different document types.
      * 
      * @param activeTab the currently active tab name, defaults to "Inbox"
-     * @return HTML string containing the navigation panel with tabs
+     * @return NavigationPanelData containing tab information
      */
-    fun render(activeTab: String = defaultTab): String {
+    fun getNavigationData(activeTab: String = defaultTab): NavigationPanelData {
         val currentActiveTab = if (isValidTab(activeTab)) activeTab else defaultTab
         
-        return buildString {
-            append("""
-                <nav class="nav-panel" role="navigation" aria-label="Document type navigation">
-                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            """.trimIndent())
-            
-            validTabs.forEach { tab ->
-                val isActive = tab == currentActiveTab
-                val activeClass = if (isActive) "active" else ""
-                val ariaSelected = if (isActive) "true" else "false"
-                val tabindex = if (isActive) "0" else "-1"
-                
-                append("""
-                        <button class="nav-link tab-link $activeClass" 
-                                id="nav-${tab.lowercase()}-tab" 
-                                data-bs-toggle="tab" 
-                                data-bs-target="#nav-${tab.lowercase()}" 
-                                data-tab="$tab"
-                                type="button" 
-                                role="tab" 
-                                aria-controls="nav-${tab.lowercase()}" 
-                                aria-selected="$ariaSelected"
-                                tabindex="$tabindex">
-                            <i class="fas fa-${getTabIcon(tab)} me-2"></i>
-                            $tab
-                        </button>
-                """.trimIndent())
-            }
-            
-            append("""
-                    </div>
-                </nav>
-            """.trimIndent())
+        val tabs = validTabs.map { tab ->
+            NavigationTab(
+                name = tab,
+                icon = getTabIcon(tab),
+                active = tab == currentActiveTab
+            )
         }
+        
+        return NavigationPanelData(
+            tabs = tabs,
+            activeTab = currentActiveTab
+        )
     }
 
     /**

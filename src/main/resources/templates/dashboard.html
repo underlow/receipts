@@ -380,11 +380,7 @@
         <div class="row">
             <!-- Left Navigation Panel -->
             <aside class="col-md-3 col-lg-2 navigation-panel">
-                <nav class="nav nav-pills nav-fill flex-column">
-                    <a class="nav-link active" href="#inbox" data-bs-toggle="tab">Inbox</a>
-                    <a class="nav-link" href="#bills" data-bs-toggle="tab">Bills</a>
-                    <a class="nav-link" href="#receipts" data-bs-toggle="tab">Receipts</a>
-                </nav>
+                <div th:replace="fragments/navigation-panel :: navigationPanel(${navigationData})"></div>
             </aside>
 
             <!-- Main Content Area -->

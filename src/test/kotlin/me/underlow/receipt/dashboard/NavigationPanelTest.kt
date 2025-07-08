@@ -16,140 +16,161 @@ import kotlin.test.assertFalse
 class NavigationPanelTest {
 
     @Test
-    fun `given navigation panel when rendered then should display all navigation tabs`() {
+    fun `given navigation panel when getting navigation data then should contain all navigation tabs`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel
-        val html = navigationPanel.render()
+        // when - getting navigation data
+        val navigationData = navigationPanel.getNavigationData()
         
-        // then - should display all required tabs
-        assertNotNull(html)
-        assertTrue(html.contains("Inbox"))
-        assertTrue(html.contains("Bills"))
-        assertTrue(html.contains("Receipts"))
+        // then - should contain all required tabs
+        assertNotNull(navigationData)
+        assertEquals(3, navigationData.tabs.size)
+        assertTrue(navigationData.tabs.any { it.name == "Inbox" })
+        assertTrue(navigationData.tabs.any { it.name == "Bills" })
+        assertTrue(navigationData.tabs.any { it.name == "Receipts" })
     }
 
     @Test
-    fun `given navigation panel when rendered with default state then should highlight inbox tab as active`() {
+    fun `given navigation panel when getting data with default state then should highlight inbox tab as active`() {
         // given - navigation panel component with default state
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel with default active tab
-        val html = navigationPanel.render()
+        // when - getting navigation data with default active tab
+        val navigationData = navigationPanel.getNavigationData()
         
         // then - should highlight inbox tab as active by default
-        assertNotNull(html)
-        assertTrue(html.contains("active"))
-        assertTrue(html.contains("Inbox"))
+        assertNotNull(navigationData)
+        assertEquals("Inbox", navigationData.activeTab)
+        val inboxTab = navigationData.tabs.find { it.name == "Inbox" }
+        assertNotNull(inboxTab)
+        assertTrue(inboxTab!!.active)
     }
 
     @Test
-    fun `given navigation panel when rendered with active tab then should highlight specified tab`() {
+    fun `given navigation panel when getting data with active tab then should highlight specified tab`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel with bills tab active
-        val html = navigationPanel.render(activeTab = "Bills")
+        // when - getting navigation data with bills tab active
+        val navigationData = navigationPanel.getNavigationData(activeTab = "Bills")
         
         // then - should highlight bills tab as active
-        assertNotNull(html)
-        assertTrue(html.contains("Bills"))
-        assertTrue(html.contains("active"))
+        assertNotNull(navigationData)
+        assertEquals("Bills", navigationData.activeTab)
+        val billsTab = navigationData.tabs.find { it.name == "Bills" }
+        assertNotNull(billsTab)
+        assertTrue(billsTab!!.active)
+        val inboxTab = navigationData.tabs.find { it.name == "Inbox" }
+        assertFalse(inboxTab!!.active)
     }
 
     @Test
-    fun `given navigation panel when rendered with receipts tab active then should highlight receipts tab`() {
+    fun `given navigation panel when getting data with receipts tab active then should highlight receipts tab`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel with receipts tab active
-        val html = navigationPanel.render(activeTab = "Receipts")
+        // when - getting navigation data with receipts tab active
+        val navigationData = navigationPanel.getNavigationData(activeTab = "Receipts")
         
         // then - should highlight receipts tab as active
-        assertNotNull(html)
-        assertTrue(html.contains("Receipts"))
-        assertTrue(html.contains("active"))
+        assertNotNull(navigationData)
+        assertEquals("Receipts", navigationData.activeTab)
+        val receiptsTab = navigationData.tabs.find { it.name == "Receipts" }
+        assertNotNull(receiptsTab)
+        assertTrue(receiptsTab!!.active)
     }
 
     @Test
-    fun `given navigation panel when rendered then should include proper accessibility attributes`() {
+    fun `given navigation panel when getting data then should include tab icons`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel
-        val html = navigationPanel.render()
+        // when - getting navigation data
+        val navigationData = navigationPanel.getNavigationData()
         
-        // then - should include proper accessibility attributes
-        assertNotNull(html)
-        assertTrue(html.contains("role=\"navigation\""))
-        assertTrue(html.contains("aria-label"))
-        assertTrue(html.contains("tabindex"))
+        // then - should include appropriate icons for each tab
+        assertNotNull(navigationData)
+        val inboxTab = navigationData.tabs.find { it.name == "Inbox" }
+        assertEquals("inbox", inboxTab?.icon)
+        val billsTab = navigationData.tabs.find { it.name == "Bills" }
+        assertEquals("file-invoice", billsTab?.icon)
+        val receiptsTab = navigationData.tabs.find { it.name == "Receipts" }
+        assertEquals("receipt", receiptsTab?.icon)
     }
 
     @Test
-    fun `given navigation panel when rendered then should include tab selection functionality`() {
+    fun `given navigation panel when getting data then should have correct tab structure`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel
-        val html = navigationPanel.render()
+        // when - getting navigation data
+        val navigationData = navigationPanel.getNavigationData()
         
-        // then - should include tab selection functionality
-        assertNotNull(html)
-        assertTrue(html.contains("tab-link"))
-        assertTrue(html.contains("data-tab"))
-        assertTrue(html.contains("data-bs-target"))
+        // then - should have correct tab structure
+        assertNotNull(navigationData)
+        navigationData.tabs.forEach { tab ->
+            assertNotNull(tab.name)
+            assertNotNull(tab.icon)
+            assertTrue(tab.name.isNotEmpty())
+            assertTrue(tab.icon.isNotEmpty())
+        }
     }
 
     @Test
-    fun `given navigation panel when rendered with invalid tab then should default to inbox`() {
+    fun `given navigation panel when getting data with invalid tab then should default to inbox`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel with invalid tab name
-        val html = navigationPanel.render(activeTab = "InvalidTab")
+        // when - getting navigation data with invalid tab name
+        val navigationData = navigationPanel.getNavigationData(activeTab = "InvalidTab")
         
         // then - should default to inbox tab as active
-        assertNotNull(html)
-        assertTrue(html.contains("Inbox"))
-        assertTrue(html.contains("active"))
+        assertNotNull(navigationData)
+        assertEquals("Inbox", navigationData.activeTab)
+        val inboxTab = navigationData.tabs.find { it.name == "Inbox" }
+        assertTrue(inboxTab!!.active)
     }
 
     @Test
-    fun `given navigation panel when rendered then should include proper CSS classes for styling`() {
+    fun `given navigation panel when getting data then should maintain consistent tab names`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel
-        val html = navigationPanel.render()
+        // when - getting navigation data
+        val navigationData = navigationPanel.getNavigationData()
         
-        // then - should include proper CSS classes for styling
-        assertNotNull(html)
-        assertTrue(html.contains("nav-panel"))
-        assertTrue(html.contains("nav-tabs"))
-        assertTrue(html.contains("nav-link"))
+        // then - should maintain consistent tab names
+        assertNotNull(navigationData)
+        val expectedTabs = listOf("Inbox", "Bills", "Receipts")
+        val actualTabNames = navigationData.tabs.map { it.name }
+        assertEquals(expectedTabs, actualTabNames)
     }
 
     @Test
-    fun `given navigation panel when rendered then should handle tab state management`() {
+    fun `given navigation panel when getting data then should handle tab state management`() {
         // given - navigation panel component
         val navigationPanel = NavigationPanel()
         
-        // when - rendering navigation panel with different active tabs
-        val inboxHtml = navigationPanel.render(activeTab = "Inbox")
-        val billsHtml = navigationPanel.render(activeTab = "Bills")
-        val receiptsHtml = navigationPanel.render(activeTab = "Receipts")
+        // when - getting navigation data with different active tabs
+        val inboxData = navigationPanel.getNavigationData(activeTab = "Inbox")
+        val billsData = navigationPanel.getNavigationData(activeTab = "Bills")
+        val receiptsData = navigationPanel.getNavigationData(activeTab = "Receipts")
         
         // then - should handle tab state management correctly
-        assertNotNull(inboxHtml)
-        assertNotNull(billsHtml)
-        assertNotNull(receiptsHtml)
+        assertNotNull(inboxData)
+        assertNotNull(billsData)
+        assertNotNull(receiptsData)
         
         // Each should have only one active tab
-        assertTrue(inboxHtml.contains("active"))
-        assertTrue(billsHtml.contains("active"))
-        assertTrue(receiptsHtml.contains("active"))
+        assertEquals(1, inboxData.tabs.count { it.active })
+        assertEquals(1, billsData.tabs.count { it.active })
+        assertEquals(1, receiptsData.tabs.count { it.active })
+        
+        // Verify correct active tabs
+        assertTrue(inboxData.tabs.find { it.name == "Inbox" }!!.active)
+        assertTrue(billsData.tabs.find { it.name == "Bills" }!!.active)
+        assertTrue(receiptsData.tabs.find { it.name == "Receipts" }!!.active)
     }
 
     @Test
