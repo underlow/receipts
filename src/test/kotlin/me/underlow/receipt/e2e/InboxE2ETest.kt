@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import java.time.Duration
 
 /**
  * End-to-end tests for Inbox functionality.
@@ -30,32 +31,31 @@ class InboxE2ETest : BaseE2ETest() {
         // given - user is authenticated and on dashboard
         assertTrue(isOnDashboardPage())
         
-        // when - user clicks on Inbox tab or navigates to inbox
-        val inboxTab = `$`("[data-tab='inbox']")
-        if (inboxTab.exists()) {
-            inboxTab.click()
-        } else {
-            // Alternative navigation if tab structure is different
-            val inboxLink = `$`("a[href*='inbox']")
-            if (inboxLink.exists()) {
-                inboxLink.click()
-            }
-        }
+        // when - user navigates to inbox (inbox tab should be active by default)
+        // The inbox tab is already active by default, so just wait for the data to load
         waitForPageLoad()
         
-        // then - should display inbox table with headers
-        val table = `$`("table")
-        assertTrue(table.exists())
+        // Wait for inbox content to load (AJAX call)
+        val inboxContent = `$`("#inbox-content")
+        inboxContent.shouldBe(Condition.visible)
         
-        // Verify table headers are present
-        assertTrue(`$`("th").text().contains("Upload Date") || 
-                  `$$`("th").any { it.text().contains("Upload Date") })
-        assertTrue(`$`("th").text().contains("Image") || 
-                  `$$`("th").any { it.text().contains("Image") })
-        assertTrue(`$`("th").text().contains("OCR Status") || 
-                  `$$`("th").any { it.text().contains("OCR Status") })
-        assertTrue(`$`("th").text().contains("Actions") || 
-                  `$$`("th").any { it.text().contains("Actions") })
+        // Wait for the table to appear (it's loaded dynamically) - use longer timeout
+        val table = `$`("table")
+        table.shouldBe(Condition.visible, Duration.ofSeconds(15))
+        
+        // Wait for table headers to be present
+        val headers = `$$`("th")
+        assertTrue(headers.size() > 0, "No table headers found")
+        
+        // Debug: Print all header texts
+        val headerTexts = headers.map { it.text() }
+        println("Found headers: $headerTexts")
+        
+        // Check each header individually with better error messages (case-insensitive)
+        assertTrue(headerTexts.any { it.contains("Upload Date", ignoreCase = true) }, "Upload Date header not found. Found headers: $headerTexts")
+        assertTrue(headerTexts.any { it.contains("Image", ignoreCase = true) }, "Image header not found. Found headers: $headerTexts")
+        assertTrue(headerTexts.any { it.contains("OCR Status", ignoreCase = true) }, "OCR Status header not found. Found headers: $headerTexts")
+        assertTrue(headerTexts.any { it.contains("Actions", ignoreCase = true) }, "Actions header not found. Found headers: $headerTexts")
     }
 
     @Test
