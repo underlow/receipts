@@ -33,7 +33,30 @@ Enable individuals and families to digitize, review, and manage household (and o
 #### User state
 User do not have states.
 #### User behaviour
-User can log in into system only if its email in the list of allowed emails. 
+User can log in into system only if its email in the list of allowed emails.
+
+### Bill
+#### Bill data
+ - id: unique identifier for the bill
+ - serviceProviderId: identifier of the service provider
+ - billDate: date of the bill
+ - amount: monetary amount of the bill (BigDecimal)
+ - inboxEntityId: optional link to the inbox entity (if created from OCR)
+ - state: current state of the bill (BillState)
+ - createdDate: timestamp when the bill was created
+ - description: optional description for the bill
+#### Bill state
+Bills can be in the following states:
+ - CREATED: Bill exists and is active, can be modified and managed
+ - REMOVED: Bill has been deleted and is no longer active
+#### Bill behaviour
+Bills represent financial obligations that users need to track and manage:
+ - Bills can be created from approved inbox items (linking to OCR process)
+ - Bills can be created manually without inbox item
+ - Bills can be removed (transition to REMOVED state)
+ - Bills can have their amount updated (must be greater than zero)
+ - Bills can have their service provider updated
+ - Bills track validation states (canRemove, isActive) 
 
 
 ## Functional Requirements
