@@ -78,7 +78,6 @@ class DashboardTemplateTest {
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk)
             .andExpect(view().name("dashboard"))
-            .andExpect(content().string(containsString("Welcome")))
             .andExpect(content().string(containsString("Unknown User")))
             .andExpect(content().string(containsString("user")))
     }

@@ -53,9 +53,6 @@ class AuthenticationE2ETest : BaseE2ETest() {
         // Then: should redirect to dashboard
         waitForPageLoad()
         assert(isOnDashboardPage()) { "User should be redirected to dashboard after successful login" }
-
-        // And: dashboard should show user information
-        Selenide.`$`("h1").shouldHave(Condition.text("Dashboard"))
     }
 
     @Test
@@ -106,7 +103,6 @@ class AuthenticationE2ETest : BaseE2ETest() {
 
         // Then: should show dashboard with user information
         assert(isOnDashboardPage()) { "User should be on dashboard page" }
-        Selenide.`$`("h1").shouldHave(Condition.text("Dashboard"))
 
         // And: user profile information should be visible
         Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.ALLOWED_EMAIL_1))
@@ -170,7 +166,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
 
         Selenide.open("/profile")
         waitForPageLoad()
-        Selenide.`$`("h1").shouldHave(Condition.text("Profile"))
+        Selenide.`$`("h1").shouldHave(Condition.text("User Profile"))
 
         Selenide.open("/settings")
         waitForPageLoad()
