@@ -56,6 +56,10 @@
             padding: 0;
             margin-bottom: 0;
         }
+
+        .dashboard-header .navbar {
+            padding: 0.75rem 1.5rem;
+        }
         
         .navbar-brand {
             font-size: 1.125rem;
@@ -722,7 +726,7 @@
     <!-- Dashboard Header with Navigation -->
     <header class="dashboard-header">
         <nav class="navbar navbar-expand-lg">
-            <div class="container">
+            <div class="container-fluid">
                 <a class="navbar-brand" href="/dashboard" aria-label="Receipt Manager Dashboard">
                     <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNMTAgMTBIMjJWMjJIMTBWMTBaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K" alt="Receipt Manager Logo" class="d-inline-block align-text-top me-2" style="width: 32px; height: 32px;">
                     Receipt Manager
@@ -747,7 +751,7 @@
                     
                     <!-- User Dropdown Menu -->
                     <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle d-flex align-items-center text-white text-decoration-none" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                        <button class="btn btn-link dropdown-toggle d-flex align-items-center text-decoration-none" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu" style="color: hsl(var(--foreground));">
                             <img th:if="${userAvatar != null and userAvatar != ''}" 
                                  th:src="${userAvatar}" 
                                  th:alt="${userName + ' avatar'}"
