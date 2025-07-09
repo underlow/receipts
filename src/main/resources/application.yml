@@ -24,6 +24,12 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: email
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+      enabled: true
+
 # Logging configuration
 logging:
   level:
