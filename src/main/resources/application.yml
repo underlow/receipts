@@ -49,3 +49,6 @@ logging:
 
 # Environment variables
 ALLOWED_EMAILS: ${ALLOWED_EMAILS:admin@example.com}
+
+receipts:
+  inbox-path: file to upload folder
