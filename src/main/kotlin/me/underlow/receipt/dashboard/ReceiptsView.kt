@@ -109,13 +109,13 @@ class ReceiptsView(private val baseTable: BaseTable) {
      */
     fun formatPaymentType(paymentTypeId: String): String {
         return when (paymentTypeId) {
-            "credit_card_001" -> "Credit Card"
-            "debit_card_001" -> "Debit Card"
-            "cash_001" -> "Cash"
-            "check_001" -> "Check"
-            "bank_transfer_001" -> "Bank Transfer"
-            "mobile_payment_001" -> "Mobile Payment"
-            "gift_card_001" -> "Gift Card"
+            "credit_card_001", "credit_card" -> "Credit Card"
+            "debit_card_001", "debit_card" -> "Debit Card"
+            "cash_001", "cash" -> "Cash"
+            "check_001", "check" -> "Check"
+            "bank_transfer_001", "bank_transfer" -> "Bank Transfer"
+            "mobile_payment_001", "mobile_payment" -> "Mobile Payment"
+            "gift_card_001", "gift_card" -> "Gift Card"
             else -> paymentTypeId.replace("_", " ").split(" ").joinToString(" ") { 
                 it.lowercase().replaceFirstChar { char -> char.uppercase() }
             }

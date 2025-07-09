@@ -4,10 +4,12 @@ import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.NavigationPanel
 import me.underlow.receipt.dashboard.PaginationConfig
+import me.underlow.receipt.dashboard.ReceiptsView
 import me.underlow.receipt.dashboard.SortDirection
 import me.underlow.receipt.dashboard.TableViewData
 import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
+import me.underlow.receipt.service.MockReceiptsService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -26,8 +28,10 @@ import org.springframework.web.bind.annotation.ResponseBody
 class DashboardController(
     private val mockInboxService: MockInboxService,
     private val mockBillsService: MockBillsService,
+    private val mockReceiptsService: MockReceiptsService,
     private val inboxView: InboxView,
     private val billsView: BillsView,
+    private val receiptsView: ReceiptsView,
     private val navigationPanel: NavigationPanel
 ) {
 
@@ -161,6 +165,66 @@ class DashboardController(
         // Prepare table view data
         val tableViewData = billsView.prepareTableViewData(
             billsData = filteredData,
+            paginationConfig = paginationConfig,
+            searchEnabled = true,
+            sortKey = sortBy,
+            sortDirection = sortDir
+        )
+        
+        return ResponseEntity.ok(tableViewData)
+    }
+
+    /**
+     * API endpoint for receipts data with pagination and sorting support.
+     * Returns table view data for template rendering.
+     * 
+     * @param page page number (0-based, default 0)
+     * @param size page size (default 10)
+     * @param sortBy sort field (default "paymentDate")
+     * @param sortDirection sort direction (default "DESC")
+     * @param search optional search term
+     * @return table view data response
+     */
+    @GetMapping("/api/receipts")
+    @PreAuthorize("isAuthenticated()")
+    @ResponseBody
+    fun getReceiptsData(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "paymentDate") sortBy: String,
+        @RequestParam(defaultValue = "DESC") sortDirection: String,
+        @RequestParam(required = false) search: String?
+    ): ResponseEntity<TableViewData> {
+        // Get paginated data from mock service
+        val receiptsData = mockReceiptsService.findAll(page, size, sortBy, sortDirection)
+        val totalCount = mockReceiptsService.getTotalCount()
+        
+        // Apply search filter if provided
+        val filteredData = if (!search.isNullOrBlank()) {
+            receiptsData.filter { entity ->
+                entity.merchantName?.contains(search, ignoreCase = true) == true ||
+                entity.description?.contains(search, ignoreCase = true) == true ||
+                entity.amount.toString().contains(search, ignoreCase = true) ||
+                entity.paymentTypeId.contains(search, ignoreCase = true) ||
+                entity.state.name.contains(search, ignoreCase = true)
+            }
+        } else {
+            receiptsData
+        }
+        
+        // Create pagination config
+        val paginationConfig = PaginationConfig(
+            pageSize = size,
+            currentPage = page + 1, // Convert to 1-based
+            totalItems = totalCount
+        )
+        
+        // Convert sort direction
+        val sortDir = if (sortDirection.uppercase() == "ASC") SortDirection.ASC else SortDirection.DESC
+        
+        // Prepare table view data
+        val tableViewData = receiptsView.prepareTableViewData(
+            receiptsData = filteredData,
             paginationConfig = paginationConfig,
             searchEnabled = true,
             sortKey = sortBy,

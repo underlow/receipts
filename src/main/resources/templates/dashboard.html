@@ -829,9 +829,20 @@
                     <!-- Receipts Tab -->
                     <div class="tab-pane fade" id="receipts">
                         <div class="dashboard-card">
-                            <div class="placeholder-content">
-                                <div class="placeholder-icon">🏷️</div>
-                                <p>Receipt management features in development.</p>
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-receipt me-2"></i>
+                                    Receipt Management
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="receipts-content">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -859,6 +870,12 @@
         let billsCurrentSort = 'billDate';
         let billsCurrentDirection = 'DESC';
         let billsCurrentSearch = '';
+        
+        // Receipts tab state
+        let receiptsCurrentPage = 0;
+        let receiptsCurrentSort = 'paymentDate';
+        let receiptsCurrentDirection = 'DESC';
+        let receiptsCurrentSearch = '';
 
         // Load inbox data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -876,6 +893,13 @@
             if (billsTab) {
                 billsTab.addEventListener('shown.bs.tab', function() {
                     loadBillsData();
+                });
+            }
+            
+            const receiptsTab = document.querySelector('a[href="#receipts"]');
+            if (receiptsTab) {
+                receiptsTab.addEventListener('shown.bs.tab', function() {
+                    loadReceiptsData();
                 });
             }
         });
@@ -1101,6 +1125,113 @@
                 alert(`Bill ${billId} removed. (Functionality not yet implemented)`);
             }
         }
+
+        // Function to load receipts data from the API
+        function loadReceiptsData(page = 0, search = '') {
+            receiptsCurrentPage = page;
+            receiptsCurrentSearch = search;
+            
+            const params = new URLSearchParams({
+                page: page,
+                size: 10,
+                sortBy: receiptsCurrentSort,
+                sortDirection: receiptsCurrentDirection
+            });
+            
+            if (search && search.trim() !== '') {
+                params.append('search', search.trim());
+            }
+            
+            fetch(`/api/receipts?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load receipts data');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    renderReceiptsTable(data);
+                    document.getElementById('receipts-content').innerHTML = getRenderedTable(data);
+                    
+                    // Set up event listeners for the loaded content
+                    setupReceiptsTableEventListeners();
+                })
+                .catch(error => {
+                    console.error('Error loading receipts data:', error);
+                    document.getElementById('receipts-content').innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load receipts data. Please try again.
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadReceiptsData()">
+                                <i class="fas fa-redo me-1"></i> Retry
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        // Set up event listeners for receipts table interactions
+        function setupReceiptsTableEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('receipts-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value;
+                    clearTimeout(searchInput.timeout);
+                    searchInput.timeout = setTimeout(() => {
+                        loadReceiptsData(0, searchTerm);
+                    }, 500);
+                });
+            }
+            
+            // Pagination
+            const paginationLinks = document.querySelectorAll('.pagination .page-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    if (!isNaN(page) && page > 0) {
+                        loadReceiptsData(page - 1, receiptsCurrentSearch); // Convert to 0-based
+                    }
+                });
+            });
+            
+            // Sorting
+            const sortableHeaders = document.querySelectorAll('th.sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.getAttribute('data-sort');
+                    if (sortKey) {
+                        // Toggle direction if same column, otherwise use DESC as default
+                        if (receiptsCurrentSort === sortKey) {
+                            receiptsCurrentDirection = receiptsCurrentDirection === 'ASC' ? 'DESC' : 'ASC';
+                        } else {
+                            receiptsCurrentSort = sortKey;
+                            receiptsCurrentDirection = 'DESC';
+                        }
+                        loadReceiptsData(0, receiptsCurrentSearch);
+                    }
+                });
+                
+                // Add cursor pointer style
+                header.style.cursor = 'pointer';
+            });
+        }
+
+        // Functions for receipts action buttons
+        function editReceipt(receiptId) {
+            // TODO: Implement edit receipt functionality
+            console.log(`Editing receipt ${receiptId}`);
+            alert(`Edit receipt ${receiptId}. (Functionality not yet implemented)`);
+        }
+
+        function removeReceipt(receiptId) {
+            if (confirm('Are you sure you want to remove this receipt?')) {
+                // TODO: Implement remove receipt functionality
+                console.log(`Removing receipt ${receiptId}`);
+                alert(`Receipt ${receiptId} removed. (Functionality not yet implemented)`);
+            }
+        }
         
         // Function to render table from JSON data
         function getRenderedTable(data) {
@@ -1179,6 +1310,11 @@
                         // Special formatting for actions column in bills table
                         if (data.tableId === 'bills' && column.key === 'actions') {
                             formattedValue = formatBillsActions(cellValue, row.id);
+                        }
+                        
+                        // Special formatting for actions column in receipts table
+                        if (data.tableId === 'receipts' && column.key === 'actions') {
+                            formattedValue = formatReceiptsActions(cellValue, row.id);
                         }
                         
                         html += `<td class="modern-table-cell">${formattedValue}</td>`;
@@ -1290,6 +1426,41 @@
         // Function to toggle dropdown actions
         function toggleActions(billId) {
             console.log(`Toggle actions for bill ${billId}`);
+            // TODO: Implement dropdown toggle functionality
+        }
+
+        // Function to render receipts table - required for the JavaScript to work
+        function renderReceiptsTable(data) {
+            // This function is called but the actual rendering is done by getRenderedTable()
+            // We just need this to exist so the JavaScript doesn't throw errors
+        }
+
+        // Function to format actions column for receipts table
+        function formatReceiptsActions(actionsText, receiptId) {
+            if (actionsText === 'Edit | Remove') {
+                return `
+                    <div class="action-buttons">
+                        <button class="action-btn action-btn-primary" onclick="editReceipt('${receiptId}')" title="Edit receipt">
+                            Edit
+                        </button>
+                        <button class="action-btn action-btn-danger" onclick="removeReceipt('${receiptId}')" title="Remove receipt">
+                            Remove
+                        </button>
+                        <button class="dropdown-toggle-btn" onclick="toggleReceiptActions('${receiptId}')" title="More actions">
+                            ⋮
+                        </button>
+                    </div>
+                `;
+            } else if (actionsText === 'Removed') {
+                return `<span class="text-muted">Removed</span>`;
+            } else {
+                return actionsText;
+            }
+        }
+
+        // Function to toggle receipt dropdown actions
+        function toggleReceiptActions(receiptId) {
+            console.log(`Toggle actions for receipt ${receiptId}`);
             // TODO: Implement dropdown toggle functionality
         }
     </script>
