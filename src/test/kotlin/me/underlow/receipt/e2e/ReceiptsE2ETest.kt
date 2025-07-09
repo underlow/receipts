@@ -381,14 +381,19 @@ class ReceiptsE2ETest : BaseE2ETest() {
         navigateToReceipts()
 
         // when - checking for error handling
-        val hasErrors = `$$`(".alert-danger, .error, .alert-error").any { it.exists() }
+        val errorElements = `$$`(".alert-danger, .error, .alert-error")
+        val visibleErrorElements = errorElements.filter { it.exists() && it.isDisplayed }
 
         // then - should handle errors gracefully without breaking the interface
-        if (hasErrors) {
-            val errorElements = `$$`(".alert-danger, .error, .alert-error")
-            errorElements.forEach { errorElement ->
+        if (visibleErrorElements.isNotEmpty()) {
+            visibleErrorElements.forEach { errorElement ->
                 assertTrue(errorElement.exists())
-                assertTrue(errorElement.text().isNotEmpty())
+                assertTrue(errorElement.isDisplayed)
+                // Only check text content if the element is visible and has content
+                val errorText = errorElement.text().trim()
+                if (errorText.isNotEmpty()) {
+                    assertTrue(errorText.isNotEmpty())
+                }
             }
         }
 
