@@ -3,10 +3,10 @@ package me.underlow.receipt.config
 import com.codeborne.selenide.Configuration
 import com.codeborne.selenide.Selenide
 import com.codeborne.selenide.WebDriverRunner
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
@@ -16,7 +16,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.time.Duration
 
 /**
  * Base class for E2E tests using Selenide browser automation.
@@ -37,6 +36,7 @@ import java.time.Duration
 )
 @Import(SelenideConfiguration::class)
 abstract class BaseE2ETest {
+
 
     companion object {
         /**
@@ -62,8 +62,24 @@ abstract class BaseE2ETest {
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
         }
-    }
 
+        /**
+         * Cleans up all test resources after all tests in the class are completed.
+         * Ensures complete cleanup of browser instances and other resources.
+         */
+        @AfterAll
+        @JvmStatic
+        fun cleanupAfterAll() {
+            try {
+                // Close all browser instances
+                if (WebDriverRunner.hasWebDriverStarted()) {
+                    Selenide.closeWebDriver()
+                }
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
+        }
+    }
     /**
      * Local server port for Spring Boot test server.
      * Used to configure Selenide base URL dynamically.
@@ -117,8 +133,8 @@ abstract class BaseE2ETest {
                 if (WebDriverRunner.hasWebDriverStarted()) {
                     Selenide.clearBrowserCookies()
                     Selenide.clearBrowserLocalStorage()
-                    // Note: We don't close the WebDriver completely to improve performance
-                     Selenide.closeWebDriver() //- commented out for performance
+                    // close web driver only after all tests in
+//                    Selenide.closeWebDriver()
                 }
             } catch (e: Exception) {
                 // Ignore cleanup errors
@@ -206,7 +222,7 @@ abstract class BaseE2ETest {
                 Selenide.`$`("form[action='/logout'] button[type='submit']")
 
             Selenide.`$`("button[type='submit']").exists() &&
-            Selenide.`$`("button[type='submit']").text().contains("Logout") ->
+                    Selenide.`$`("button[type='submit']").text().contains("Logout") ->
                 Selenide.`$`("button[type='submit']")
 
             Selenide.`$`("a[href='/logout']").exists() ->
@@ -227,8 +243,8 @@ abstract class BaseE2ETest {
      */
     protected fun isOnLoginPage(): Boolean {
         return Selenide.`$`("form").exists() &&
-               Selenide.`$`("input[name='username']").exists() &&
-               Selenide.`$`("input[name='password']").exists()
+                Selenide.`$`("input[name='username']").exists() &&
+                Selenide.`$`("input[name='password']").exists()
     }
 
     /**
@@ -239,8 +255,8 @@ abstract class BaseE2ETest {
      */
     protected fun isOnDashboardPage(): Boolean {
         return Selenide.`$`(".dashboard-layout").exists() &&
-               Selenide.`$`(".navigation-panel").exists() &&
-               Selenide.`$`(".content-area").exists()
+                Selenide.`$`(".navigation-panel").exists() &&
+                Selenide.`$`(".content-area").exists()
     }
 
     /**
@@ -262,6 +278,7 @@ abstract class BaseE2ETest {
      */
     protected fun isErrorMessageDisplayed(expectedMessage: String): Boolean {
         return Selenide.`$`(".alert-danger").exists() &&
-               Selenide.`$`(".alert-danger").text().contains(expectedMessage)
+                Selenide.`$`(".alert-danger").text().contains(expectedMessage)
     }
+
 }
