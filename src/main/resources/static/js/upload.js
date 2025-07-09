@@ -218,6 +218,9 @@ function handleFileSelect(file) {
         return;
     }
 
+    // Clear any previous error messages when new file is selected
+    clearModalErrors();
+
     // Store selected file
     uploadState.selectedFile = file;
 
@@ -304,23 +307,71 @@ function showUploadModal(imageSrc) {
         return;
     }
 
-    // Update modal UI
-    cropperImage.src = imageSrc;
-    cropperImage.style.display = 'block';
-    fileDropZone.style.display = 'none';
-    imageControls.style.display = 'none'; // Initially hidden, shown on hover
-    confirmUpload.disabled = false;
+    // Resize image to fit within modal dimensions if needed
+    resizeImageToFitModal(imageSrc, (resizedImageSrc) => {
+        // Update modal UI
+        cropperImage.src = resizedImageSrc;
+        cropperImage.style.display = 'block';
+        fileDropZone.style.display = 'none';
+        imageControls.style.display = 'none'; // Initially hidden, shown on hover
+        confirmUpload.disabled = false;
 
-    // Show the modal using Bootstrap
-    const modal = new bootstrap.Modal(uploadModal);
-    modal.show();
+        // Show the modal using Bootstrap
+        const modal = new bootstrap.Modal(uploadModal);
+        modal.show();
 
-    // Initialize Cropper.js after modal is shown
-    uploadModal.addEventListener('shown.bs.modal', function initializeCropperOnShow() {
-        initializeCropper(cropperImage);
-        // Remove this event listener after first use
-        uploadModal.removeEventListener('shown.bs.modal', initializeCropperOnShow);
+        // Initialize Cropper.js after modal is shown
+        uploadModal.addEventListener('shown.bs.modal', function initializeCropperOnShow() {
+            initializeCropper(cropperImage);
+            // Remove this event listener after first use
+            uploadModal.removeEventListener('shown.bs.modal', initializeCropperOnShow);
+        });
     });
+}
+
+/**
+ * Resize image to fit within modal dimensions if needed.
+ * 
+ * @param {string} imageSrc - The image source data URL
+ * @param {Function} callback - Callback function to handle resized image
+ */
+function resizeImageToFitModal(imageSrc, callback) {
+    const img = new Image();
+    img.onload = function() {
+        const maxWidth = window.innerWidth * 0.6; // 60% of viewport width (reduced for cropping padding)
+        const maxHeight = window.innerHeight * 0.4; // 40% of viewport height (reduced for cropping padding)
+        
+        if (img.width <= maxWidth && img.height <= maxHeight) {
+            // Image fits, no need to resize
+            callback(imageSrc);
+            return;
+        }
+        
+        // Calculate resize ratio
+        const widthRatio = maxWidth / img.width;
+        const heightRatio = maxHeight / img.height;
+        const ratio = Math.min(widthRatio, heightRatio);
+        
+        // Create canvas for resizing
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        // Draw resized image
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to data URL and callback
+        canvas.toBlob(function(blob) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                callback(e.target.result);
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.8);
+    };
+    img.src = imageSrc;
 }
 
 /**
@@ -343,7 +394,7 @@ function initializeCropper(imageElement) {
     uploadState.cropper = new Cropper(imageElement, {
         aspectRatio: NaN, // Allow free aspect ratio
         viewMode: 1,
-        autoCropArea: 1,
+        autoCropArea: 0.8, // Reduce crop area to 80% to provide padding around image
         responsive: true,
         restore: false,
         guides: true,
@@ -354,6 +405,7 @@ function initializeCropper(imageElement) {
         toggleDragModeOnDblclick: false,
         ready: function() {
             // Cropper is ready
+            addRotationHandles();
         },
         crop: function(event) {
             // Crop event handled
@@ -524,7 +576,12 @@ function handleUploadResponse(response) {
         // Handle upload error
         console.error('Upload error:', response);
         const errorMessage = response.error || response.message || 'Upload failed. Please try again.';
+        
+        // Show error message (will be displayed in modal if modal is open)
         showErrorMessage(errorMessage);
+        
+        // Modal remains open for user to correct the issue or try again
+        // Do not call closeModal() on error
     }
 }
 
@@ -652,6 +709,9 @@ function cleanupModal() {
  * Reset modal state to initial configuration.
  */
 function resetModalState() {
+    // Clear any error messages
+    clearModalErrors();
+
     // Destroy cropper safely
     if (uploadState.cropper) {
         try {
@@ -753,10 +813,54 @@ function showSuccessMessage(message) {
 
 /**
  * Show error message to user.
+ * If upload modal is open, displays error in modal; otherwise displays on page.
  *
  * @param {string} message - The error message to display
  */
 function showErrorMessage(message) {
+    const uploadModal = document.getElementById('uploadModal');
+    const isModalOpen = uploadModal && uploadModal.classList.contains('show');
+    
+    if (isModalOpen) {
+        // Display error in modal
+        showModalErrorMessage(message);
+    } else {
+        // Display error on page (original behavior)
+        showPageErrorMessage(message);
+    }
+}
+
+/**
+ * Show error message in the upload modal.
+ *
+ * @param {string} message - The error message to display
+ */
+function showModalErrorMessage(message) {
+    const errorContainer = document.getElementById('uploadErrorContainer');
+    const errorMessageElement = document.getElementById('uploadErrorMessage');
+    
+    if (errorContainer && errorMessageElement) {
+        // Set the error message
+        errorMessageElement.textContent = message;
+        
+        // Show the error container
+        errorContainer.style.display = 'block';
+        
+        // Auto-dismiss after 10 seconds (longer than page errors since modal stays open)
+        setTimeout(() => {
+            if (errorContainer) {
+                errorContainer.style.display = 'none';
+            }
+        }, 10000);
+    }
+}
+
+/**
+ * Show error message on the page (original behavior).
+ *
+ * @param {string} message - The error message to display
+ */
+function showPageErrorMessage(message) {
     const alertHtml = `
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -780,6 +884,17 @@ function showErrorMessage(message) {
             alert.remove();
         }
     }, 5000);
+}
+
+/**
+ * Clear error messages from the modal.
+ * Called when new file is selected or modal is reset.
+ */
+function clearModalErrors() {
+    const errorContainer = document.getElementById('uploadErrorContainer');
+    if (errorContainer) {
+        errorContainer.style.display = 'none';
+    }
 }
 
 /**
@@ -825,8 +940,76 @@ function enterCropMode() {
         cropControls.style.display = 'block';
     }
 
+    // Show rotation handles in crop mode too
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'block';
+    });
+
     // Enable crop mode
     uploadState.cropper.setDragMode('crop');
+}
+
+/**
+ * Add rotation handles to the image corners for manual rotation
+ */
+function addRotationHandles() {
+    const cropperContainer = document.querySelector('.cropper-container');
+    if (!cropperContainer) return;
+    
+    // Remove existing handles
+    const existingHandles = cropperContainer.querySelectorAll('.rotation-handle');
+    existingHandles.forEach(handle => handle.remove());
+    
+    // Create rotation handles for each corner
+    const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+    corners.forEach(corner => {
+        const handle = document.createElement('div');
+        handle.className = `rotation-handle rotation-handle-${corner}`;
+        handle.style.cssText = `
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+        `;
+        
+        // Position handles at corners
+        switch (corner) {
+            case 'top-left':
+                handle.style.top = '-10px';
+                handle.style.left = '-10px';
+                break;
+            case 'top-right':
+                handle.style.top = '-10px';
+                handle.style.right = '-10px';
+                break;
+            case 'bottom-left':
+                handle.style.bottom = '-10px';
+                handle.style.left = '-10px';
+                break;
+            case 'bottom-right':
+                handle.style.bottom = '-10px';
+                handle.style.right = '-10px';
+                break;
+        }
+        
+        // Add click event for rotation
+        handle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Allow rotation in both crop and rotate modes
+            if (uploadState.currentMode === 'rotate' || uploadState.currentMode === 'crop') {
+                uploadState.cropper.rotate(90);
+                uploadState.rotationAngle = (uploadState.rotationAngle + 90) % 360;
+            }
+        });
+        
+        cropperContainer.appendChild(handle);
+    });
 }
 
 /**
@@ -855,7 +1038,13 @@ function enterRotateMode() {
         rotateControls.style.display = 'block';
     }
 
-    // Rotate by 90 degrees on click
+    // Show rotation handles
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'block';
+    });
+
+    // Rotate by 90 degrees on initial click
     uploadState.cropper.rotate(90);
     uploadState.rotationAngle = (uploadState.rotationAngle + 90) % 360;
 }
@@ -876,11 +1065,16 @@ function acceptCropChanges() {
     uploadState.currentMode = null;
     uploadState.cropBackupData = null;
 
-    // Hide crop controls
+    // Hide crop controls and rotation handles
     const cropControls = document.getElementById('cropControls');
     if (cropControls) {
         cropControls.style.display = 'none';
     }
+
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'none';
+    });
 
     // Reset drag mode
     uploadState.cropper.setDragMode('move');
@@ -897,11 +1091,16 @@ function cancelCropChanges() {
     uploadState.currentMode = null;
     uploadState.cropBackupData = null;
 
-    // Hide crop controls
+    // Hide crop controls and rotation handles
     const cropControls = document.getElementById('cropControls');
     if (cropControls) {
         cropControls.style.display = 'none';
     }
+
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'none';
+    });
 
     // Reset drag mode
     uploadState.cropper.setDragMode('move');
@@ -914,11 +1113,16 @@ function acceptRotateChanges() {
     uploadState.currentMode = null;
     uploadState.rotateBackupData = null;
 
-    // Hide rotate controls
+    // Hide rotate controls and rotation handles
     const rotateControls = document.getElementById('rotateControls');
     if (rotateControls) {
         rotateControls.style.display = 'none';
     }
+    
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'none';
+    });
 }
 
 /**
@@ -942,11 +1146,16 @@ function cancelRotateChanges() {
     uploadState.currentMode = null;
     uploadState.rotateBackupData = null;
 
-    // Hide rotate controls
+    // Hide rotate controls and rotation handles
     const rotateControls = document.getElementById('rotateControls');
     if (rotateControls) {
         rotateControls.style.display = 'none';
     }
+    
+    const handles = document.querySelectorAll('.rotation-handle');
+    handles.forEach(handle => {
+        handle.style.display = 'none';
+    });
 }
 
 // Initialize upload functionality when DOM is ready

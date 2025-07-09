@@ -3,6 +3,7 @@ package me.underlow.receipt.e2e
 import com.codeborne.selenide.Condition
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
+import com.codeborne.selenide.Selenide.executeJavaScript
 import me.underlow.receipt.config.BaseE2ETest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
@@ -228,19 +229,23 @@ class UploadModalE2ETest : BaseE2ETest() {
     }
 
     @Test
-    fun `given upload modal when error occurs then should display error message`() {
+    fun `given upload modal when error occurs then should display error message in modal`() {
         // given - user opens upload modal
         openUploadModal()
 
-        // when - error occurs during upload or processing
-        // This would be tested by simulating error conditions
+        // when - error occurs during upload or processing (simulated via JavaScript)
+        executeJavaScript<Any>("window.showErrorMessage('Upload failed. Please try again.')")
 
-        // then - error message should be displayed
-        val errorContainer = `$`(".alert-danger, .error-message")
-        if (errorContainer.exists()) {
-            errorContainer.shouldBe(Condition.visible)
-            assertTrue(errorContainer.text().isNotEmpty())
-        }
+        // then - error message should be displayed in modal
+        val modalErrorContainer = `$`("#uploadModal .alert-danger")
+        modalErrorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
+        assertTrue(modalErrorContainer.text().isNotEmpty())
+        assertTrue(modalErrorContainer.text().contains("Upload failed"))
+
+        // and - modal should remain open
+        val modal = `$`("#uploadModal")
+        modal.shouldBe(Condition.visible)
+        modal.shouldHave(Condition.cssClass("show"))
     }
 
     /**

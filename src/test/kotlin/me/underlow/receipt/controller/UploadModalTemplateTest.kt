@@ -268,4 +268,30 @@ class UploadModalTemplateTest {
             .andExpect(content().string(containsString("position-absolute")))
             .andExpect(content().string(containsString("bottom: 10px; right: 10px")))
     }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have error display area`() {
+        // Given: Upload modal with error handling capability
+        // When: Dashboard page is rendered
+        // Then: Error display area is present for showing upload errors
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("id=\"uploadErrorContainer\"")))
+            .andExpect(content().string(containsString("upload-error-container")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have error display area with proper styling`() {
+        // Given: Upload modal requiring error message display
+        // When: Dashboard page is rendered
+        // Then: Error display area has proper Bootstrap styling for alerts
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("alert alert-danger")))
+            .andExpect(content().string(containsString("btn-close")))
+    }
 }
