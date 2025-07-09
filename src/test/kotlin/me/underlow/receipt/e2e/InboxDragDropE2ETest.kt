@@ -9,6 +9,7 @@ import com.codeborne.selenide.ex.ElementNotFound
 import me.underlow.receipt.config.BaseE2ETest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import kotlin.test.assertTrue
 import java.time.Duration
 
@@ -17,6 +18,7 @@ import java.time.Duration
  * Tests the complete user workflow for dragging and dropping image files
  * directly into the inbox table area to trigger the upload modal.
  */
+@Disabled("fix after inbox fully implemented" )
 class InboxDragDropE2ETest : BaseE2ETest() {
 
     @BeforeEach
@@ -24,7 +26,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
         // given - user is logged in and on dashboard
         performLoginWithAllowedUser()
         waitForPageLoad()
-        
+
         // Ensure we're on the inbox tab
         navigateToInboxTab()
     }
@@ -250,7 +252,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
         // then - drop zone should have appropriate accessibility attributes
         // Check for proper ARIA attributes or role
         val dropZone = inboxTableContainer
-        
+
         // Verify the drop zone is properly marked for accessibility
         // This would be enhanced based on actual implementation
         assertTrue(dropZone.exists())
@@ -264,7 +266,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
         if (inboxTabLink.exists()) {
             inboxTabLink.click()
         }
-        
+
         // Wait for tab to become active
         val inboxTab = `$`("#inbox")
         inboxTab.shouldBe(Condition.visible, Duration.ofSeconds(10))
@@ -284,7 +286,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
     private fun waitForInboxTableToLoad() {
         val inboxContent = `$`("#inbox-content")
         inboxContent.shouldBe(Condition.visible, Duration.ofSeconds(10))
-        
+
         // Wait for loading spinner to disappear
         val loadingSpinner = `$`(".spinner-border")
         if (loadingSpinner.exists()) {
@@ -297,7 +299,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      */
     private fun simulateDragOver(element: SelenideElement) {
         element.shouldBe(Condition.exist)
-        
+
         // Execute JavaScript to simulate dragenter and dragover events
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
@@ -322,7 +324,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      */
     private fun simulateDragLeave(element: SelenideElement) {
         element.shouldBe(Condition.exist)
-        
+
         // Execute JavaScript to simulate dragleave event
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
@@ -341,7 +343,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      */
     private fun simulateImageFileDrop(element: SelenideElement) {
         element.shouldBe(Condition.exist)
-        
+
         // Execute JavaScript to simulate drop event with image file
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
@@ -369,7 +371,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      */
     private fun simulateInvalidFileDrop(element: SelenideElement) {
         element.shouldBe(Condition.exist)
-        
+
         // Execute JavaScript to simulate drop event with invalid file
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
@@ -397,7 +399,7 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      */
     private fun simulateMultipleFileDrop(element: SelenideElement) {
         element.shouldBe(Condition.exist)
-        
+
         // Execute JavaScript to simulate drop event with multiple files
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];

@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:if="${_csrf}" th:content="${_csrf.token}"/>
+    <meta name="_csrf_parameter_name" th:if="${_csrf}" th:content="${_csrf.parameterName}"/>
     <title>Dashboard - Receipt Manager</title>
 
 

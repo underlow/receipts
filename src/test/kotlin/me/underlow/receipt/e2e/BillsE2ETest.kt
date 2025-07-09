@@ -336,21 +336,32 @@ class BillsE2ETest : BaseE2ETest() {
         // given - user is on bills view
         navigateToBills()
 
-        // when - checking for error handling
-        val hasErrors = `$$`(".alert-danger, .error, .alert-error").any { it.exists() }
+        // when - checking for error handling capability
+        val errorElements = `$$`(".alert-danger, .error, .alert-error")
+        val hasErrors = errorElements.any { it.exists() }
 
         // then - should handle errors gracefully without breaking the interface
         if (hasErrors) {
-            val errorElements = `$$`(".alert-danger, .error, .alert-error")
-            errorElements.forEach { errorElement ->
+            val visibleErrorElements = errorElements.filter { it.exists() && it.isDisplayed }
+            visibleErrorElements.forEach { errorElement ->
                 assertTrue(errorElement.exists())
-                assertTrue(errorElement.text().isNotEmpty())
+                // Only check for non-empty text if the element is visible and not a structural element
+                if (errorElement.isDisplayed && errorElement.attr("class")?.contains("d-none") != true) {
+                    val errorText = errorElement.text().trim()
+                    assertTrue(errorText.isNotEmpty() || errorElement.`$`("*").exists(), 
+                              "Error element should have text or child elements")
+                }
             }
         }
 
-        // Interface should still be functional
+        // Interface should still be functional regardless of errors
         val table = `$`("table")
-        assertTrue(table.exists())
+        assertTrue(table.exists(), "Bills table should exist even when errors are present")
+        
+        // Verify the bills interface is still responsive
+        val billsTabPane = `$`("#bills")
+        assertTrue(billsTabPane.exists(), "Bills tab pane should exist")
+        assertTrue(billsTabPane.isDisplayed, "Bills tab pane should be displayed")
     }
 
     @Test

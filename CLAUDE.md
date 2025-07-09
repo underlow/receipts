@@ -9,6 +9,8 @@
 
 kotlin code should never generate html. 
 
+logs and console messages from tests do not appear in test logs. do not use them.
+
 # Bash commands
 
 - ./gradlew test: Run unit tests
