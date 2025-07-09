@@ -228,4 +228,18 @@ class DashboardTemplateTest {
             .andExpect(content().string(containsString("cropper.min.js")))
             .andExpect(content().string(containsString("Dashboard JavaScript")))
     }
+
+    @Test
+    @WithMockUser
+    fun `should have green upload button in topbar with correct styling`() {
+        // Given: Dashboard page requires upload functionality
+        // When: Dashboard page is rendered
+        // Then: Upload button in topbar has green styling (btn-success) and upload icon
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("class=\"btn btn-success ms-2\" data-bs-toggle=\"modal\" data-bs-target=\"#uploadModal\"")))
+            .andExpect(content().string(containsString("fas fa-upload")))
+            .andExpect(content().string(containsString(">Upload</button>")))
+    }
 }
