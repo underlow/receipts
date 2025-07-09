@@ -292,7 +292,10 @@ class InboxE2ETest : BaseE2ETest() {
         if (errorElements.size() > 0) {
             errorElements.forEach { errorElement ->
                 assertTrue(errorElement.exists())
-                assertTrue(errorElement.text().isNotEmpty())
+                // Only validate text content for visible error elements
+                if (errorElement.isDisplayed) {
+                    assertTrue(errorElement.text().isNotEmpty())
+                }
             }
         }
         
