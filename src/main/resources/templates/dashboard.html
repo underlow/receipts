@@ -4,21 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Receipt Manager</title>
-    
-    <!-- CSRF Token -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <meta name="_csrf_parameter_name" th:content="${_csrf.parameterName}"/>
-    
+
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     <!-- Cropper.js CSS -->
     <link href="/static/css/cropper.min.css" rel="stylesheet">
-    
+
     <!-- Custom CSS - shadcn/ui inspired design -->
     <style>
         :root {
@@ -57,7 +53,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        
+
         .dashboard-header {
             background: hsl(var(--card));
             border-bottom: 1px solid hsl(var(--border));
@@ -68,7 +64,7 @@
         .dashboard-header .navbar {
             padding: 0.75rem 1.5rem;
         }
-        
+
         .navbar-brand {
             font-size: 1.125rem;
             font-weight: 600;
@@ -77,7 +73,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .navbar-nav .nav-link {
             color: hsl(var(--muted-foreground)) !important;
             font-weight: 500;
@@ -87,7 +83,7 @@
             margin: 0 0.125rem;
             font-size: 0.875rem;
         }
-        
+
         .navbar-nav .nav-link:hover {
             background-color: hsl(var(--muted));
             color: hsl(var(--foreground)) !important;
@@ -97,7 +93,7 @@
             background-color: hsl(var(--primary));
             color: hsl(var(--primary-foreground)) !important;
         }
-        
+
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -118,7 +114,7 @@
             white-space: nowrap;
             border: 0;
         }
-        
+
         .user-avatar-fallback {
             width: 32px;
             height: 32px;
@@ -133,7 +129,7 @@
             margin-right: 8px;
             border: 2px solid hsl(var(--border));
         }
-        
+
         .welcome-section {
             background: hsl(var(--card));
             border-radius: var(--radius);
@@ -141,38 +137,38 @@
             margin-bottom: 1.5rem;
             border: 1px solid hsl(var(--border));
         }
-        
+
         .welcome-title {
             color: hsl(var(--foreground));
             font-size: 1.875rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .user-info {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
         }
-        
+
         .user-details {
             flex: 1;
             min-width: 200px;
         }
-        
+
         .user-name {
             font-size: 1.125rem;
             font-weight: 600;
             color: hsl(var(--foreground));
             margin-bottom: 0.25rem;
         }
-        
+
         .user-email {
             color: hsl(var(--muted-foreground));
             font-size: 0.875rem;
         }
-        
+
         .dashboard-card {
             background: hsl(var(--card));
             border-radius: var(--radius);
@@ -181,23 +177,23 @@
             border: 1px solid hsl(var(--border));
             transition: all 0.2s ease;
         }
-        
+
         .dashboard-card:hover {
             box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .card-title {
             color: hsl(var(--foreground));
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 1rem;
         }
-        
+
         .card-text {
             color: hsl(var(--muted-foreground));
             line-height: 1.6;
         }
-        
+
         .btn-logout {
             background-color: hsl(var(--destructive));
             border-color: hsl(var(--destructive));
@@ -212,13 +208,13 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .btn-logout:hover {
             background-color: hsl(var(--destructive));
             opacity: 0.9;
             color: hsl(var(--destructive-foreground));
         }
-        
+
         .placeholder-content {
             background: hsl(var(--card));
             border-radius: var(--radius);
@@ -226,13 +222,13 @@
             text-align: center;
             border: 1px solid hsl(var(--border));
         }
-        
+
         .placeholder-icon {
             font-size: 3rem;
             color: hsl(var(--muted-foreground));
             margin-bottom: 1rem;
         }
-        
+
         .dropdown-menu {
             background: hsl(var(--popover));
             border: 1px solid hsl(var(--border));
@@ -240,7 +236,7 @@
             box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
             padding: 0.25rem;
         }
-        
+
         .dropdown-item {
             padding: 0.5rem 0.75rem;
             color: hsl(var(--popover-foreground));
@@ -252,7 +248,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .dropdown-item:hover {
             background-color: hsl(var(--accent));
             color: hsl(var(--accent-foreground));
@@ -312,37 +308,37 @@
             .dashboard-header {
                 padding: 0.75rem 0;
             }
-            
+
             .welcome-section {
                 padding: 1rem;
             }
-            
+
             .welcome-title {
                 font-size: 1.5rem;
             }
-            
+
             .user-info {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .dashboard-card {
                 padding: 1rem;
             }
-            
+
             .dashboard-layout {
                 padding: 1rem;
             }
-            
+
             .navigation-panel {
                 margin-bottom: 1rem;
             }
-            
+
             .navigation-panel .nav {
                 flex-direction: row;
                 gap: 0.5rem;
             }
-            
+
             .navigation-panel .nav-link {
                 text-align: center;
                 margin-bottom: 0;
@@ -350,20 +346,20 @@
                 flex: 1;
             }
         }
-        
+
         @media (max-width: 576px) {
             .welcome-section {
                 padding: 1rem;
             }
-            
+
             .dashboard-card {
                 padding: 1rem;
             }
-            
+
             .placeholder-content {
                 padding: 2rem 1rem;
             }
-            
+
             .dashboard-layout {
                 padding: 0.75rem;
             }
@@ -748,30 +744,30 @@
                 overflow-x: auto;
                 border-radius: calc(var(--radius) - 2px);
             }
-            
+
             .modern-table-header th,
             .modern-table-cell {
                 padding: 0.625rem 0.75rem;
             }
-            
+
             .modern-table-header th {
                 font-size: 0.75rem;
             }
-            
+
             .modern-table-cell {
                 font-size: 0.8125rem;
             }
-            
+
             .modern-table-cell-select {
                 width: 2.5rem;
                 padding: 0.5rem 0.75rem;
             }
-            
+
             .modern-table-cell-actions {
                 width: 3.125rem;
                 padding: 0.5rem 0.75rem;
             }
-            
+
             .action-buttons {
                 flex-direction: column;
                 gap: 0.25rem;
@@ -788,11 +784,11 @@
                     <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNMTAgMTBIMjJWMjJIMTBWMTBaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K" alt="Receipt Manager Logo" class="d-inline-block align-text-top me-2" style="width: 32px; height: 32px;">
                     Receipt Manager
                 </a>
-                
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                
+
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
@@ -810,15 +806,15 @@
                             </button>
                         </li>
                     </ul>
-                    
+
                     <!-- User Dropdown Menu -->
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle d-flex align-items-center text-decoration-none" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu" style="color: hsl(var(--foreground));">
-                            <img th:if="${userAvatar != null and userAvatar != ''}" 
-                                 th:src="${userAvatar}" 
+                            <img th:if="${userAvatar != null and userAvatar != ''}"
+                                 th:src="${userAvatar}"
                                  th:alt="${userName + ' avatar'}"
                                  class="user-avatar">
-                            <div th:if="${userAvatar == null or userAvatar == ''}" 
+                            <div th:if="${userAvatar == null or userAvatar == ''}"
                                  class="user-avatar-fallback"
                                  th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
                                  th:title="${userName}">
@@ -927,32 +923,32 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- FontAwesome for icons -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    
+
     <!-- FontAwesome CSS fallback -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
-    
+
     <!-- Cropper.js JavaScript -->
     <script src="/static/js/cropper.min.js"></script>
-    
+
     <!-- Upload JavaScript Module -->
     <script src="/static/js/upload.js"></script>
-    
+
     <!-- Dashboard JavaScript -->
     <script>
         let currentPage = 0;
         let currentSort = 'uploadDate';
         let currentDirection = 'DESC';
         let currentSearch = '';
-        
+
         // Bills tab state
         let billsCurrentPage = 0;
         let billsCurrentSort = 'billDate';
         let billsCurrentDirection = 'DESC';
         let billsCurrentSearch = '';
-        
+
         // Receipts tab state
         let receiptsCurrentPage = 0;
         let receiptsCurrentSort = 'paymentDate';
@@ -962,7 +958,7 @@
         // Load inbox data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadInboxData();
-            
+
             // Set up tab change event to refresh data when tabs are activated
             const inboxTab = document.querySelector('a[href="#inbox"]');
             if (inboxTab) {
@@ -970,21 +966,21 @@
                     loadInboxData();
                 });
             }
-            
+
             const billsTab = document.querySelector('a[href="#bills"]');
             if (billsTab) {
                 billsTab.addEventListener('shown.bs.tab', function() {
                     loadBillsData();
                 });
             }
-            
+
             const receiptsTab = document.querySelector('a[href="#receipts"]');
             if (receiptsTab) {
                 receiptsTab.addEventListener('shown.bs.tab', function() {
                     loadReceiptsData();
                 });
             }
-            
+
             // Initialize inbox table drag-and-drop functionality
             setupInboxDragAndDrop();
         });
@@ -993,32 +989,32 @@
         function setupInboxDragAndDrop() {
             const inboxTableContainer = document.getElementById('inboxTableContainer');
             const dropOverlay = document.getElementById('dropOverlay');
-            
+
             if (!inboxTableContainer || !dropOverlay) {
                 console.error('Inbox drag-and-drop elements not found');
                 return;
             }
-            
+
             // Track drag count to handle multiple drag enter/leave events
             let dragCounter = 0;
-            
+
             // Prevent default drag behaviors
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 inboxTableContainer.addEventListener(eventName, preventDefaults, false);
                 document.body.addEventListener(eventName, preventDefaults, false);
             });
-            
+
             // Handle drag enter
             inboxTableContainer.addEventListener('dragenter', function(e) {
                 dragCounter++;
                 handleDragEnter(e);
             });
-            
+
             // Handle drag over
             inboxTableContainer.addEventListener('dragover', function(e) {
                 handleDragOver(e);
             });
-            
+
             // Handle drag leave
             inboxTableContainer.addEventListener('dragleave', function(e) {
                 dragCounter--;
@@ -1026,66 +1022,66 @@
                     handleDragLeave(e);
                 }
             });
-            
+
             // Handle drop
             inboxTableContainer.addEventListener('drop', function(e) {
                 dragCounter = 0;
                 handleDrop(e);
             });
         }
-        
+
         // Function to prevent default drag behaviors
         function preventDefaults(e) {
             e.preventDefault();
             e.stopPropagation();
         }
-        
+
         // Function to handle drag enter events
         function handleDragEnter(e) {
             const inboxTableContainer = document.getElementById('inboxTableContainer');
             const dropOverlay = document.getElementById('dropOverlay');
-            
+
             if (inboxTableContainer && dropOverlay) {
                 inboxTableContainer.classList.add('drag-over');
                 dropOverlay.style.display = 'flex';
             }
         }
-        
+
         // Function to handle drag over events
         function handleDragOver(e) {
             // Allow drop
             e.dataTransfer.dropEffect = 'copy';
         }
-        
+
         // Function to handle drag leave events
         function handleDragLeave(e) {
             const inboxTableContainer = document.getElementById('inboxTableContainer');
             const dropOverlay = document.getElementById('dropOverlay');
-            
+
             if (inboxTableContainer && dropOverlay) {
                 inboxTableContainer.classList.remove('drag-over');
                 dropOverlay.style.display = 'none';
             }
         }
-        
+
         // Function to handle drop events
         function handleDrop(e) {
             const inboxTableContainer = document.getElementById('inboxTableContainer');
             const dropOverlay = document.getElementById('dropOverlay');
-            
+
             // Remove visual feedback
             if (inboxTableContainer && dropOverlay) {
                 inboxTableContainer.classList.remove('drag-over');
                 dropOverlay.style.display = 'none';
             }
-            
+
             // Get dropped files
             const files = e.dataTransfer.files;
-            
+
             if (files.length > 0) {
                 // Process the first file
                 const file = files[0];
-                
+
                 // Validate file type
                 if (file.type.startsWith('image/')) {
                     // Try using existing upload.js functionality first
@@ -1101,23 +1097,23 @@
                 }
             }
         }
-        
+
         // Function to load inbox data from the API
         function loadInboxData(page = 0, search = '') {
             currentPage = page;
             currentSearch = search;
-            
+
             const params = new URLSearchParams({
                 page: page,
                 size: 10,
                 sortBy: currentSort,
                 sortDirection: currentDirection
             });
-            
+
             if (search && search.trim() !== '') {
                 params.append('search', search.trim());
             }
-            
+
             fetch(`/api/inbox?${params.toString()}`)
                 .then(response => {
                     if (!response.ok) {
@@ -1128,7 +1124,7 @@
                 .then(data => {
                     renderInboxTable(data);
                     document.getElementById('inbox-content').innerHTML = getRenderedTable(data);
-                    
+
                     // Set up event listeners for the loaded content
                     setupTableEventListeners();
                 })
@@ -1159,7 +1155,7 @@
                     }, 500);
                 });
             }
-            
+
             // Pagination
             const paginationLinks = document.querySelectorAll('.pagination .page-link');
             paginationLinks.forEach(link => {
@@ -1171,7 +1167,7 @@
                     }
                 });
             });
-            
+
             // Sorting
             const sortableHeaders = document.querySelectorAll('th.sortable');
             sortableHeaders.forEach(header => {
@@ -1188,7 +1184,7 @@
                         loadInboxData(0, currentSearch);
                     }
                 });
-                
+
                 // Add cursor pointer style
                 header.style.cursor = 'pointer';
             });
@@ -1221,18 +1217,18 @@
         function loadBillsData(page = 0, search = '') {
             billsCurrentPage = page;
             billsCurrentSearch = search;
-            
+
             const params = new URLSearchParams({
                 page: page,
                 size: 10,
                 sortBy: billsCurrentSort,
                 sortDirection: billsCurrentDirection
             });
-            
+
             if (search && search.trim() !== '') {
                 params.append('search', search.trim());
             }
-            
+
             fetch(`/api/bills?${params.toString()}`)
                 .then(response => {
                     if (!response.ok) {
@@ -1243,7 +1239,7 @@
                 .then(data => {
                     renderBillsTable(data);
                     document.getElementById('bills-content').innerHTML = getRenderedTable(data);
-                    
+
                     // Set up event listeners for the loaded content
                     setupBillsTableEventListeners();
                 })
@@ -1274,7 +1270,7 @@
                     }, 500);
                 });
             }
-            
+
             // Pagination
             const paginationLinks = document.querySelectorAll('.pagination .page-link');
             paginationLinks.forEach(link => {
@@ -1286,7 +1282,7 @@
                     }
                 });
             });
-            
+
             // Sorting
             const sortableHeaders = document.querySelectorAll('th.sortable');
             sortableHeaders.forEach(header => {
@@ -1303,7 +1299,7 @@
                         loadBillsData(0, billsCurrentSearch);
                     }
                 });
-                
+
                 // Add cursor pointer style
                 header.style.cursor = 'pointer';
             });
@@ -1328,18 +1324,18 @@
         function loadReceiptsData(page = 0, search = '') {
             receiptsCurrentPage = page;
             receiptsCurrentSearch = search;
-            
+
             const params = new URLSearchParams({
                 page: page,
                 size: 10,
                 sortBy: receiptsCurrentSort,
                 sortDirection: receiptsCurrentDirection
             });
-            
+
             if (search && search.trim() !== '') {
                 params.append('search', search.trim());
             }
-            
+
             fetch(`/api/receipts?${params.toString()}`)
                 .then(response => {
                     if (!response.ok) {
@@ -1350,7 +1346,7 @@
                 .then(data => {
                     renderReceiptsTable(data);
                     document.getElementById('receipts-content').innerHTML = getRenderedTable(data);
-                    
+
                     // Set up event listeners for the loaded content
                     setupReceiptsTableEventListeners();
                 })
@@ -1381,7 +1377,7 @@
                     }, 500);
                 });
             }
-            
+
             // Pagination
             const paginationLinks = document.querySelectorAll('.pagination .page-link');
             paginationLinks.forEach(link => {
@@ -1393,7 +1389,7 @@
                     }
                 });
             });
-            
+
             // Sorting
             const sortableHeaders = document.querySelectorAll('th.sortable');
             sortableHeaders.forEach(header => {
@@ -1410,7 +1406,7 @@
                         loadReceiptsData(0, receiptsCurrentSearch);
                     }
                 });
-                
+
                 // Add cursor pointer style
                 header.style.cursor = 'pointer';
             });
@@ -1430,11 +1426,11 @@
                 alert(`Receipt ${receiptId} removed. (Functionality not yet implemented)`);
             }
         }
-        
+
         // Function to render table from JSON data
         function getRenderedTable(data) {
             let html = '<div class="table-container">';
-            
+
             // Add search box if enabled
             if (data.searchEnabled) {
                 html += `
@@ -1448,7 +1444,7 @@
                     </div>
                 `;
             }
-            
+
             // Add table wrapper
             html += `
                 <div class="modern-table-wrapper">
@@ -1456,14 +1452,14 @@
                         <thead class="modern-table-header">
                             <tr>
             `;
-            
+
             // Add column headers
             data.columns.forEach(column => {
                 const sortClass = column.sortable ? 'sortable' : '';
-                const sortIcon = column.sortable && data.sortKey === column.key ? 
-                    (data.sortDirection === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 
+                const sortIcon = column.sortable && data.sortKey === column.key ?
+                    (data.sortDirection === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') :
                     (column.sortable ? 'fa-sort' : '');
-                
+
                 html += `
                     <th scope="col" class="${sortClass}" ${column.sortable ? `data-sort="${column.key}"` : ''}>
                         <div class="header-content">
@@ -1473,13 +1469,13 @@
                     </th>
                 `;
             });
-            
+
             html += `
                             </tr>
                         </thead>
                         <tbody class="modern-table-body">
             `;
-            
+
             // Add data rows or empty state
             if (data.data.length === 0) {
                 html += `
@@ -1499,41 +1495,41 @@
                     data.columns.forEach(column => {
                         const cellValue = row[column.key] || '';
                         let formattedValue = cellValue;
-                        
+
                         // Special formatting for status column in inbox table
                         if (data.tableId === 'inbox' && column.key === 'status') {
                             formattedValue = formatStatusBadge(cellValue);
                         }
-                        
+
                         // Special formatting for actions column in bills table
                         if (data.tableId === 'bills' && column.key === 'actions') {
                             formattedValue = formatBillsActions(cellValue, row.id);
                         }
-                        
+
                         // Special formatting for actions column in receipts table
                         if (data.tableId === 'receipts' && column.key === 'actions') {
                             formattedValue = formatReceiptsActions(cellValue, row.id);
                         }
-                        
+
                         html += `<td class="modern-table-cell">${formattedValue}</td>`;
                     });
                     html += '</tr>';
                 });
             }
-            
+
             html += `
                         </tbody>
                     </table>
                 </div>
             `;
-            
+
             // Add pagination if configured
             if (data.paginationConfig) {
                 html += `
                     <nav aria-label="Table pagination">
                         <ul class="pagination justify-content-center">
                 `;
-                
+
                 // Previous button
                 const prevDisabled = data.paginationConfig.currentPage <= 1 ? 'disabled' : '';
                 html += `
@@ -1544,7 +1540,7 @@
                         </a>
                     </li>
                 `;
-                
+
                 // Page numbers
                 for (let page = 1; page <= data.totalPages; page++) {
                     const activeClass = page === data.paginationConfig.currentPage ? 'active' : '';
@@ -1554,7 +1550,7 @@
                         </li>
                     `;
                 }
-                
+
                 // Next button
                 const nextDisabled = data.paginationConfig.currentPage >= data.totalPages ? 'disabled' : '';
                 html += `
@@ -1568,21 +1564,21 @@
                     </nav>
                 `;
             }
-            
+
             html += '</div>';
             return html;
         }
-        
+
         function renderInboxTable(data) {
             // Any inbox-specific rendering logic can go here
             console.log('Rendering inbox table with data:', data);
         }
-        
+
         function renderBillsTable(data) {
             // Any bills-specific rendering logic can go here
             console.log('Rendering bills table with data:', data);
         }
-        
+
         // Function to format status badges for inbox table
         function formatStatusBadge(statusText) {
             const statusMappings = {
@@ -1593,11 +1589,11 @@
                 'Approved': 'status-done',
                 'In Process': 'status-in-progress'
             };
-            
+
             const statusClass = statusMappings[statusText] || 'status-pending';
             return `<span class="status-indicator ${statusClass}">${statusText}</span>`;
         }
-        
+
         // Function to format action buttons for bills table
         function formatBillsActions(actionsText, billId) {
             if (actionsText === 'Edit | Remove') {
@@ -1620,7 +1616,7 @@
                 return actionsText;
             }
         }
-        
+
         // Function to toggle dropdown actions
         function toggleActions(billId) {
             console.log(`Toggle actions for bill ${billId}`);
@@ -1663,7 +1659,7 @@
         }
 
         // Upload functionality is now handled by upload.js module
-        
+
         // Function to show error message specific to dashboard
         function showDashboardErrorMessage(message) {
             const alertHtml = `
@@ -1673,15 +1669,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             const alertContainer = document.createElement('div');
             alertContainer.innerHTML = alertHtml;
-            
+
             const dashboardLayout = document.querySelector('.dashboard-layout');
             if (dashboardLayout) {
                 dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
             }
-            
+
             // Auto-dismiss after 5 seconds
             setTimeout(() => {
                 const alert = document.querySelector('.alert-danger');
@@ -1690,18 +1686,18 @@
                 }
             }, 5000);
         }
-        
+
         // Function to trigger upload modal with file as fallback
         function triggerUploadModalWithFile(file) {
             // Store the file for later use
             window.dragDroppedFile = file;
-            
+
             // Show the upload modal
             const uploadModal = document.getElementById('uploadModal');
             if (uploadModal) {
                 const modal = new bootstrap.Modal(uploadModal);
                 modal.show();
-                
+
                 // Try to simulate file selection after modal is shown
                 setTimeout(() => {
                     const fileInput = document.getElementById('fileInput');
@@ -1710,7 +1706,7 @@
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         fileInput.files = dataTransfer.files;
-                        
+
                         // Trigger the file change event
                         const changeEvent = new Event('change', { bubbles: true });
                         fileInput.dispatchEvent(changeEvent);
