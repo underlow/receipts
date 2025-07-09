@@ -6,7 +6,11 @@ import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
 import me.underlow.receipt.service.FileUploadService
+import me.underlow.receipt.service.InboxService
 import me.underlow.receipt.service.UserService
+import me.underlow.receipt.model.InboxEntity
+import me.underlow.receipt.model.InboxState
+import java.time.LocalDateTime
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
@@ -42,6 +46,9 @@ class FileUploadControllerTest {
     private lateinit var fileUploadService: FileUploadService
 
     @MockitoBean
+    private lateinit var inboxService: InboxService
+
+    @MockitoBean
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
 
     @MockitoBean
@@ -63,8 +70,15 @@ class FileUploadControllerTest {
             "image/jpeg",
             "fake-jpeg-content".toByteArray()
         )
+        val mockInboxEntity = InboxEntity(
+            id = "test-inbox-id",
+            uploadedImage = "test_unique_filename.jpg",
+            uploadDate = LocalDateTime.now(),
+            state = InboxState.CREATED
+        )
         whenever(fileUploadService.validateFile(any())).thenReturn(true)
         whenever(fileUploadService.saveFile(any())).thenReturn("test_unique_filename.jpg")
+        whenever(inboxService.createInboxEntityFromUpload(any())).thenReturn(mockInboxEntity)
 
         // when - POST request to /api/upload with valid file
         mockMvc.perform(
@@ -77,6 +91,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.filePath").value("test_unique_filename.jpg"))
+            .andExpect(jsonPath("$.inboxEntityId").value("test-inbox-id"))
             .andExpect(jsonPath("$.message").value("File uploaded successfully"))
             .andExpect(jsonPath("$.error").doesNotExist())
     }
@@ -104,6 +119,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.filePath").doesNotExist())
+            .andExpect(jsonPath("$.inboxEntityId").doesNotExist())
             .andExpect(jsonPath("$.message").value("Invalid file"))
             .andExpect(jsonPath("$.error").value("Only JPEG, PNG, GIF, WebP files are allowed"))
     }
@@ -131,6 +147,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.filePath").doesNotExist())
+            .andExpect(jsonPath("$.inboxEntityId").doesNotExist())
             .andExpect(jsonPath("$.message").value("Invalid file"))
             .andExpect(jsonPath("$.error").value("Only JPEG, PNG, GIF, WebP files are allowed"))
     }
@@ -159,6 +176,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.filePath").doesNotExist())
+            .andExpect(jsonPath("$.inboxEntityId").doesNotExist())
             .andExpect(jsonPath("$.message").value("File upload failed"))
             .andExpect(jsonPath("$.error").value("Filesystem error"))
     }
@@ -177,6 +195,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.filePath").doesNotExist())
+            .andExpect(jsonPath("$.inboxEntityId").doesNotExist())
             .andExpect(jsonPath("$.message").value("Missing file parameter"))
             .andExpect(jsonPath("$.error").value("File parameter is required"))
     }
@@ -191,8 +210,15 @@ class FileUploadControllerTest {
             "image/png",
             "fake-png-content".toByteArray()
         )
+        val mockInboxEntity = InboxEntity(
+            id = "test-png-inbox-id",
+            uploadedImage = "test_unique_filename.png",
+            uploadDate = LocalDateTime.now(),
+            state = InboxState.CREATED
+        )
         whenever(fileUploadService.validateFile(any())).thenReturn(true)
         whenever(fileUploadService.saveFile(any())).thenReturn("test_unique_filename.png")
+        whenever(inboxService.createInboxEntityFromUpload(any())).thenReturn(mockInboxEntity)
 
         // when - POST request to /api/upload with valid PNG file
         mockMvc.perform(
@@ -205,6 +231,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.filePath").value("test_unique_filename.png"))
+            .andExpect(jsonPath("$.inboxEntityId").value("test-png-inbox-id"))
             .andExpect(jsonPath("$.message").value("File uploaded successfully"))
             .andExpect(jsonPath("$.error").doesNotExist())
     }
@@ -219,8 +246,15 @@ class FileUploadControllerTest {
             "image/webp",
             "fake-webp-content".toByteArray()
         )
+        val mockInboxEntity = InboxEntity(
+            id = "test-webp-inbox-id",
+            uploadedImage = "test_unique_filename.webp",
+            uploadDate = LocalDateTime.now(),
+            state = InboxState.CREATED
+        )
         whenever(fileUploadService.validateFile(any())).thenReturn(true)
         whenever(fileUploadService.saveFile(any())).thenReturn("test_unique_filename.webp")
+        whenever(inboxService.createInboxEntityFromUpload(any())).thenReturn(mockInboxEntity)
 
         // when - POST request to /api/upload with valid WebP file
         mockMvc.perform(
@@ -233,6 +267,7 @@ class FileUploadControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.filePath").value("test_unique_filename.webp"))
+            .andExpect(jsonPath("$.inboxEntityId").value("test-webp-inbox-id"))
             .andExpect(jsonPath("$.message").value("File uploaded successfully"))
             .andExpect(jsonPath("$.error").doesNotExist())
     }

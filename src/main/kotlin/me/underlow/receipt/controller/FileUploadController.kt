@@ -1,6 +1,7 @@
 package me.underlow.receipt.controller
 
 import me.underlow.receipt.service.FileUploadService
+import me.underlow.receipt.service.InboxService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -13,7 +14,8 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api")
 class FileUploadController(
-    private val fileUploadService: FileUploadService
+    private val fileUploadService: FileUploadService,
+    private val inboxService: InboxService
 ) {
     
     /**
@@ -33,6 +35,7 @@ class FileUploadController(
                     UploadResponse(
                         success = false,
                         filePath = null,
+                        inboxEntityId = null,
                         message = "Missing file parameter",
                         error = "File parameter is required"
                     )
@@ -45,6 +48,7 @@ class FileUploadController(
                     UploadResponse(
                         success = false,
                         filePath = null,
+                        inboxEntityId = null,
                         message = "Invalid file",
                         error = "Only JPEG, PNG, GIF, WebP files are allowed"
                     )
@@ -54,11 +58,15 @@ class FileUploadController(
             // Save file using service
             val filePath = fileUploadService.saveFile(file)
             
+            // Create InboxEntity for OCR processing workflow
+            val inboxEntity = inboxService.createInboxEntityFromUpload(filePath)
+            
             // Return success response
             ResponseEntity.ok(
                 UploadResponse(
                     success = true,
                     filePath = filePath,
+                    inboxEntityId = inboxEntity.id,
                     message = "File uploaded successfully",
                     error = null
                 )
@@ -70,6 +78,7 @@ class FileUploadController(
                 UploadResponse(
                     success = false,
                     filePath = null,
+                    inboxEntityId = null,
                     message = "File upload failed",
                     error = e.message ?: "Unknown error occurred"
                 )
@@ -90,6 +99,7 @@ class FileUploadController(
             UploadResponse(
                 success = false,
                 filePath = null,
+                inboxEntityId = null,
                 message = "File too large",
                 error = "File size exceeds maximum allowed size of 20MB"
             )
@@ -109,6 +119,7 @@ class FileUploadController(
             UploadResponse(
                 success = false,
                 filePath = null,
+                inboxEntityId = null,
                 message = "Missing file parameter",
                 error = "File parameter is required"
             )
@@ -118,11 +129,12 @@ class FileUploadController(
 
 /**
  * Data class representing the response from file upload endpoint.
- * Provides structured response with success status, file path, and error information.
+ * Provides structured response with success status, file path, inbox entity ID, and error information.
  */
 data class UploadResponse(
     val success: Boolean,
     val filePath: String?,
+    val inboxEntityId: String?,
     val message: String,
     val error: String?
 )
