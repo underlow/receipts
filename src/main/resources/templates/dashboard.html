@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Receipt Manager</title>
     
+    <!-- CSRF Token -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta name="_csrf_parameter_name" th:content="${_csrf.parameterName}"/>
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -362,6 +367,55 @@
             .dashboard-layout {
                 padding: 0.75rem;
             }
+        }
+
+        /* Drop Zone Styles for Inbox Table */
+        .drop-zone {
+            position: relative;
+            min-height: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background-color: hsl(214.3 31.8% 91.4%);
+            border: 2px dashed hsl(222.2 84% 4.9%);
+            border-radius: var(--radius);
+        }
+
+        .drop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(222, 47, 11, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: var(--radius);
+        }
+
+        .drop-message {
+            text-align: center;
+            color: hsl(var(--foreground));
+            padding: 2rem;
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            border: 2px solid hsl(var(--border));
+            box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .drop-message i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: hsl(var(--primary));
+        }
+
+        .drop-message p {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 500;
         }
 
         /* Modern Table Styles - shadcn/ui design */
@@ -811,10 +865,18 @@
                     <!-- Inbox Tab -->
                     <div class="tab-pane fade show active" id="inbox">
                         <div class="dashboard-card">
-                            <div id="inbox-content">
-                                <div class="d-flex justify-content-center">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                            <div id="inboxTableContainer" class="drop-zone">
+                                <div id="inbox-content">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="drop-overlay" id="dropOverlay" style="display: none;">
+                                    <div class="drop-message">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Drop images here to upload</p>
                                     </div>
                                 </div>
                             </div>
@@ -869,6 +931,9 @@
     <!-- FontAwesome for icons -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     
+    <!-- FontAwesome CSS fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+    
     <!-- Cropper.js JavaScript -->
     <script src="/static/js/cropper.min.js"></script>
     
@@ -919,8 +984,124 @@
                     loadReceiptsData();
                 });
             }
+            
+            // Initialize inbox table drag-and-drop functionality
+            setupInboxDragAndDrop();
         });
 
+        // Function to set up drag-and-drop functionality for inbox table
+        function setupInboxDragAndDrop() {
+            const inboxTableContainer = document.getElementById('inboxTableContainer');
+            const dropOverlay = document.getElementById('dropOverlay');
+            
+            if (!inboxTableContainer || !dropOverlay) {
+                console.error('Inbox drag-and-drop elements not found');
+                return;
+            }
+            
+            // Track drag count to handle multiple drag enter/leave events
+            let dragCounter = 0;
+            
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                inboxTableContainer.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Handle drag enter
+            inboxTableContainer.addEventListener('dragenter', function(e) {
+                dragCounter++;
+                handleDragEnter(e);
+            });
+            
+            // Handle drag over
+            inboxTableContainer.addEventListener('dragover', function(e) {
+                handleDragOver(e);
+            });
+            
+            // Handle drag leave
+            inboxTableContainer.addEventListener('dragleave', function(e) {
+                dragCounter--;
+                if (dragCounter === 0) {
+                    handleDragLeave(e);
+                }
+            });
+            
+            // Handle drop
+            inboxTableContainer.addEventListener('drop', function(e) {
+                dragCounter = 0;
+                handleDrop(e);
+            });
+        }
+        
+        // Function to prevent default drag behaviors
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Function to handle drag enter events
+        function handleDragEnter(e) {
+            const inboxTableContainer = document.getElementById('inboxTableContainer');
+            const dropOverlay = document.getElementById('dropOverlay');
+            
+            if (inboxTableContainer && dropOverlay) {
+                inboxTableContainer.classList.add('drag-over');
+                dropOverlay.style.display = 'flex';
+            }
+        }
+        
+        // Function to handle drag over events
+        function handleDragOver(e) {
+            // Allow drop
+            e.dataTransfer.dropEffect = 'copy';
+        }
+        
+        // Function to handle drag leave events
+        function handleDragLeave(e) {
+            const inboxTableContainer = document.getElementById('inboxTableContainer');
+            const dropOverlay = document.getElementById('dropOverlay');
+            
+            if (inboxTableContainer && dropOverlay) {
+                inboxTableContainer.classList.remove('drag-over');
+                dropOverlay.style.display = 'none';
+            }
+        }
+        
+        // Function to handle drop events
+        function handleDrop(e) {
+            const inboxTableContainer = document.getElementById('inboxTableContainer');
+            const dropOverlay = document.getElementById('dropOverlay');
+            
+            // Remove visual feedback
+            if (inboxTableContainer && dropOverlay) {
+                inboxTableContainer.classList.remove('drag-over');
+                dropOverlay.style.display = 'none';
+            }
+            
+            // Get dropped files
+            const files = e.dataTransfer.files;
+            
+            if (files.length > 0) {
+                // Process the first file
+                const file = files[0];
+                
+                // Validate file type
+                if (file.type.startsWith('image/')) {
+                    // Try using existing upload.js functionality first
+                    if (typeof handleFileSelect === 'function') {
+                        handleFileSelect(file);
+                    } else {
+                        // Fallback: trigger upload modal manually
+                        console.warn('handleFileSelect function not found, using fallback');
+                        triggerUploadModalWithFile(file);
+                    }
+                } else {
+                    showDashboardErrorMessage('Please drop a valid image file');
+                }
+            }
+        }
+        
         // Function to load inbox data from the API
         function loadInboxData(page = 0, search = '') {
             currentPage = page;
@@ -1482,6 +1663,63 @@
         }
 
         // Upload functionality is now handled by upload.js module
+        
+        // Function to show error message specific to dashboard
+        function showDashboardErrorMessage(message) {
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            const alertContainer = document.createElement('div');
+            alertContainer.innerHTML = alertHtml;
+            
+            const dashboardLayout = document.querySelector('.dashboard-layout');
+            if (dashboardLayout) {
+                dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
+            }
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert-danger');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        // Function to trigger upload modal with file as fallback
+        function triggerUploadModalWithFile(file) {
+            // Store the file for later use
+            window.dragDroppedFile = file;
+            
+            // Show the upload modal
+            const uploadModal = document.getElementById('uploadModal');
+            if (uploadModal) {
+                const modal = new bootstrap.Modal(uploadModal);
+                modal.show();
+                
+                // Try to simulate file selection after modal is shown
+                setTimeout(() => {
+                    const fileInput = document.getElementById('fileInput');
+                    if (fileInput) {
+                        // Create a new FileList with our file
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                        
+                        // Trigger the file change event
+                        const changeEvent = new Event('change', { bubbles: true });
+                        fileInput.dispatchEvent(changeEvent);
+                    }
+                }, 100);
+            } else {
+                showDashboardErrorMessage('Upload modal not found');
+            }
+        }
     </script>
 </body>
 </html>

@@ -361,6 +361,24 @@ function uploadFile(processedFile) {
     const formData = new FormData();
     formData.append('file', processedFile, uploadState.selectedFile.name);
     
+    // Add CSRF token to form data
+    const csrfToken = document.querySelector('meta[name="_csrf"]');
+    const csrfParamName = document.querySelector('meta[name="_csrf_parameter_name"]');
+    
+    if (csrfToken && csrfParamName) {
+        const tokenValue = csrfToken.getAttribute('content');
+        const paramName = csrfParamName.getAttribute('content');
+        formData.append(paramName, tokenValue);
+        console.log('Added CSRF token:', paramName, '=', tokenValue);
+        console.log('Token length:', tokenValue ? tokenValue.length : 'null');
+        console.log('Param name:', paramName);
+    } else {
+        console.warn('CSRF token or parameter name not found in meta tags');
+        console.log('CSRF Token element:', csrfToken);
+        console.log('CSRF Param Name element:', csrfParamName);
+        console.log('All meta tags:', Array.from(document.querySelectorAll('meta')).map(m => ({name: m.name, content: m.content})));
+    }
+    
     // Show loading state
     updateUploadProgress(0);
     
