@@ -1689,31 +1689,36 @@
 
         // Function to trigger upload modal with file as fallback
         function triggerUploadModalWithFile(file) {
-            // Store the file for later use
-            window.dragDroppedFile = file;
-
-            // Show the upload modal
-            const uploadModal = document.getElementById('uploadModal');
-            if (uploadModal) {
-                const modal = new bootstrap.Modal(uploadModal);
-                modal.show();
-
-                // Try to simulate file selection after modal is shown
-                setTimeout(() => {
-                    const fileInput = document.getElementById('fileInput');
-                    if (fileInput) {
-                        // Create a new FileList with our file
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
-
-                        // Trigger the file change event
-                        const changeEvent = new Event('change', { bubbles: true });
-                        fileInput.dispatchEvent(changeEvent);
-                    }
-                }, 100);
+            // Use the upload.js handleFileSelect function directly
+            if (typeof handleFileSelect === 'function') {
+                handleFileSelect(file);
             } else {
-                showDashboardErrorMessage('Upload modal not found');
+                // Fallback: Store the file and show modal manually
+                window.dragDroppedFile = file;
+
+                // Show the upload modal
+                const uploadModal = document.getElementById('uploadModal');
+                if (uploadModal) {
+                    const modal = new bootstrap.Modal(uploadModal);
+                    modal.show();
+
+                    // Try to simulate file selection after modal is shown
+                    setTimeout(() => {
+                        const fileInput = document.getElementById('fileInput');
+                        if (fileInput) {
+                            // Create a new FileList with our file
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            fileInput.files = dataTransfer.files;
+
+                            // Trigger the file change event
+                            const changeEvent = new Event('change', { bubbles: true });
+                            fileInput.dispatchEvent(changeEvent);
+                        }
+                    }, 100);
+                } else {
+                    showDashboardErrorMessage('Upload modal not found');
+                }
             }
         }
     </script>

@@ -1,6 +1,6 @@
 /**
  * Upload JavaScript Module
- * 
+ *
  * Handles file selection, drag-and-drop, and upload logic with comprehensive JavaScript functionality.
  * This module provides a reusable interface for handling image uploads with cropping capabilities.
  */
@@ -43,6 +43,7 @@ function initializeUpload() {
     const rotateControls = document.getElementById('rotateControls');
     const acceptRotate = document.getElementById('acceptRotate');
     const cancelRotate = document.getElementById('cancelRotate');
+    const modalCloseBtn = uploadModal ? uploadModal.querySelector('.btn-close') : null;
 
     if (!uploadModal || !fileInput || !selectFileBtn) {
         console.error('Upload modal elements not found');
@@ -148,10 +149,58 @@ function initializeUpload() {
         });
     }
 
-    // Handle modal close
+    // Handle cancel upload button
+    if (cancelUpload) {
+        cancelUpload.addEventListener('click', function(event) {
+            // Prevent default Bootstrap behavior
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Force cleanup and close
+            forceCloseModal();
+        });
+    }
+
+    // Handle modal close button (X)
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', function(event) {
+            // Prevent default Bootstrap behavior
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Force cleanup and close
+            forceCloseModal();
+        });
+    }
+
+    // Handle modal close and hide events
     if (uploadModal) {
+        uploadModal.addEventListener('hide.bs.modal', function() {
+            // Called when modal is about to be hidden
+            cleanupModal();
+        });
+        
         uploadModal.addEventListener('hidden.bs.modal', function() {
+            // Called after modal is fully hidden
             resetModalState();
+        });
+
+        // Handle escape key and backdrop click
+        uploadModal.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                forceCloseModal();
+            }
+        });
+
+        // Handle backdrop click (clicking outside the modal)
+        uploadModal.addEventListener('click', function(event) {
+            if (event.target === uploadModal) {
+                event.preventDefault();
+                event.stopPropagation();
+                forceCloseModal();
+            }
         });
     }
 
@@ -161,7 +210,7 @@ function initializeUpload() {
 /**
  * Handle file selection from input.
  * Validates file type and size, then displays in modal.
- * 
+ *
  * @param {File} file - The selected file
  */
 function handleFileSelect(file) {
@@ -171,7 +220,7 @@ function handleFileSelect(file) {
 
     // Store selected file
     uploadState.selectedFile = file;
-    
+
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -201,12 +250,12 @@ function handleFileSelect(file) {
 /**
  * Handle drag and drop events.
  * Provides visual feedback and processes dropped files.
- * 
+ *
  * @param {DragEvent} event - The drag event
  */
 function handleDragDrop(event) {
     event.preventDefault();
-    
+
     const fileDropZone = document.getElementById('fileDropZone');
     if (!fileDropZone) {
         return;
@@ -216,14 +265,14 @@ function handleDragDrop(event) {
         case 'dragover':
             fileDropZone.classList.add('border-primary');
             break;
-        
+
         case 'dragleave':
             fileDropZone.classList.remove('border-primary');
             break;
-        
+
         case 'drop':
             fileDropZone.classList.remove('border-primary');
-            
+
             const files = event.dataTransfer.files;
             if (files.length > 0) {
                 const file = files[0];
@@ -240,7 +289,7 @@ function handleDragDrop(event) {
 /**
  * Show upload modal with selected file.
  * Initializes Cropper.js and displays image preview.
- * 
+ *
  * @param {string} imageSrc - The image source data URL
  */
 function showUploadModal(imageSrc) {
@@ -276,13 +325,18 @@ function showUploadModal(imageSrc) {
 
 /**
  * Initialize Cropper.js for image editing.
- * 
+ *
  * @param {HTMLImageElement} imageElement - The image element to crop
  */
 function initializeCropper(imageElement) {
     // Destroy existing cropper if present
     if (uploadState.cropper) {
-        uploadState.cropper.destroy();
+        try {
+            uploadState.cropper.destroy();
+        } catch (e) {
+            console.warn('Error destroying existing cropper:', e);
+        }
+        uploadState.cropper = null;
     }
 
     // Create new Cropper instance
@@ -319,7 +373,7 @@ function processAndUploadImage() {
 
     // Get cropped canvas
     const canvas = uploadState.cropper.getCroppedCanvas();
-    
+
     // Convert canvas to blob with default quality
     canvas.toBlob(function(blob) {
         if (blob) {
@@ -332,7 +386,7 @@ function processAndUploadImage() {
 
 /**
  * Upload processed file to server.
- * 
+ *
  * @param {Blob} processedFile - The processed image blob
  */
 function uploadFile(processedFile) {
@@ -344,11 +398,11 @@ function uploadFile(processedFile) {
     // Create form data
     const formData = new FormData();
     formData.append('file', processedFile, uploadState.selectedFile.name);
-    
+
     // Add CSRF token to form data
     const csrfToken = document.querySelector('meta[name="_csrf"]');
     const csrfParamName = document.querySelector('meta[name="_csrf_parameter_name"]');
-    
+
     if (csrfToken && csrfParamName) {
         const tokenValue = csrfToken.getAttribute('content');
         const paramName = csrfParamName.getAttribute('content');
@@ -362,13 +416,13 @@ function uploadFile(processedFile) {
         console.log('CSRF Param Name element:', csrfParamName);
         console.log('All meta tags:', Array.from(document.querySelectorAll('meta')).map(m => ({name: m.name, content: m.content})));
     }
-    
+
     // Show loading state
     updateUploadProgress(0);
-    
+
     // Create XMLHttpRequest for progress tracking
     const xhr = new XMLHttpRequest();
-    
+
     // Track upload progress
     xhr.upload.addEventListener('progress', function(e) {
         if (e.lengthComputable) {
@@ -376,7 +430,7 @@ function uploadFile(processedFile) {
             updateUploadProgress(percentComplete);
         }
     });
-    
+
     // Handle response
     xhr.addEventListener('load', function() {
         if (xhr.status === 200) {
@@ -396,7 +450,7 @@ function uploadFile(processedFile) {
             });
         }
     });
-    
+
     // Handle network errors
     xhr.addEventListener('error', function() {
         handleUploadResponse({
@@ -404,7 +458,7 @@ function uploadFile(processedFile) {
             error: 'Network error occurred during upload'
         });
     });
-    
+
     // Handle timeout
     xhr.addEventListener('timeout', function() {
         handleUploadResponse({
@@ -412,7 +466,7 @@ function uploadFile(processedFile) {
             error: 'Upload timeout. Please try again.'
         });
     });
-    
+
     // Configure and send request
     xhr.open('POST', '/api/upload');
     xhr.timeout = 30000; // 30 second timeout
@@ -421,7 +475,7 @@ function uploadFile(processedFile) {
 
 /**
  * Handle upload progress updates.
- * 
+ *
  * @param {number} percent - Upload progress percentage (0-100)
  */
 function updateUploadProgress(percent) {
@@ -442,7 +496,7 @@ function updateUploadProgress(percent) {
 
 /**
  * Handle upload success/error responses.
- * 
+ *
  * @param {Object} response - The server response
  */
 function handleUploadResponse(response) {
@@ -455,24 +509,15 @@ function handleUploadResponse(response) {
     if (response.success) {
         // Handle successful upload
         console.log('Upload successful:', response);
-        
+
         // Close modal
-        const uploadModal = document.getElementById('uploadModal');
-        if (uploadModal) {
-            const modal = bootstrap.Modal.getInstance(uploadModal);
-            if (modal) {
-                modal.hide();
-            }
-        }
-        
-        // Reset modal state
-        resetModalState();
-        
+        closeModal();
+
         // Refresh inbox data if function exists
         if (typeof loadInboxData === 'function') {
             loadInboxData();
         }
-        
+
         // Show success message
         showSuccessMessage(response.message || 'Image uploaded successfully!');
     } else {
@@ -484,15 +529,139 @@ function handleUploadResponse(response) {
 }
 
 /**
+ * Close the upload modal properly.
+ * Ensures modal instance is properly closed and backdrop is removed.
+ */
+function closeModal() {
+    const uploadModal = document.getElementById('uploadModal');
+    if (uploadModal) {
+        const modal = bootstrap.Modal.getInstance(uploadModal);
+        if (modal) {
+            modal.hide();
+        } else {
+            // If no instance exists, create one and hide it
+            const newModal = new bootstrap.Modal(uploadModal);
+            newModal.hide();
+        }
+    }
+}
+
+/**
+ * Force close the modal with aggressive cleanup.
+ * This is used when the cancel button is clicked to ensure complete cleanup.
+ */
+function forceCloseModal() {
+    console.log('forceCloseModal called');
+    debugModalState('Before cleanup');
+    
+    const uploadModal = document.getElementById('uploadModal');
+    
+    if (uploadModal) {
+        // Manually hide the modal without relying on Bootstrap
+        uploadModal.style.display = 'none';
+        uploadModal.classList.remove('show');
+        uploadModal.setAttribute('aria-hidden', 'true');
+        uploadModal.removeAttribute('aria-modal');
+        uploadModal.removeAttribute('role');
+        
+        // Try to dispose of any Bootstrap modal instances
+        const modal = bootstrap.Modal.getInstance(uploadModal);
+        if (modal) {
+            try {
+                modal.dispose();
+            } catch (e) {
+                console.warn('Error disposing modal:', e);
+            }
+        }
+    }
+    
+    // Immediate aggressive cleanup
+    cleanupModal();
+    
+    // Reset modal state immediately
+    resetModalState();
+    
+    // Additional cleanup after a short delay to catch any lingering elements
+    setTimeout(() => {
+        cleanupModal();
+        debugModalState('After cleanup');
+    }, 150);
+}
+
+/**
+ * Debug function to check modal state in DOM.
+ */
+function debugModalState(stage) {
+    console.log(`=== Modal State Debug - ${stage} ===`);
+    const backdrops = document.querySelectorAll('.modal-backdrop, [class*="modal-backdrop"]');
+    console.log('Found backdrops:', backdrops.length);
+    backdrops.forEach((backdrop, index) => {
+        console.log(`Backdrop ${index}:`, backdrop.className, backdrop.style.cssText);
+    });
+    
+    const bodyClass = document.body.className;
+    const bodyStyle = document.body.style.cssText;
+    console.log('Body class:', bodyClass);
+    console.log('Body style:', bodyStyle);
+    
+    const uploadModal = document.getElementById('uploadModal');
+    if (uploadModal) {
+        console.log('Modal display:', uploadModal.style.display);
+        console.log('Modal classes:', uploadModal.className);
+    }
+}
+
+/**
+ * Clean up modal immediately when it starts to close.
+ * This prevents backdrop issues by cleaning up before the modal is fully hidden.
+ */
+function cleanupModal() {
+    // Remove any existing modal backdrops immediately
+    const modalBackdrops = document.querySelectorAll('.modal-backdrop, .modal-backdrop.fade, .modal-backdrop.show');
+    modalBackdrops.forEach(backdrop => {
+        backdrop.remove();
+    });
+
+    // Also check for any elements with backdrop classes
+    const backdrops = document.querySelectorAll('[class*="modal-backdrop"]');
+    backdrops.forEach(backdrop => {
+        backdrop.remove();
+    });
+
+    // Restore body classes and styles immediately
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('overflow-x');
+    document.body.style.removeProperty('overflow-y');
+    
+    // Remove any inline styles that might prevent scrolling
+    const htmlElement = document.documentElement;
+    htmlElement.style.removeProperty('padding-right');
+    htmlElement.style.removeProperty('overflow');
+    htmlElement.style.removeProperty('overflow-x');
+    htmlElement.style.removeProperty('overflow-y');
+    
+    // Reset any potential fixed positioning that might interfere
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+}
+
+/**
  * Reset modal state to initial configuration.
  */
 function resetModalState() {
-    // Destroy cropper
+    // Destroy cropper safely
     if (uploadState.cropper) {
-        uploadState.cropper.destroy();
+        try {
+            uploadState.cropper.destroy();
+        } catch (e) {
+            console.warn('Error destroying cropper:', e);
+        }
         uploadState.cropper = null;
     }
-    
+
     // Reset UI elements
     const cropperImage = document.getElementById('cropperImage');
     const fileDropZone = document.getElementById('fileDropZone');
@@ -501,48 +670,59 @@ function resetModalState() {
     const rotateControls = document.getElementById('rotateControls');
     const confirmUpload = document.getElementById('confirmUpload');
     const fileInput = document.getElementById('fileInput');
-    
+
     if (cropperImage) {
         cropperImage.style.display = 'none';
         cropperImage.src = '';
     }
-    
+
     if (fileDropZone) {
         fileDropZone.style.display = 'block';
         fileDropZone.classList.remove('border-primary');
     }
-    
+
     if (imageControls) {
         imageControls.style.display = 'none';
     }
-    
+
     if (cropControls) {
         cropControls.style.display = 'none';
     }
-    
+
     if (rotateControls) {
         rotateControls.style.display = 'none';
     }
-    
+
     if (confirmUpload) {
         confirmUpload.disabled = true;
         confirmUpload.innerHTML = 'Upload';
     }
-    
+
     if (fileInput) {
         fileInput.value = '';
     }
-    
+
     // Reset state
     uploadState.selectedFile = null;
     uploadState.originalImageData = null;
     uploadState.currentMode = null;
     uploadState.rotationAngle = 0;
+
+    // Clean up any lingering modal backdrops
+    const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+    modalBackdrops.forEach(backdrop => {
+        backdrop.remove();
+    });
+
+    // Restore body scroll if needed
+    document.body.classList.remove('modal-open');
+    document.body.style.paddingRight = '';
+    document.body.style.overflow = '';
 }
 
 /**
  * Show success message to user.
- * 
+ *
  * @param {string} message - The success message to display
  */
 function showSuccessMessage(message) {
@@ -553,15 +733,15 @@ function showSuccessMessage(message) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     const alertContainer = document.createElement('div');
     alertContainer.innerHTML = alertHtml;
-    
+
     const dashboardLayout = document.querySelector('.dashboard-layout');
     if (dashboardLayout) {
         dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
     }
-    
+
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
         const alert = document.querySelector('.alert-success');
@@ -573,7 +753,7 @@ function showSuccessMessage(message) {
 
 /**
  * Show error message to user.
- * 
+ *
  * @param {string} message - The error message to display
  */
 function showErrorMessage(message) {
@@ -584,15 +764,15 @@ function showErrorMessage(message) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     const alertContainer = document.createElement('div');
     alertContainer.innerHTML = alertHtml;
-    
+
     const dashboardLayout = document.querySelector('.dashboard-layout');
     if (dashboardLayout) {
         dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
     }
-    
+
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
         const alert = document.querySelector('.alert-danger');
@@ -629,22 +809,22 @@ function enterCropMode() {
     if (!uploadState.cropper) {
         return;
     }
-    
+
     uploadState.currentMode = 'crop';
     uploadState.cropBackupData = uploadState.cropper.getData();
-    
+
     // Hide image controls and show crop controls
     const imageControls = document.getElementById('imageControls');
     const cropControls = document.getElementById('cropControls');
-    
+
     if (imageControls) {
         imageControls.style.display = 'none';
     }
-    
+
     if (cropControls) {
         cropControls.style.display = 'block';
     }
-    
+
     // Enable crop mode
     uploadState.cropper.setDragMode('crop');
 }
@@ -656,73 +836,37 @@ function enterRotateMode() {
     if (!uploadState.cropper) {
         return;
     }
-    
+
     uploadState.currentMode = 'rotate';
     uploadState.rotateBackupData = {
         angle: uploadState.rotationAngle,
         data: uploadState.cropper.getData()
     };
-    
+
     // Hide image controls and show rotate controls
     const imageControls = document.getElementById('imageControls');
     const rotateControls = document.getElementById('rotateControls');
-    
+
     if (imageControls) {
         imageControls.style.display = 'none';
     }
-    
+
     if (rotateControls) {
         rotateControls.style.display = 'block';
     }
-    
-    // Enable rotate mode - add mouse rotation handling to the cropper container
-    const cropperContainer = uploadState.cropper.getContainer();
-    if (cropperContainer) {
-        cropperContainer.addEventListener('mousedown', startRotation);
-        cropperContainer.style.cursor = 'grab';
-    }
+
+    // Rotate by 90 degrees on click
+    uploadState.cropper.rotate(90);
+    uploadState.rotationAngle = (uploadState.rotationAngle + 90) % 360;
 }
 
 /**
- * Start rotation handling
+ * Start rotation handling (simplified for now)
  * @param {MouseEvent} event - Mouse down event
  */
 function startRotation(event) {
-    if (uploadState.currentMode !== 'rotate') {
-        return;
-    }
-    
-    event.preventDefault();
-    
-    const cropperContainer = uploadState.cropper.getContainer();
-    const rect = cropperContainer.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    let startAngle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
-    let currentRotation = uploadState.rotationAngle;
-    
-    function onMouseMove(e) {
-        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-        const deltaAngle = currentAngle - startAngle;
-        const degrees = deltaAngle * (180 / Math.PI);
-        
-        // Apply rotation incrementally
-        uploadState.cropper.rotate(degrees);
-        uploadState.rotationAngle = (uploadState.rotationAngle + degrees) % 360;
-        
-        startAngle = currentAngle;
-    }
-    
-    function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        cropperContainer.style.cursor = 'grab';
-    }
-    
-    cropperContainer.style.cursor = 'grabbing';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    // For now, this is not used since we're doing simple 90-degree rotation
+    console.log('Start rotation called (not implemented)');
 }
 
 /**
@@ -731,13 +875,13 @@ function startRotation(event) {
 function acceptCropChanges() {
     uploadState.currentMode = null;
     uploadState.cropBackupData = null;
-    
+
     // Hide crop controls
     const cropControls = document.getElementById('cropControls');
     if (cropControls) {
         cropControls.style.display = 'none';
     }
-    
+
     // Reset drag mode
     uploadState.cropper.setDragMode('move');
 }
@@ -749,16 +893,16 @@ function cancelCropChanges() {
     if (uploadState.cropBackupData) {
         uploadState.cropper.setData(uploadState.cropBackupData);
     }
-    
+
     uploadState.currentMode = null;
     uploadState.cropBackupData = null;
-    
+
     // Hide crop controls
     const cropControls = document.getElementById('cropControls');
     if (cropControls) {
         cropControls.style.display = 'none';
     }
-    
+
     // Reset drag mode
     uploadState.cropper.setDragMode('move');
 }
@@ -769,18 +913,11 @@ function cancelCropChanges() {
 function acceptRotateChanges() {
     uploadState.currentMode = null;
     uploadState.rotateBackupData = null;
-    
+
     // Hide rotate controls
     const rotateControls = document.getElementById('rotateControls');
     if (rotateControls) {
         rotateControls.style.display = 'none';
-    }
-    
-    // Remove rotation event listeners
-    const cropperContainer = uploadState.cropper.getContainer();
-    if (cropperContainer) {
-        cropperContainer.removeEventListener('mousedown', startRotation);
-        cropperContainer.style.cursor = 'default';
     }
 }
 
@@ -793,29 +930,22 @@ function cancelRotateChanges() {
         const currentAngle = uploadState.rotationAngle;
         const backupAngle = uploadState.rotateBackupData.angle;
         const deltaAngle = backupAngle - currentAngle;
-        
+
         if (deltaAngle !== 0) {
             uploadState.cropper.rotate(deltaAngle);
         }
-        
+
         uploadState.rotationAngle = backupAngle;
         uploadState.cropper.setData(uploadState.rotateBackupData.data);
     }
-    
+
     uploadState.currentMode = null;
     uploadState.rotateBackupData = null;
-    
+
     // Hide rotate controls
     const rotateControls = document.getElementById('rotateControls');
     if (rotateControls) {
         rotateControls.style.display = 'none';
-    }
-    
-    // Remove rotation event listeners
-    const cropperContainer = uploadState.cropper.getContainer();
-    if (cropperContainer) {
-        cropperContainer.removeEventListener('mousedown', startRotation);
-        cropperContainer.style.cursor = 'default';
     }
 }
 
@@ -823,3 +953,27 @@ function cancelRotateChanges() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeUpload();
 });
+
+// Expose handleFileSelect function globally for integration with other modules
+window.handleFileSelect = handleFileSelect;
+
+// Expose debug function for testing
+window.debugModalState = debugModalState;
+
+// Test function to verify modal cleanup
+window.testModalCleanup = function() {
+    console.log('Testing modal cleanup...');
+    forceCloseModal();
+    
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop, [class*="modal-backdrop"]');
+        const hasModalOpen = document.body.classList.contains('modal-open');
+        const hasOverflow = document.body.style.overflow !== '';
+        
+        console.log('=== Test Results ===');
+        console.log('Backdrops found:', backdrops.length);
+        console.log('Body has modal-open class:', hasModalOpen);
+        console.log('Body has overflow style:', hasOverflow);
+        console.log('Test result:', backdrops.length === 0 && !hasModalOpen && !hasOverflow ? 'PASS' : 'FAIL');
+    }, 200);
+};
