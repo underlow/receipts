@@ -7,11 +7,13 @@ import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.dashboard.NavigationPanel
 import me.underlow.receipt.dashboard.NavigationPanelData
 import me.underlow.receipt.dashboard.NavigationTab
+import me.underlow.receipt.dashboard.ReceiptsView
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
 import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
+import me.underlow.receipt.service.MockReceiptsService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -56,6 +58,9 @@ class DashboardControllerTest {
     private lateinit var mockBillsService: MockBillsService
 
     @MockitoBean
+    private lateinit var mockReceiptsService: MockReceiptsService
+
+    @MockitoBean
     private lateinit var inboxView: InboxView
 
     @MockitoBean
@@ -63,6 +68,9 @@ class DashboardControllerTest {
 
     @MockitoBean
     private lateinit var baseTable: BaseTable
+
+    @MockitoBean
+    private lateinit var receiptsView: ReceiptsView
 
     @MockitoBean
     private lateinit var navigationPanel: NavigationPanel

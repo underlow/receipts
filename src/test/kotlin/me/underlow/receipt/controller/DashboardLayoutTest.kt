@@ -5,11 +5,13 @@ import me.underlow.receipt.dashboard.BaseTable
 import me.underlow.receipt.dashboard.BillsView
 import me.underlow.receipt.dashboard.InboxView
 import me.underlow.receipt.dashboard.NavigationPanel
+import me.underlow.receipt.dashboard.ReceiptsView
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
 import me.underlow.receipt.service.MockBillsService
 import me.underlow.receipt.service.MockInboxService
+import me.underlow.receipt.service.MockReceiptsService
 import org.hamcrest.CoreMatchers.containsString
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -58,6 +60,12 @@ class DashboardLayoutTest {
 
     @Autowired
     private lateinit var baseTable: BaseTable
+
+    @MockitoBean
+    private lateinit var mockReceiptsService: MockReceiptsService
+
+    @MockitoBean
+    private lateinit var receiptsView: ReceiptsView
 
     @Test
     @WithMockUser
