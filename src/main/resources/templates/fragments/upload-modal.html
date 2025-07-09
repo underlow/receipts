@@ -13,43 +13,32 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="imagePreview" class="mb-3">
+                    <div id="imagePreview" class="mb-3 position-relative">
                         <img id="cropperImage" style="max-width: 100%; display: none;" alt="Image preview">
+                        <div id="imageControls" class="position-absolute" style="bottom: 10px; right: 10px; display: none;">
+                            <button type="button" class="btn btn-sm btn-outline-light me-2" id="cropButton">
+                                <i class="fas fa-crop"></i> Crop
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light" id="rotateButton">
+                                <i class="fas fa-redo"></i> Rotate
+                            </button>
+                        </div>
                     </div>
-                    <div class="resize-controls" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="imageWidth" class="form-label">Width (px)</label>
-                                    <input type="number" class="form-control" id="imageWidth" placeholder="Width">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="imageHeight" class="form-label">Height (px)</label>
-                                    <input type="number" class="form-control" id="imageHeight" placeholder="Height">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="imageQuality" class="form-label">Quality</label>
-                                    <input type="range" class="form-range" id="imageQuality" min="0.1" max="1" step="0.1" value="0.8">
-                                    <small class="form-text text-muted">Adjust image quality (0.1 = low, 1.0 = high)</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-outline-secondary" id="undoChanges">
-                                    <i class="fas fa-undo"></i> Undo Changes
-                                </button>
-                                <button type="button" class="btn btn-outline-primary" id="resetCropper">
-                                    <i class="fas fa-crop"></i> Reset Crop
-                                </button>
-                            </div>
-                        </div>
+                    <div id="cropControls" class="mb-3 text-center" style="display: none;">
+                        <button type="button" class="btn btn-success me-2" id="acceptCrop">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelCrop">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                    <div id="rotateControls" class="mb-3 text-center" style="display: none;">
+                        <button type="button" class="btn btn-success me-2" id="acceptRotate">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelRotate">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
                     </div>
                     <div id="fileDropZone" class="border-dashed border-2 border-muted p-4 text-center">
                         <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>

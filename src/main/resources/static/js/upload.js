@@ -10,7 +10,11 @@ let uploadState = {
     cropper: null,
     originalImageData: null,
     selectedFile: null,
-    isInitialized: false
+    isInitialized: false,
+    currentMode: null, // 'crop' or 'rotate'
+    rotationAngle: 0,
+    cropBackupData: null,
+    rotateBackupData: null
 };
 
 /**
@@ -30,12 +34,15 @@ function initializeUpload() {
     const cancelUpload = document.getElementById('cancelUpload');
     const fileDropZone = document.getElementById('fileDropZone');
     const imagePreview = document.getElementById('imagePreview');
-    const resizeControls = document.querySelector('.resize-controls');
-    const imageWidth = document.getElementById('imageWidth');
-    const imageHeight = document.getElementById('imageHeight');
-    const imageQuality = document.getElementById('imageQuality');
-    const undoChanges = document.getElementById('undoChanges');
-    const resetCropper = document.getElementById('resetCropper');
+    const imageControls = document.getElementById('imageControls');
+    const cropButton = document.getElementById('cropButton');
+    const rotateButton = document.getElementById('rotateButton');
+    const cropControls = document.getElementById('cropControls');
+    const acceptCrop = document.getElementById('acceptCrop');
+    const cancelCrop = document.getElementById('cancelCrop');
+    const rotateControls = document.getElementById('rotateControls');
+    const acceptRotate = document.getElementById('acceptRotate');
+    const cancelRotate = document.getElementById('cancelRotate');
 
     if (!uploadModal || !fileInput || !selectFileBtn) {
         console.error('Upload modal elements not found');
@@ -70,31 +77,67 @@ function initializeUpload() {
         });
     }
 
-    // Handle width input change
-    if (imageWidth) {
-        imageWidth.addEventListener('input', function() {
-            updateCropperDimensions('width', this.value);
+    // Handle crop button
+    if (cropButton) {
+        cropButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            enterCropMode();
         });
     }
 
-    // Handle height input change
-    if (imageHeight) {
-        imageHeight.addEventListener('input', function() {
-            updateCropperDimensions('height', this.value);
+    // Handle rotate button
+    if (rotateButton) {
+        rotateButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            enterRotateMode();
         });
     }
 
-    // Handle undo changes button
-    if (undoChanges) {
-        undoChanges.addEventListener('click', function() {
-            undoImageChanges();
+    // Handle crop accept button
+    if (acceptCrop) {
+        acceptCrop.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            acceptCropChanges();
         });
     }
 
-    // Handle reset cropper button
-    if (resetCropper) {
-        resetCropper.addEventListener('click', function() {
-            resetCropperState();
+    // Handle crop cancel button
+    if (cancelCrop) {
+        cancelCrop.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            cancelCropChanges();
+        });
+    }
+
+    // Handle rotate accept button
+    if (acceptRotate) {
+        acceptRotate.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            acceptRotateChanges();
+        });
+    }
+
+    // Handle rotate cancel button
+    if (cancelRotate) {
+        cancelRotate.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            cancelRotateChanges();
+        });
+    }
+
+    // Handle image hover for showing controls
+    if (imagePreview) {
+        imagePreview.addEventListener('mouseenter', function() {
+            showImageControls();
+        });
+        imagePreview.addEventListener('mouseleave', function() {
+            hideImageControls();
         });
     }
 
@@ -201,12 +244,13 @@ function handleDragDrop(event) {
  * @param {string} imageSrc - The image source data URL
  */
 function showUploadModal(imageSrc) {
+    const uploadModal = document.getElementById('uploadModal');
     const cropperImage = document.getElementById('cropperImage');
     const fileDropZone = document.getElementById('fileDropZone');
-    const resizeControls = document.querySelector('.resize-controls');
+    const imageControls = document.getElementById('imageControls');
     const confirmUpload = document.getElementById('confirmUpload');
 
-    if (!cropperImage || !fileDropZone || !resizeControls || !confirmUpload) {
+    if (!uploadModal || !cropperImage || !fileDropZone || !imageControls || !confirmUpload) {
         console.error('Modal elements not found');
         return;
     }
@@ -215,11 +259,19 @@ function showUploadModal(imageSrc) {
     cropperImage.src = imageSrc;
     cropperImage.style.display = 'block';
     fileDropZone.style.display = 'none';
-    resizeControls.style.display = 'block';
+    imageControls.style.display = 'none'; // Initially hidden, shown on hover
     confirmUpload.disabled = false;
 
-    // Initialize Cropper.js
-    initializeCropper(cropperImage);
+    // Show the modal using Bootstrap
+    const modal = new bootstrap.Modal(uploadModal);
+    modal.show();
+
+    // Initialize Cropper.js after modal is shown
+    uploadModal.addEventListener('shown.bs.modal', function initializeCropperOnShow() {
+        initializeCropper(cropperImage);
+        // Remove this event listener after first use
+        uploadModal.removeEventListener('shown.bs.modal', initializeCropperOnShow);
+    });
 }
 
 /**
@@ -247,78 +299,14 @@ function initializeCropper(imageElement) {
         cropBoxResizable: true,
         toggleDragModeOnDblclick: false,
         ready: function() {
-            updateDimensionInputs();
+            // Cropper is ready
         },
         crop: function(event) {
-            updateDimensionInputs();
+            // Crop event handled
         }
     });
 }
 
-/**
- * Update dimension input fields based on cropper state.
- */
-function updateDimensionInputs() {
-    if (!uploadState.cropper) {
-        return;
-    }
-
-    const imageWidth = document.getElementById('imageWidth');
-    const imageHeight = document.getElementById('imageHeight');
-    
-    if (imageWidth && imageHeight) {
-        const cropBoxData = uploadState.cropper.getCropBoxData();
-        imageWidth.value = Math.round(cropBoxData.width);
-        imageHeight.value = Math.round(cropBoxData.height);
-    }
-}
-
-/**
- * Update cropper dimensions based on input values.
- * 
- * @param {string} dimension - Either 'width' or 'height'
- * @param {string} value - The new dimension value
- */
-function updateCropperDimensions(dimension, value) {
-    if (!uploadState.cropper || !value) {
-        return;
-    }
-
-    const dimensionValue = parseInt(value);
-    if (isNaN(dimensionValue) || dimensionValue <= 0) {
-        return;
-    }
-
-    const cropBoxData = uploadState.cropper.getCropBoxData();
-    const newCropBoxData = { ...cropBoxData };
-    
-    if (dimension === 'width') {
-        newCropBoxData.width = dimensionValue;
-    } else if (dimension === 'height') {
-        newCropBoxData.height = dimensionValue;
-    }
-    
-    uploadState.cropper.setCropBoxData(newCropBoxData);
-}
-
-/**
- * Undo image changes by restoring original image.
- */
-function undoImageChanges() {
-    if (uploadState.originalImageData) {
-        showUploadModal(uploadState.originalImageData);
-    }
-}
-
-/**
- * Reset cropper to initial state.
- */
-function resetCropperState() {
-    if (uploadState.cropper) {
-        uploadState.cropper.reset();
-        updateDimensionInputs();
-    }
-}
 
 /**
  * Process and upload the cropped image.
@@ -329,21 +317,17 @@ function processAndUploadImage() {
         return;
     }
 
-    // Get quality setting
-    const imageQuality = document.getElementById('imageQuality');
-    const quality = imageQuality ? parseFloat(imageQuality.value) : 0.8;
-    
     // Get cropped canvas
     const canvas = uploadState.cropper.getCroppedCanvas();
     
-    // Convert canvas to blob
+    // Convert canvas to blob with default quality
     canvas.toBlob(function(blob) {
         if (blob) {
             uploadFile(blob);
         } else {
             showErrorMessage('Failed to process image. Please try again.');
         }
-    }, uploadState.selectedFile.type, quality);
+    }, uploadState.selectedFile.type, 0.8);
 }
 
 /**
@@ -512,12 +496,11 @@ function resetModalState() {
     // Reset UI elements
     const cropperImage = document.getElementById('cropperImage');
     const fileDropZone = document.getElementById('fileDropZone');
-    const resizeControls = document.querySelector('.resize-controls');
+    const imageControls = document.getElementById('imageControls');
+    const cropControls = document.getElementById('cropControls');
+    const rotateControls = document.getElementById('rotateControls');
     const confirmUpload = document.getElementById('confirmUpload');
     const fileInput = document.getElementById('fileInput');
-    const imageWidth = document.getElementById('imageWidth');
-    const imageHeight = document.getElementById('imageHeight');
-    const imageQuality = document.getElementById('imageQuality');
     
     if (cropperImage) {
         cropperImage.style.display = 'none';
@@ -529,8 +512,16 @@ function resetModalState() {
         fileDropZone.classList.remove('border-primary');
     }
     
-    if (resizeControls) {
-        resizeControls.style.display = 'none';
+    if (imageControls) {
+        imageControls.style.display = 'none';
+    }
+    
+    if (cropControls) {
+        cropControls.style.display = 'none';
+    }
+    
+    if (rotateControls) {
+        rotateControls.style.display = 'none';
     }
     
     if (confirmUpload) {
@@ -542,21 +533,11 @@ function resetModalState() {
         fileInput.value = '';
     }
     
-    if (imageWidth) {
-        imageWidth.value = '';
-    }
-    
-    if (imageHeight) {
-        imageHeight.value = '';
-    }
-    
-    if (imageQuality) {
-        imageQuality.value = '0.8';
-    }
-    
     // Reset state
     uploadState.selectedFile = null;
     uploadState.originalImageData = null;
+    uploadState.currentMode = null;
+    uploadState.rotationAngle = 0;
 }
 
 /**
@@ -619,6 +600,223 @@ function showErrorMessage(message) {
             alert.remove();
         }
     }, 5000);
+}
+
+/**
+ * Show image controls on hover
+ */
+function showImageControls() {
+    const imageControls = document.getElementById('imageControls');
+    if (imageControls && uploadState.cropper && uploadState.currentMode === null) {
+        imageControls.style.display = 'block';
+    }
+}
+
+/**
+ * Hide image controls when not hovering
+ */
+function hideImageControls() {
+    const imageControls = document.getElementById('imageControls');
+    if (imageControls && uploadState.currentMode === null) {
+        imageControls.style.display = 'none';
+    }
+}
+
+/**
+ * Enter crop mode
+ */
+function enterCropMode() {
+    if (!uploadState.cropper) {
+        return;
+    }
+    
+    uploadState.currentMode = 'crop';
+    uploadState.cropBackupData = uploadState.cropper.getData();
+    
+    // Hide image controls and show crop controls
+    const imageControls = document.getElementById('imageControls');
+    const cropControls = document.getElementById('cropControls');
+    
+    if (imageControls) {
+        imageControls.style.display = 'none';
+    }
+    
+    if (cropControls) {
+        cropControls.style.display = 'block';
+    }
+    
+    // Enable crop mode
+    uploadState.cropper.setDragMode('crop');
+}
+
+/**
+ * Enter rotate mode
+ */
+function enterRotateMode() {
+    if (!uploadState.cropper) {
+        return;
+    }
+    
+    uploadState.currentMode = 'rotate';
+    uploadState.rotateBackupData = {
+        angle: uploadState.rotationAngle,
+        data: uploadState.cropper.getData()
+    };
+    
+    // Hide image controls and show rotate controls
+    const imageControls = document.getElementById('imageControls');
+    const rotateControls = document.getElementById('rotateControls');
+    
+    if (imageControls) {
+        imageControls.style.display = 'none';
+    }
+    
+    if (rotateControls) {
+        rotateControls.style.display = 'block';
+    }
+    
+    // Enable rotate mode - add mouse rotation handling to the cropper container
+    const cropperContainer = uploadState.cropper.getContainer();
+    if (cropperContainer) {
+        cropperContainer.addEventListener('mousedown', startRotation);
+        cropperContainer.style.cursor = 'grab';
+    }
+}
+
+/**
+ * Start rotation handling
+ * @param {MouseEvent} event - Mouse down event
+ */
+function startRotation(event) {
+    if (uploadState.currentMode !== 'rotate') {
+        return;
+    }
+    
+    event.preventDefault();
+    
+    const cropperContainer = uploadState.cropper.getContainer();
+    const rect = cropperContainer.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    let startAngle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+    let currentRotation = uploadState.rotationAngle;
+    
+    function onMouseMove(e) {
+        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+        const deltaAngle = currentAngle - startAngle;
+        const degrees = deltaAngle * (180 / Math.PI);
+        
+        // Apply rotation incrementally
+        uploadState.cropper.rotate(degrees);
+        uploadState.rotationAngle = (uploadState.rotationAngle + degrees) % 360;
+        
+        startAngle = currentAngle;
+    }
+    
+    function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        cropperContainer.style.cursor = 'grab';
+    }
+    
+    cropperContainer.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+/**
+ * Accept crop changes
+ */
+function acceptCropChanges() {
+    uploadState.currentMode = null;
+    uploadState.cropBackupData = null;
+    
+    // Hide crop controls
+    const cropControls = document.getElementById('cropControls');
+    if (cropControls) {
+        cropControls.style.display = 'none';
+    }
+    
+    // Reset drag mode
+    uploadState.cropper.setDragMode('move');
+}
+
+/**
+ * Cancel crop changes
+ */
+function cancelCropChanges() {
+    if (uploadState.cropBackupData) {
+        uploadState.cropper.setData(uploadState.cropBackupData);
+    }
+    
+    uploadState.currentMode = null;
+    uploadState.cropBackupData = null;
+    
+    // Hide crop controls
+    const cropControls = document.getElementById('cropControls');
+    if (cropControls) {
+        cropControls.style.display = 'none';
+    }
+    
+    // Reset drag mode
+    uploadState.cropper.setDragMode('move');
+}
+
+/**
+ * Accept rotate changes
+ */
+function acceptRotateChanges() {
+    uploadState.currentMode = null;
+    uploadState.rotateBackupData = null;
+    
+    // Hide rotate controls
+    const rotateControls = document.getElementById('rotateControls');
+    if (rotateControls) {
+        rotateControls.style.display = 'none';
+    }
+    
+    // Remove rotation event listeners
+    const cropperContainer = uploadState.cropper.getContainer();
+    if (cropperContainer) {
+        cropperContainer.removeEventListener('mousedown', startRotation);
+        cropperContainer.style.cursor = 'default';
+    }
+}
+
+/**
+ * Cancel rotate changes
+ */
+function cancelRotateChanges() {
+    if (uploadState.rotateBackupData) {
+        // Reset to backup rotation angle
+        const currentAngle = uploadState.rotationAngle;
+        const backupAngle = uploadState.rotateBackupData.angle;
+        const deltaAngle = backupAngle - currentAngle;
+        
+        if (deltaAngle !== 0) {
+            uploadState.cropper.rotate(deltaAngle);
+        }
+        
+        uploadState.rotationAngle = backupAngle;
+        uploadState.cropper.setData(uploadState.rotateBackupData.data);
+    }
+    
+    uploadState.currentMode = null;
+    uploadState.rotateBackupData = null;
+    
+    // Hide rotate controls
+    const rotateControls = document.getElementById('rotateControls');
+    if (rotateControls) {
+        rotateControls.style.display = 'none';
+    }
+    
+    // Remove rotation event listeners
+    const cropperContainer = uploadState.cropper.getContainer();
+    if (cropperContainer) {
+        cropperContainer.removeEventListener('mousedown', startRotation);
+        cropperContainer.style.cursor = 'default';
+    }
 }
 
 // Initialize upload functionality when DOM is ready

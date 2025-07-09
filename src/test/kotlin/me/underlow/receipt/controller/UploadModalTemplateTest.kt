@@ -106,16 +106,16 @@ class UploadModalTemplateTest {
 
     @Test
     @WithMockUser
-    fun `given upload modal when rendered then should have resize controls section`() {
+    fun `given upload modal when rendered then should have crop and rotate controls section`() {
         // Given: Upload modal with image editing capabilities
         // When: Dashboard page is rendered
-        // Then: Resize controls section is present for image editing
+        // Then: Crop and rotate controls section is present for image editing
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk)
             .andExpect(view().name("dashboard"))
-            .andExpect(content().string(containsString("resize-controls")))
-            .andExpect(content().string(containsString("width")))
-            .andExpect(content().string(containsString("height")))
+            .andExpect(content().string(containsString("imageControls")))
+            .andExpect(content().string(containsString("cropButton")))
+            .andExpect(content().string(containsString("rotateButton")))
     }
 
     @Test
@@ -199,7 +199,8 @@ class UploadModalTemplateTest {
             .andExpect(view().name("dashboard"))
             .andExpect(content().string(containsString("modal-body")))
             .andExpect(content().string(containsString("imagePreview")))
-            .andExpect(content().string(containsString("resize-controls")))
+            .andExpect(content().string(containsString("cropControls")))
+            .andExpect(content().string(containsString("rotateControls")))
     }
 
     @Test
@@ -213,5 +214,58 @@ class UploadModalTemplateTest {
             .andExpect(view().name("dashboard"))
             .andExpect(content().string(containsString("modal-lg")))
             .andExpect(content().string(containsString("modal-dialog")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have crop accept and cancel buttons`() {
+        // Given: Upload modal with crop functionality
+        // When: Dashboard page is rendered
+        // Then: Crop accept and cancel buttons are present
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("acceptCrop")))
+            .andExpect(content().string(containsString("cancelCrop")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have rotate accept and cancel buttons`() {
+        // Given: Upload modal with rotate functionality
+        // When: Dashboard page is rendered
+        // Then: Rotate accept and cancel buttons are present
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("acceptRotate")))
+            .andExpect(content().string(containsString("cancelRotate")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have proper button styling for crop and rotate`() {
+        // Given: Upload modal with crop and rotate buttons
+        // When: Dashboard page is rendered
+        // Then: Buttons have proper Bootstrap styling
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("btn-outline-light")))
+            .andExpect(content().string(containsString("fa-crop")))
+            .andExpect(content().string(containsString("fa-redo")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `given upload modal when rendered then should have positioned image controls`() {
+        // Given: Upload modal with hover-triggered image controls
+        // When: Dashboard page is rendered
+        // Then: Image controls are positioned correctly
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("position-absolute")))
+            .andExpect(content().string(containsString("bottom: 10px; right: 10px")))
     }
 }
