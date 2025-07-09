@@ -750,6 +750,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/settings">Settings</a>
                         </li>
+                        <li class="nav-item">
+                            <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </li>
                     </ul>
                     
                     <!-- User Dropdown Menu -->
@@ -854,6 +859,9 @@
             </section>
         </div>
     </main>
+
+    <!-- Upload Modal -->
+    <div th:replace="fragments/upload-modal :: uploadModal"></div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1469,6 +1477,310 @@
             console.log(`Toggle actions for receipt ${receiptId}`);
             // TODO: Implement dropdown toggle functionality
         }
+
+        // Upload Modal and Cropper.js Integration
+        let cropper = null;
+        let originalImageData = null;
+        let selectedFile = null;
+
+        // Initialize upload modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadModal = document.getElementById('uploadModal');
+            const fileInput = document.getElementById('fileInput');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            const cropperImage = document.getElementById('cropperImage');
+            const confirmUpload = document.getElementById('confirmUpload');
+            const cancelUpload = document.getElementById('cancelUpload');
+            const fileDropZone = document.getElementById('fileDropZone');
+            const imagePreview = document.getElementById('imagePreview');
+            const resizeControls = document.querySelector('.resize-controls');
+            const imageWidth = document.getElementById('imageWidth');
+            const imageHeight = document.getElementById('imageHeight');
+            const imageQuality = document.getElementById('imageQuality');
+            const undoChanges = document.getElementById('undoChanges');
+            const resetCropper = document.getElementById('resetCropper');
+
+            // Handle file selection button click
+            selectFileBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // Handle file input change
+            fileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    handleFileSelect(file);
+                }
+            });
+
+            // Handle drag and drop
+            fileDropZone.addEventListener('dragover', function(event) {
+                event.preventDefault();
+                fileDropZone.classList.add('border-primary');
+            });
+
+            fileDropZone.addEventListener('dragleave', function(event) {
+                event.preventDefault();
+                fileDropZone.classList.remove('border-primary');
+            });
+
+            fileDropZone.addEventListener('drop', function(event) {
+                event.preventDefault();
+                fileDropZone.classList.remove('border-primary');
+                
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        handleFileSelect(file);
+                    }
+                }
+            });
+
+            // Handle file selection
+            function handleFileSelect(file) {
+                selectedFile = file;
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file (JPEG, PNG, GIF, WebP)');
+                    return;
+                }
+
+                // Validate file size (20MB limit)
+                if (file.size > 20 * 1024 * 1024) {
+                    alert('File size must be less than 20MB');
+                    return;
+                }
+
+                // Read file and display
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    originalImageData = e.target.result;
+                    displayImageInModal(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Display image in modal and initialize cropper
+            function displayImageInModal(imageSrc) {
+                cropperImage.src = imageSrc;
+                cropperImage.style.display = 'block';
+                fileDropZone.style.display = 'none';
+                resizeControls.style.display = 'block';
+                confirmUpload.disabled = false;
+
+                // Initialize Cropper.js
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: NaN, // Allow free aspect ratio
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    responsive: true,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    ready: function() {
+                        // Update dimension inputs when cropper is ready
+                        updateDimensionInputs();
+                    },
+                    crop: function(event) {
+                        // Update dimension inputs when crop area changes
+                        updateDimensionInputs();
+                    }
+                });
+            }
+
+            // Update dimension input fields
+            function updateDimensionInputs() {
+                if (cropper) {
+                    const cropBoxData = cropper.getCropBoxData();
+                    imageWidth.value = Math.round(cropBoxData.width);
+                    imageHeight.value = Math.round(cropBoxData.height);
+                }
+            }
+
+            // Handle width input change
+            imageWidth.addEventListener('input', function() {
+                if (cropper && this.value) {
+                    const width = parseInt(this.value);
+                    const cropBoxData = cropper.getCropBoxData();
+                    cropper.setCropBoxData({
+                        ...cropBoxData,
+                        width: width
+                    });
+                }
+            });
+
+            // Handle height input change
+            imageHeight.addEventListener('input', function() {
+                if (cropper && this.value) {
+                    const height = parseInt(this.value);
+                    const cropBoxData = cropper.getCropBoxData();
+                    cropper.setCropBoxData({
+                        ...cropBoxData,
+                        height: height
+                    });
+                }
+            });
+
+            // Handle undo changes button
+            undoChanges.addEventListener('click', function() {
+                if (originalImageData) {
+                    displayImageInModal(originalImageData);
+                }
+            });
+
+            // Handle reset cropper button
+            resetCropper.addEventListener('click', function() {
+                if (cropper) {
+                    cropper.reset();
+                    updateDimensionInputs();
+                }
+            });
+
+            // Handle upload confirmation
+            confirmUpload.addEventListener('click', function() {
+                if (cropper && selectedFile) {
+                    // Get cropped canvas
+                    const quality = parseFloat(imageQuality.value);
+                    const canvas = cropper.getCroppedCanvas();
+                    
+                    // Convert canvas to blob
+                    canvas.toBlob(function(blob) {
+                        // Create form data
+                        const formData = new FormData();
+                        formData.append('file', blob, selectedFile.name);
+                        
+                        // Upload the image
+                        uploadImage(formData);
+                    }, selectedFile.type, quality);
+                }
+            });
+
+            // Upload image function
+            function uploadImage(formData) {
+                // Show loading state
+                confirmUpload.disabled = true;
+                confirmUpload.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+                fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle successful upload
+                    console.log('Upload successful:', data);
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(uploadModal);
+                    modal.hide();
+                    
+                    // Reset modal state
+                    resetModalState();
+                    
+                    // Refresh inbox data
+                    loadInboxData();
+                    
+                    // Show success message
+                    showSuccessMessage('Image uploaded successfully!');
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    showErrorMessage('Upload failed. Please try again.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    confirmUpload.disabled = false;
+                    confirmUpload.innerHTML = 'Upload';
+                });
+            }
+
+            // Reset modal state
+            function resetModalState() {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                
+                cropperImage.style.display = 'none';
+                fileDropZone.style.display = 'block';
+                resizeControls.style.display = 'none';
+                confirmUpload.disabled = true;
+                fileInput.value = '';
+                selectedFile = null;
+                originalImageData = null;
+                imageWidth.value = '';
+                imageHeight.value = '';
+                imageQuality.value = 0.8;
+            }
+
+            // Handle modal close
+            uploadModal.addEventListener('hidden.bs.modal', function() {
+                resetModalState();
+            });
+
+            // Show success message
+            function showSuccessMessage(message) {
+                // Create and show success alert
+                const alertHtml = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                const alertContainer = document.createElement('div');
+                alertContainer.innerHTML = alertHtml;
+                document.querySelector('.dashboard-layout').insertBefore(alertContainer.firstElementChild, document.querySelector('.dashboard-layout').firstElementChild);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    const alert = document.querySelector('.alert-success');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+
+            // Show error message
+            function showErrorMessage(message) {
+                // Create and show error alert
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                const alertContainer = document.createElement('div');
+                alertContainer.innerHTML = alertHtml;
+                document.querySelector('.dashboard-layout').insertBefore(alertContainer.firstElementChild, document.querySelector('.dashboard-layout').firstElementChild);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    const alert = document.querySelector('.alert-danger');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+        });
     </script>
 </body>
 </html>
