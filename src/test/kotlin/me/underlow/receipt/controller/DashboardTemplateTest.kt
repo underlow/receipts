@@ -188,4 +188,44 @@ class DashboardTemplateTest {
             .andExpect(content().string(containsString("user")))
             .andExpect(content().string(containsString("menu")))
     }
+
+    @Test
+    @WithMockUser
+    fun `should include Cropper_js CSS library in dashboard template`() {
+        // Given: Dashboard page requires image processing capabilities
+        // When: Dashboard page is rendered
+        // Then: Cropper.js CSS library is included in the template
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("/static/css/cropper.min.css")))
+            .andExpect(content().string(containsString("Cropper.js CSS")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `should include Cropper_js JavaScript library in dashboard template`() {
+        // Given: Dashboard page requires image processing capabilities
+        // When: Dashboard page is rendered
+        // Then: Cropper.js JavaScript library is included in the template
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("/static/js/cropper.min.js")))
+            .andExpect(content().string(containsString("Cropper.js JavaScript")))
+    }
+
+    @Test
+    @WithMockUser
+    fun `should load Cropper_js library after Bootstrap and before custom scripts`() {
+        // Given: Dashboard page requires proper script loading order
+        // When: Dashboard page is rendered
+        // Then: Cropper.js library is loaded after Bootstrap but before custom scripts
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("dashboard"))
+            .andExpect(content().string(containsString("bootstrap@5.3.0")))
+            .andExpect(content().string(containsString("cropper.min.js")))
+            .andExpect(content().string(containsString("Dashboard JavaScript")))
+    }
 }

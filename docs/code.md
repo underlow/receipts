@@ -141,6 +141,36 @@ Entities provide validation methods like `canApprove()`, `canRemove()`:
 - Provide clear API for UI layer
 - Support consistent behavior across the application
 
+## Static Resources
+
+### Client-Side Libraries
+The application includes client-side libraries for enhanced user experience:
+
+#### Cropper.js
+Client-side image processing library for crop, resize, and editing functionality.
+- **Files**: 
+  - `src/main/resources/static/js/cropper.min.js` - JavaScript library (v1.6.2)
+  - `src/main/resources/static/css/cropper.min.css` - CSS stylesheet (v1.6.2)
+- **Purpose**: Enables image cropping, resizing, rotation, and zoom functionality for uploaded images
+- **Features**:
+  - Crop with aspect ratio constraints
+  - Resize and rotate images
+  - Zoom in/out functionality
+  - Undo/redo operations
+  - Touch and mouse support
+- **Template Integration**: 
+  - CSS loaded in dashboard template head section
+  - JavaScript loaded after Bootstrap but before custom scripts
+  - Available globally as `Cropper` constructor
+- **Library Info**: MIT License, maintained by fengyuanchen
+- **Documentation**: https://github.com/fengyuanchen/cropperjs
+
+### Template Integration
+Static resources are included in the main dashboard template:
+- CSS files loaded in `<head>` section for proper styling
+- JavaScript files loaded before closing `</body>` tag
+- Proper loading order: Bootstrap → External Libraries → Custom Scripts
+
 ## Build Configuration
 - **Build Tool**: Gradle
 - **Language**: Kotlin
