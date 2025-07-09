@@ -1,6 +1,7 @@
 package me.underlow.receipt.e2e
 
 import com.codeborne.selenide.Condition
+import com.codeborne.selenide.Selenide
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.SelenideElement
@@ -295,40 +296,133 @@ class InboxDragDropE2ETest : BaseE2ETest() {
      * Helper method to simulate drag over event.
      */
     private fun simulateDragOver(element: SelenideElement) {
-        // This would use JavaScript to simulate drag events
-        // For now, we'll assume the functionality exists
         element.shouldBe(Condition.exist)
+        
+        // Execute JavaScript to simulate dragenter and dragover events
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dragEnterEvent = new DragEvent('dragenter', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+            var dragOverEvent = new DragEvent('dragover', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+            
+            element.dispatchEvent(dragEnterEvent);
+            element.dispatchEvent(dragOverEvent);
+        """, element)
     }
 
     /**
      * Helper method to simulate drag leave event.
      */
     private fun simulateDragLeave(element: SelenideElement) {
-        // This would use JavaScript to simulate drag leave events
         element.shouldBe(Condition.exist)
+        
+        // Execute JavaScript to simulate dragleave event
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dragLeaveEvent = new DragEvent('dragleave', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+            
+            element.dispatchEvent(dragLeaveEvent);
+        """, element)
     }
 
     /**
      * Helper method to simulate image file drop.
      */
     private fun simulateImageFileDrop(element: SelenideElement) {
-        // This would use JavaScript to simulate file drop with valid image
         element.shouldBe(Condition.exist)
+        
+        // Execute JavaScript to simulate drop event with image file
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dataTransfer = new DataTransfer();
+            
+            // Create a mock image file
+            var file = new File(['fake image content'], 'test-image.jpg', {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+            dataTransfer.items.add(file);
+            
+            var dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dropEvent);
+        """, element)
     }
 
     /**
      * Helper method to simulate invalid file drop.
      */
     private fun simulateInvalidFileDrop(element: SelenideElement) {
-        // This would use JavaScript to simulate file drop with invalid file
         element.shouldBe(Condition.exist)
+        
+        // Execute JavaScript to simulate drop event with invalid file
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dataTransfer = new DataTransfer();
+            
+            // Create a mock text file (invalid)
+            var file = new File(['fake text content'], 'test-file.txt', {
+                type: 'text/plain',
+                lastModified: Date.now()
+            });
+            dataTransfer.items.add(file);
+            
+            var dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dropEvent);
+        """, element)
     }
 
     /**
      * Helper method to simulate multiple file drop.
      */
     private fun simulateMultipleFileDrop(element: SelenideElement) {
-        // This would use JavaScript to simulate dropping multiple files
         element.shouldBe(Condition.exist)
+        
+        // Execute JavaScript to simulate drop event with multiple files
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dataTransfer = new DataTransfer();
+            
+            // Create multiple mock files
+            var imageFile = new File(['fake image content'], 'test-image.jpg', {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+            var textFile = new File(['fake text content'], 'test-file.txt', {
+                type: 'text/plain',
+                lastModified: Date.now()
+            });
+            
+            dataTransfer.items.add(imageFile);
+            dataTransfer.items.add(textFile);
+            
+            var dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dropEvent);
+        """, element)
     }
 }
