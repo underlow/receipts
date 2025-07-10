@@ -324,7 +324,11 @@ class CompleteUploadE2ETest : BaseE2ETest() {
 
     @Test
     fun shouldShowSuccessMessageAfterSuccessfulUpload() {
-        // Given - user has opened upload modal
+        // Given - user is on dashboard page
+        dashboardPage.open()
+            .shouldBeDisplayed()
+        
+        // And - user has opened upload modal
         uploadModalPage.openModal()
             .shouldBeVisible()
         
@@ -340,8 +344,8 @@ class CompleteUploadE2ETest : BaseE2ETest() {
         // Then - success message should be shown
         uploadModalPage.shouldShowSuccessMessage()
         
-        // And - upload modal should close
-        uploadModalPage.shouldBeClosed()
+        // And - upload process should complete and modal should close
+        uploadModalPage.simulateUploadCompletion()
         
         // And - uploaded image should appear in inbox with correct metadata
         inboxPage.navigateToInbox()

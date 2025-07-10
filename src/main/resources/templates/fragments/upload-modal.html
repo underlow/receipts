@@ -5,21 +5,21 @@
 </head>
 <body>
     <!-- Upload Modal Fragment -->
-    <div th:fragment="uploadModal" class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div th:fragment="uploadModal" class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true" data-test-id="upload-modal">
         <div class="modal-dialog modal-lg" style="max-width: 80vw; max-height: 80vh;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadModalLabel">Upload Receipt Image</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-test-id="close-button"></button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div id="imagePreview" class="mb-3 position-relative" style="max-height: 60vh; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 20px;">
-                        <img id="cropperImage" style="max-width: 100%; max-height: 60vh; object-fit: contain; display: none;" alt="Image preview">
+                        <img id="cropperImage" style="max-width: 100%; max-height: 60vh; object-fit: contain; display: none;" alt="Image preview" data-test-id="cropper-image">
                         <div id="imageControls" class="position-absolute" style="bottom: 10px; right: 10px; display: none;">
-                            <button type="button" class="btn btn-sm btn-outline-light me-2" id="cropButton">
+                            <button type="button" class="btn btn-sm btn-outline-light me-2" id="cropButton" data-test-id="crop-button">
                                 <i class="fas fa-crop"></i> Crop
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-light" id="rotateButton">
+                            <button type="button" class="btn btn-sm btn-outline-light" id="rotateButton" data-test-id="rotate-button">
                                 <i class="fas fa-redo"></i> Rotate
                             </button>
                         </div>
@@ -27,7 +27,14 @@
                     <div id="uploadErrorContainer" class="upload-error-container mb-3" style="display: none;">
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            <span id="uploadErrorMessage"></span>
+                            <span id="uploadErrorMessage" data-test-id="error-message"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                    <div id="uploadSuccessContainer" class="upload-success-container mb-3" style="display: none;">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span id="uploadSuccessMessage" data-test-id="success-message"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     </div>
@@ -47,16 +54,16 @@
                             <i class="fas fa-times"></i> Cancel
                         </button>
                     </div>
-                    <div id="fileDropZone" class="border-dashed border-2 border-muted p-4 text-center">
+                    <div id="fileDropZone" class="border-dashed border-2 border-muted p-4 text-center" data-test-id="file-drop-zone">
                         <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
                         <p class="text-muted">Drag and drop an image here or click to select</p>
-                        <input type="file" id="fileInput" class="d-none" accept="image/*">
+                        <input type="file" id="fileInput" class="d-none" accept="image/*" data-test-id="file-input">
                         <button type="button" class="btn btn-outline-primary" id="selectFileBtn">Select Image</button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancelUpload" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirmUpload" disabled>Upload</button>
+                    <button type="button" class="btn btn-secondary" id="cancelUpload" data-bs-dismiss="modal" data-test-id="cancel-button">Cancel</button>
+                    <button type="button" class="btn btn-success" id="confirmUpload" disabled data-test-id="confirm-upload-button">Upload</button>
                 </div>
             </div>
         </div>
