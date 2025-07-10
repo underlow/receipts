@@ -1,14 +1,11 @@
-package me.underlow.receipt.controller
+package me.underlow.receipt.e2e
 
-import com.codeborne.selenide.Selenide
 import com.codeborne.selenide.Condition
+import com.codeborne.selenide.Selenide
 import me.underlow.receipt.config.BaseE2ETest
-import me.underlow.receipt.config.SelenideConfiguration
 import me.underlow.receipt.config.TestSecurityConfiguration
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.DisplayName
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
+import org.junit.jupiter.api.Test
 import org.springframework.test.context.TestPropertySource
 
 /**
@@ -48,7 +45,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         waitForPageLoad()
 
         // When: user enters valid credentials
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1, TestSecurityConfiguration.Companion.TEST_PASSWORD)
 
         // Then: should redirect to dashboard
         waitForPageLoad()
@@ -81,7 +78,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         waitForPageLoad()
 
         // When: user enters credentials with non-allowed email
-        performLogin(TestSecurityConfiguration.NOT_ALLOWED_EMAIL, TestSecurityConfiguration.TEST_PASSWORD)
+        performLogin(TestSecurityConfiguration.Companion.NOT_ALLOWED_EMAIL, TestSecurityConfiguration.Companion.TEST_PASSWORD)
 
         // Then: should remain on login page with error
         waitForPageLoad()
@@ -105,7 +102,7 @@ class AuthenticationE2ETest : BaseE2ETest() {
         assert(isOnDashboardPage()) { "User should be on dashboard page" }
 
         // And: user profile information should be visible
-        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.ALLOWED_EMAIL_1))
+        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1))
     }
 
     @Test
@@ -183,20 +180,20 @@ class AuthenticationE2ETest : BaseE2ETest() {
     @DisplayName("Given multiple users when logging in with different accounts then should handle user switching")
     fun `given multiple users when logging in with different accounts then should handle user switching`() {
         // Given: first user is authenticated
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1, TestSecurityConfiguration.Companion.TEST_PASSWORD)
         waitForPageLoad()
         assert(isOnDashboardPage()) { "First user should be authenticated" }
 
         // When: user logs out and second user logs in
         performLogout()
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_2, TestSecurityConfiguration.TEST_PASSWORD)
+        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_2, TestSecurityConfiguration.Companion.TEST_PASSWORD)
         waitForPageLoad()
 
         // Then: second user should be authenticated
         assert(isOnDashboardPage()) { "Second user should be authenticated" }
 
         // And: should show second user's email
-        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.ALLOWED_EMAIL_2))
+        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_2))
     }
 
     @Test

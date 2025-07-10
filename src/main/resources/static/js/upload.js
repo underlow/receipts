@@ -850,6 +850,18 @@ function showModalErrorMessage(message) {
     if (errorContainer && errorMessageElement) {
         errorMessageElement.textContent = message;
         errorContainer.style.display = 'block';
+        errorContainer.style.visibility = 'visible';
+        
+        // Also ensure the alert inside is visible and has proper Bootstrap classes
+        const alertElement = errorContainer.querySelector('.alert-danger');
+        if (alertElement) {
+            alertElement.style.display = 'block';
+            alertElement.style.visibility = 'visible';
+            alertElement.style.opacity = '1';
+            // Ensure Bootstrap classes are present
+            alertElement.classList.add('show');
+            alertElement.classList.remove('d-none');
+        }
         
         // Auto-dismiss after 10 seconds (longer than page errors since modal stays open)
         setTimeout(() => {

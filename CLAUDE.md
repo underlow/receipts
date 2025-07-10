@@ -45,6 +45,7 @@ after implementing add to ticket information what was implemented and how.
  - Chain readable assertions (e.g. element.shouldHave(text(“…”)).shouldBe(visible)) with clear failure messages
  - Favor clarity over cleverness: explicit steps, small helper names, and sparing comments for non-obvious logic.
  - helpers are here package me.underlow.receipt.e2e.helpers
+ - e2e test must test full code flow, do not implement shortcuts and mock only when it is completely necessary
 
 ## Planning
 
