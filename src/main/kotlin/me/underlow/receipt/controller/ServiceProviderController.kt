@@ -226,6 +226,14 @@ class ServiceProviderController(
     }
 
     /**
+     * Exception handler for validation errors.
+     */
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException::class)
+    fun handleValidationErrors(e: org.springframework.web.bind.MethodArgumentNotValidException): ResponseEntity<ServiceProviderResponse> {
+        return ResponseEntity.badRequest().body(ServiceProviderResponse.error("Validation error"))
+    }
+
+    /**
      * Exception handler for general exceptions.
      */
     @ExceptionHandler(Exception::class)

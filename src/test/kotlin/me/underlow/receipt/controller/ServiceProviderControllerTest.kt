@@ -151,7 +151,8 @@ class ServiceProviderControllerTest {
         // when - POST request with invalid data
         mockMvc.perform(post("/api/service-providers")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns bad request status
             .andExpect(status().isBadRequest)
     }
@@ -167,7 +168,8 @@ class ServiceProviderControllerTest {
         // when - POST request with duplicate name
         mockMvc.perform(post("/api/service-providers")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -197,7 +199,8 @@ class ServiceProviderControllerTest {
         // when - PUT request to update service provider
         mockMvc.perform(put("/api/service-providers/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns success response with updated provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -221,7 +224,8 @@ class ServiceProviderControllerTest {
         // when - PUT request for non-existing provider
         mockMvc.perform(put("/api/service-providers/999")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -239,7 +243,8 @@ class ServiceProviderControllerTest {
         // when - PATCH request to change state
         mockMvc.perform(patch("/api/service-providers/1/state")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns success response with updated provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -257,7 +262,8 @@ class ServiceProviderControllerTest {
         // when - PATCH request to hide already hidden provider
         mockMvc.perform(patch("/api/service-providers/1/state")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -272,7 +278,8 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.hideServiceProvider(1L)).thenReturn(hiddenProvider)
 
         // when - DELETE request to soft delete provider
-        mockMvc.perform(delete("/api/service-providers/1"))
+        mockMvc.perform(delete("/api/service-providers/1")
+            .with(csrf()))
             // then - returns success response with hidden provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -287,7 +294,8 @@ class ServiceProviderControllerTest {
             .thenThrow(IllegalArgumentException("Service provider with ID 999 not found"))
 
         // when - DELETE request for non-existing provider
-        mockMvc.perform(delete("/api/service-providers/999"))
+        mockMvc.perform(delete("/api/service-providers/999")
+            .with(csrf()))
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -314,7 +322,8 @@ class ServiceProviderControllerTest {
 
         // when - POST request to upload avatar
         mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile))
+            .file(avatarFile)
+            .with(csrf()))
             // then - returns success response with avatar path
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -328,7 +337,8 @@ class ServiceProviderControllerTest {
         // given - no file provided
 
         // when - POST request without file
-        mockMvc.perform(multipart("/api/service-providers/1/avatar"))
+        mockMvc.perform(multipart("/api/service-providers/1/avatar")
+            .with(csrf()))
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -349,7 +359,8 @@ class ServiceProviderControllerTest {
 
         // when - POST request with invalid file
         mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(invalidFile))
+            .file(invalidFile)
+            .with(csrf()))
             // then - returns bad request with validation error
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -371,7 +382,8 @@ class ServiceProviderControllerTest {
 
         // when - POST request to upload avatar for non-existing provider
         mockMvc.perform(multipart("/api/service-providers/999/avatar")
-            .file(avatarFile))
+            .file(avatarFile)
+            .with(csrf()))
             // then - returns not found status
             .andExpect(status().isNotFound)
     }
@@ -393,7 +405,8 @@ class ServiceProviderControllerTest {
 
         // when - POST request with upload failure
         mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile))
+            .file(avatarFile)
+            .with(csrf()))
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
@@ -422,7 +435,8 @@ class ServiceProviderControllerTest {
 
         // when - POST request to upload new avatar
         mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile))
+            .file(avatarFile)
+            .with(csrf()))
             // then - returns success and cleanup is called
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -440,7 +454,8 @@ class ServiceProviderControllerTest {
         // when - POST request with validation failure
         mockMvc.perform(post("/api/service-providers")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns bad request with validation error
             .andExpect(status().isBadRequest)
     }
@@ -456,7 +471,8 @@ class ServiceProviderControllerTest {
         // when - POST request with service exception
         mockMvc.perform(post("/api/service-providers")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .with(csrf()))
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
