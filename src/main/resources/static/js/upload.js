@@ -818,14 +818,22 @@ function showSuccessMessage(message) {
  * @param {string} message - The error message to display
  */
 function showErrorMessage(message) {
-    const uploadModal = document.getElementById('uploadModal');
-    const isModalOpen = uploadModal && uploadModal.classList.contains('show');
+    const errorContainer = document.getElementById('uploadErrorContainer');
+    const errorMessageElement = document.getElementById('uploadErrorMessage');
     
-    if (isModalOpen) {
-        // Display error in modal
-        showModalErrorMessage(message);
+    // If error container exists, show error in modal directly
+    if (errorContainer && errorMessageElement) {
+        errorMessageElement.textContent = message;
+        errorContainer.style.display = 'block';
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            if (errorContainer) {
+                errorContainer.style.display = 'none';
+            }
+        }, 10000);
     } else {
-        // Display error on page (original behavior)
+        // Fallback to page display
         showPageErrorMessage(message);
     }
 }
@@ -840,10 +848,7 @@ function showModalErrorMessage(message) {
     const errorMessageElement = document.getElementById('uploadErrorMessage');
     
     if (errorContainer && errorMessageElement) {
-        // Set the error message
         errorMessageElement.textContent = message;
-        
-        // Show the error container
         errorContainer.style.display = 'block';
         
         // Auto-dismiss after 10 seconds (longer than page errors since modal stays open)
@@ -852,7 +857,9 @@ function showModalErrorMessage(message) {
                 errorContainer.style.display = 'none';
             }
         }, 10000);
+        return true;
     }
+    return false;
 }
 
 /**
@@ -1169,6 +1176,22 @@ window.handleFileSelect = handleFileSelect;
 // Expose showErrorMessage and showModalErrorMessage for testing
 window.showErrorMessage = showErrorMessage;
 window.showModalErrorMessage = showModalErrorMessage;
+
+// Expose clearModalErrors for testing
+window.clearModalErrors = clearModalErrors;
+
+// Expose direct modal error function for testing
+window.showModalErrorDirect = function(message) {
+    const errorContainer = document.getElementById('uploadErrorContainer');
+    const errorMessageElement = document.getElementById('uploadErrorMessage');
+    
+    if (errorContainer && errorMessageElement) {
+        errorMessageElement.textContent = message;
+        errorContainer.style.display = 'block';
+        return true;
+    }
+    return false;
+};
 
 // Expose upload state for testing
 window.uploadState = uploadState;

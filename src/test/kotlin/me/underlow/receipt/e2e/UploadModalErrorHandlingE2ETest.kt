@@ -35,13 +35,20 @@ class UploadModalErrorHandlingE2ETest : BaseE2ETest() {
         // given - user opens upload modal
         openUploadModal()
 
+        // Wait for modal to be fully shown and initialized
+        val modal = `$`("#uploadModal")
+        modal.shouldHave(Condition.cssClass("show"))
+        
         // when - simulating error condition via JavaScript
-        executeJavaScript<Any>("window.showErrorMessage('Test error message')")
+        executeJavaScript<Any>("window.showModalErrorDirect('Test error message')")
 
         // then - error message should be displayed in modal, not on page
-        val modalErrorContainer = `$`("#uploadModal .alert-danger")
+        val modalErrorContainer = `$`("#uploadErrorContainer")
         modalErrorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
-        assertTrue(modalErrorContainer.text().contains("Test error message"))
+
+        val alertDanger = `$`("#uploadModal .alert-danger")
+        alertDanger.shouldBe(Condition.visible, Duration.ofSeconds(5))
+        assertTrue(alertDanger.text().contains("Test error message"))
 
         // and - error should not appear on the main page
         val pageErrorContainer = `$`(".dashboard-layout .alert-danger")
