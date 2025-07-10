@@ -747,6 +747,399 @@
             opacity: 0.3;
         }
 
+        /* Split-panel layout styles */
+        .split-panel-container {
+            display: flex;
+            gap: 1rem;
+            height: 600px;
+            min-height: 400px;
+        }
+
+        .split-panel-left {
+            flex: 1;
+            min-width: 300px;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .split-panel-right {
+            flex: 1;
+            min-width: 300px;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .split-panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            background: hsl(var(--muted));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .split-panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin: 0;
+        }
+
+        .split-panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+
+        /* Service provider list styles */
+        .service-provider-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .service-provider-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-provider-item:hover {
+            background-color: hsl(var(--muted));
+        }
+
+        .service-provider-item.selected {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .service-provider-item.hidden {
+            opacity: 0.6;
+        }
+
+        .service-provider-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid hsl(var(--border));
+            flex-shrink: 0;
+        }
+
+        .service-provider-avatar-fallback {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: hsl(var(--muted));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: hsl(var(--muted-foreground));
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 2px solid hsl(var(--border));
+            flex-shrink: 0;
+        }
+
+        .service-provider-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .service-provider-name {
+            font-weight: 500;
+            color: inherit;
+            margin: 0 0 0.25rem 0;
+            font-size: 0.875rem;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .service-provider-state {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin: 0;
+        }
+
+        .service-provider-item.selected .service-provider-state {
+            color: hsl(var(--primary-foreground));
+            opacity: 0.8;
+        }
+
+        /* Service provider form styles */
+        .service-provider-form {
+            padding: 1rem;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .form-control[readonly] {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+        }
+
+        .form-control.is-invalid {
+            border-color: hsl(var(--destructive));
+        }
+
+        .invalid-feedback {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: hsl(var(--destructive));
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            padding-right: 2.5rem;
+        }
+
+        .avatar-upload-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid hsl(var(--border));
+        }
+
+        .avatar-preview-fallback {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: hsl(var(--muted));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: hsl(var(--muted-foreground));
+            font-weight: 600;
+            font-size: 1.25rem;
+            border: 2px solid hsl(var(--border));
+        }
+
+        .avatar-upload-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-upload {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-upload:hover {
+            background-color: hsl(var(--muted));
+            border-color: hsl(var(--border));
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid hsl(var(--border));
+        }
+
+        .btn-save {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: 1px solid hsl(var(--primary));
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-save:hover {
+            background-color: hsl(var(--primary));
+            opacity: 0.9;
+        }
+
+        .btn-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background-color: hsl(var(--muted));
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-input {
+            width: 44px;
+            height: 24px;
+            appearance: none;
+            background: hsl(var(--border));
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .toggle-input:checked {
+            background: hsl(var(--primary));
+        }
+
+        .toggle-input::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .toggle-input:checked::before {
+            transform: translateX(20px);
+        }
+
+        .toggle-label {
+            font-size: 0.875rem;
+            color: hsl(var(--foreground));
+            cursor: pointer;
+        }
+
+        .empty-state {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-text {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Responsive design for split-panel */
+        @media (max-width: 768px) {
+            .split-panel-container {
+                flex-direction: column;
+                height: auto;
+                gap: 0.5rem;
+            }
+
+            .split-panel-left,
+            .split-panel-right {
+                min-width: 0;
+                height: 300px;
+            }
+
+            .split-panel-header {
+                padding: 0.75rem;
+            }
+
+            .service-provider-item {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .service-provider-form {
+                padding: 0.75rem;
+            }
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .modern-table-wrapper {
@@ -929,18 +1322,39 @@
 
                     <!-- Services Tab -->
                     <div class="tab-pane fade" id="services">
-                        <div class="dashboard-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-cog me-2"></i>
-                                    Service Provider Management
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="services-content">
-                                    <div class="d-flex justify-content-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
+                        <div id="services-content">
+                            <div class="split-panel-container">
+                                <!-- Left Panel: Service Provider List -->
+                                <div class="split-panel-left">
+                                    <div class="split-panel-header">
+                                        <h3 class="split-panel-title">Service Providers</h3>
+                                        <button class="btn-upload" id="createServiceButton" onclick="createNewServiceProvider()">
+                                            <i class="fas fa-plus me-1"></i> Create Service
+                                        </button>
+                                    </div>
+                                    <div class="split-panel-content">
+                                        <div id="serviceProviderList">
+                                            <div class="d-flex justify-content-center p-3">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Panel: Service Provider Form -->
+                                <div class="split-panel-right">
+                                    <div class="split-panel-header">
+                                        <h3 class="split-panel-title" id="formTitle">Select a Service Provider</h3>
+                                    </div>
+                                    <div class="split-panel-content">
+                                        <div id="serviceProviderForm">
+                                            <div class="empty-state">
+                                                <i class="fas fa-building empty-state-icon"></i>
+                                                <div class="empty-state-title">No Service Provider Selected</div>
+                                                <p class="empty-state-text">Select a service provider from the list to view and edit details, or create a new one.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1700,29 +2114,430 @@
             // TODO: Implement dropdown toggle functionality
         }
 
+        // Services tab state
+        let serviceProviders = [];
+        let selectedServiceProvider = null;
+        let isEditingServiceProvider = false;
+
         // Function to load services data from the API
         function loadServicesData() {
-            // Set basic content for now - placeholder for future implementation
-            document.getElementById('services-content').innerHTML = `
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-cog me-2"></i>
-                            Service Providers
-                        </h5>
+            fetch('/api/service-providers')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load service providers');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    serviceProviders = data;
+                    renderServiceProviderList();
+                })
+                .catch(error => {
+                    console.error('Error loading service providers:', error);
+                    document.getElementById('serviceProviderList').innerHTML = `
+                        <div class="alert alert-danger m-3" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load service providers. Please try again.
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadServicesData()">
+                                <i class="fas fa-redo me-1"></i> Retry
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        // Function to render service provider list
+        function renderServiceProviderList() {
+            const listContainer = document.getElementById('serviceProviderList');
+            
+            if (serviceProviders.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-building empty-state-icon"></i>
+                        <div class="empty-state-title">No Service Providers</div>
+                        <p class="empty-state-text">Create your first service provider to get started.</p>
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted">Service provider management functionality will be implemented here.</p>
-                        <div class="placeholder-content">
-                            <div class="placeholder-icon">
-                                <i class="fas fa-cog"></i>
+                `;
+                return;
+            }
+
+            const listHtml = `
+                <ul class="service-provider-list">
+                    ${serviceProviders.map(provider => `
+                        <li class="service-provider-item ${provider.state === 'HIDDEN' ? 'hidden' : ''} ${selectedServiceProvider && selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
+                            onclick="selectServiceProvider(${provider.id})">
+                            ${provider.avatar ? 
+                                `<img src="${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
+                                `<div class="service-provider-avatar-fallback">${provider.name.substring(0, 1).toUpperCase()}</div>`
+                            }
+                            <div class="service-provider-info">
+                                <h4 class="service-provider-name">${provider.name}</h4>
+                                <p class="service-provider-state">${provider.state === 'ACTIVE' ? 'Active' : 'Hidden'}</p>
                             </div>
-                            <div class="placeholder-title">Service Providers</div>
-                            <p class="placeholder-text">Manage your service providers and their settings.</p>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            
+            listContainer.innerHTML = listHtml;
+        }
+
+        // Function to select a service provider
+        function selectServiceProvider(providerId) {
+            selectedServiceProvider = serviceProviders.find(p => p.id === providerId);
+            if (selectedServiceProvider) {
+                renderServiceProviderList(); // Re-render to show selection
+                renderServiceProviderForm();
+            }
+        }
+
+        // Function to render service provider form
+        function renderServiceProviderForm() {
+            const formContainer = document.getElementById('serviceProviderForm');
+            const formTitle = document.getElementById('formTitle');
+            
+            if (!selectedServiceProvider) {
+                formTitle.textContent = 'Select a Service Provider';
+                formContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-building empty-state-icon"></i>
+                        <div class="empty-state-title">No Service Provider Selected</div>
+                        <p class="empty-state-text">Select a service provider from the list to view and edit details, or create a new one.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const isNewProvider = selectedServiceProvider.id === null;
+            formTitle.textContent = isNewProvider ? 'Create New Service Provider' : 'Edit Service Provider';
+
+            const formHtml = `
+                <form class="service-provider-form" onsubmit="saveServiceProvider(event)">
+                    <!-- Avatar Upload Section -->
+                    <div class="form-group">
+                        <label class="form-label">Avatar</label>
+                        <div class="avatar-upload-section">
+                            ${selectedServiceProvider.avatar ? 
+                                `<img src="${selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview">` :
+                                `<div class="avatar-preview-fallback" id="avatarPreview">${selectedServiceProvider.name ? selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
+                            }
+                            <div class="avatar-upload-controls">
+                                <button type="button" class="btn-upload" onclick="uploadAvatar()">
+                                    <i class="fas fa-upload me-1"></i> Upload Avatar
+                                </button>
+                                ${selectedServiceProvider.avatar ? 
+                                    `<button type="button" class="btn-upload" onclick="removeAvatar()">
+                                        <i class="fas fa-trash me-1"></i> Remove
+                                    </button>` : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Name Field -->
+                    <div class="form-group">
+                        <label for="providerName" class="form-label">Name *</label>
+                        <input type="text" id="providerName" class="form-control" value="${selectedServiceProvider.name || ''}" required>
+                        <div class="invalid-feedback" id="nameError"></div>
+                    </div>
+
+                    <!-- Comment Field -->
+                    <div class="form-group">
+                        <label for="providerComment" class="form-label">Comment</label>
+                        <textarea id="providerComment" class="form-control form-textarea" placeholder="Optional comment about this service provider">${selectedServiceProvider.comment || ''}</textarea>
+                    </div>
+
+                    <!-- OCR Comment Field -->
+                    <div class="form-group">
+                        <label for="providerOcrComment" class="form-label">OCR Comment</label>
+                        <textarea id="providerOcrComment" class="form-control form-textarea" placeholder="Comment to help OCR recognition">${selectedServiceProvider.commentForOcr || ''}</textarea>
+                    </div>
+
+                    <!-- Regular Frequency Field -->
+                    <div class="form-group">
+                        <label for="providerFrequency" class="form-label">Regular Frequency</label>
+                        <select id="providerFrequency" class="form-control form-select">
+                            <option value="NOT_REGULAR" ${selectedServiceProvider.regular === 'NOT_REGULAR' ? 'selected' : ''}>Not Regular</option>
+                            <option value="YEARLY" ${selectedServiceProvider.regular === 'YEARLY' ? 'selected' : ''}>Yearly</option>
+                            <option value="MONTHLY" ${selectedServiceProvider.regular === 'MONTHLY' ? 'selected' : ''}>Monthly</option>
+                            <option value="WEEKLY" ${selectedServiceProvider.regular === 'WEEKLY' ? 'selected' : ''}>Weekly</option>
+                        </select>
+                    </div>
+
+                    <!-- State Toggle -->
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="providerState" class="toggle-input" ${selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
+                            <label for="providerState" class="toggle-label">Active</label>
+                        </div>
+                    </div>
+
+                    <!-- Custom Fields Section -->
+                    <div class="form-group">
+                        <label class="form-label">Custom Fields</label>
+                        <div id="customFieldsContainer">
+                            ${renderCustomFields(selectedServiceProvider.customFields)}
+                        </div>
+                        <button type="button" class="btn-upload" onclick="addCustomField()">
+                            <i class="fas fa-plus me-1"></i> Add Custom Field
+                        </button>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save" id="saveButton">
+                            <i class="fas fa-save me-1"></i> Save
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit()">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </button>
+                        ${!isNewProvider ? 
+                            `<button type="button" class="btn-cancel" onclick="deleteServiceProvider()" style="margin-left: auto;">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>` : ''
+                        }
+                    </div>
+                </form>
+            `;
+
+            formContainer.innerHTML = formHtml;
+        }
+
+        // Function to render custom fields
+        function renderCustomFields(customFields) {
+            if (!customFields || Object.keys(customFields).length === 0) {
+                return '<p class="text-muted">No custom fields defined.</p>';
+            }
+
+            return Object.entries(customFields).map(([key, value], index) => `
+                <div class="custom-field-item mb-2">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" placeholder="Field name" value="${key}" onchange="updateCustomFieldKey(${index}, this.value)">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" placeholder="Field value" value="${value}" onchange="updateCustomFieldValue('${key}', this.value)">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn-upload" onclick="removeCustomField('${key}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            `).join('');
+        }
+
+        // Function to create new service provider
+        function createNewServiceProvider() {
+            selectedServiceProvider = {
+                id: null,
+                name: '',
+                avatar: null,
+                comment: '',
+                commentForOcr: '',
+                regular: 'NOT_REGULAR',
+                customFields: {},
+                state: 'ACTIVE'
+            };
+            renderServiceProviderForm();
+        }
+
+        // Function to save service provider
+        function saveServiceProvider(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('providerName').value,
+                comment: document.getElementById('providerComment').value,
+                commentForOcr: document.getElementById('providerOcrComment').value,
+                regular: document.getElementById('providerFrequency').value,
+                state: document.getElementById('providerState').checked ? 'ACTIVE' : 'HIDDEN',
+                customFields: selectedServiceProvider.customFields
+            };
+
+            // Validate
+            if (!formData.name.trim()) {
+                document.getElementById('nameError').textContent = 'Name is required';
+                document.getElementById('providerName').classList.add('is-invalid');
+                return;
+            }
+
+            const isNewProvider = selectedServiceProvider.id === null;
+            const url = isNewProvider ? '/api/service-providers' : `/api/service-providers/${selectedServiceProvider.id}`;
+            const method = isNewProvider ? 'POST' : 'PUT';
+
+            document.getElementById('saveButton').disabled = true;
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to save service provider');
+                }
+                return response.json();
+            })
+            .then(data => {
+                selectedServiceProvider = data;
+                loadServicesData(); // Reload the list
+                showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
+            })
+            .catch(error => {
+                console.error('Error saving service provider:', error);
+                showErrorMessage('Failed to save service provider. Please try again.');
+            })
+            .finally(() => {
+                document.getElementById('saveButton').disabled = false;
+            });
+        }
+
+        // Function to cancel edit
+        function cancelEdit() {
+            if (selectedServiceProvider.id === null) {
+                // If it's a new provider, clear selection
+                selectedServiceProvider = null;
+                renderServiceProviderForm();
+            } else {
+                // If editing existing, reload from server
+                selectServiceProvider(selectedServiceProvider.id);
+            }
+        }
+
+        // Function to delete service provider
+        function deleteServiceProvider() {
+            if (!selectedServiceProvider || selectedServiceProvider.id === null) return;
+
+            if (confirm('Are you sure you want to delete this service provider? This action cannot be undone.')) {
+                fetch(`/api/service-providers/${selectedServiceProvider.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete service provider');
+                    }
+                    selectedServiceProvider = null;
+                    loadServicesData(); // Reload the list
+                    renderServiceProviderForm();
+                    showSuccessMessage('Service provider deleted successfully');
+                })
+                .catch(error => {
+                    console.error('Error deleting service provider:', error);
+                    showErrorMessage('Failed to delete service provider. Please try again.');
+                });
+            }
+        }
+
+        // Function to upload avatar
+        function uploadAvatar() {
+            if (!selectedServiceProvider) return;
+
+            // Use existing upload modal functionality
+            const uploadModal = document.getElementById('uploadModal');
+            if (uploadModal) {
+                const modal = new bootstrap.Modal(uploadModal);
+                modal.show();
+                
+                // Set a flag to indicate this is for avatar upload
+                window.isAvatarUpload = true;
+                window.currentServiceProviderId = selectedServiceProvider.id;
+            }
+        }
+
+        // Function to remove avatar
+        function removeAvatar() {
+            if (!selectedServiceProvider || !selectedServiceProvider.avatar) return;
+
+            if (confirm('Are you sure you want to remove the avatar?')) {
+                selectedServiceProvider.avatar = null;
+                document.getElementById('avatarPreview').outerHTML = 
+                    `<div class="avatar-preview-fallback" id="avatarPreview">${selectedServiceProvider.name ? selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`;
+            }
+        }
+
+        // Custom fields functions
+        function addCustomField() {
+            if (!selectedServiceProvider.customFields) {
+                selectedServiceProvider.customFields = {};
+            }
+            
+            const fieldName = prompt('Enter field name:');
+            if (fieldName && fieldName.trim()) {
+                selectedServiceProvider.customFields[fieldName.trim()] = '';
+                renderServiceProviderForm();
+            }
+        }
+
+        function updateCustomFieldKey(index, newKey) {
+            if (!selectedServiceProvider.customFields) return;
+            
+            const entries = Object.entries(selectedServiceProvider.customFields);
+            if (entries[index]) {
+                const [oldKey, value] = entries[index];
+                delete selectedServiceProvider.customFields[oldKey];
+                selectedServiceProvider.customFields[newKey] = value;
+            }
+        }
+
+        function updateCustomFieldValue(key, newValue) {
+            if (!selectedServiceProvider.customFields) return;
+            selectedServiceProvider.customFields[key] = newValue;
+        }
+
+        function removeCustomField(key) {
+            if (!selectedServiceProvider.customFields) return;
+            delete selectedServiceProvider.customFields[key];
+            renderServiceProviderForm();
+        }
+
+        // Helper functions
+        function showSuccessMessage(message) {
+            const alertHtml = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             `;
+            showAlert(alertHtml);
+        }
+
+        function showErrorMessage(message) {
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            showAlert(alertHtml);
+        }
+
+        function showAlert(alertHtml) {
+            const alertContainer = document.createElement('div');
+            alertContainer.innerHTML = alertHtml;
+            
+            const dashboardLayout = document.querySelector('.dashboard-layout');
+            if (dashboardLayout) {
+                dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
+            }
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
         }
 
         // Upload functionality is now handled by upload.js module
