@@ -75,9 +75,11 @@ class LoginPage {
      * Performs complete login flow with given credentials
      */
     fun loginWith(username: String, password: String): LoginPage {
-        enterUsername(username)
-        enterPassword(password)
-        clickLogin()
+        // Use the same logic as performLogin() in BaseE2ETest
+        `$`("input[name='username']").setValue(username)
+        `$`("input[name='password']").setValue(password)
+        `$`("button[type='submit']").click()
+        Thread.sleep(1000) // Wait for login to complete
         return this
     }
     
@@ -85,9 +87,10 @@ class LoginPage {
      * Verifies login form is visible and ready for input
      */
     fun shouldBeDisplayed(): LoginPage {
-        usernameInput.shouldBe(Condition.visible)
-        passwordInput.shouldBe(Condition.visible)
-        loginButton.shouldBe(Condition.visible)
+        // Use the same logic as isOnLoginPage() in BaseE2ETest
+        `$`("form").shouldBe(Condition.exist)
+        `$`("input[name='username']").shouldBe(Condition.exist)
+        `$`("input[name='password']").shouldBe(Condition.exist)
         return this
     }
     

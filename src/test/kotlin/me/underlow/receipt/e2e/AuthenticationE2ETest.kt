@@ -133,31 +133,29 @@ class AuthenticationE2ETest : BaseE2ETest() {
     @DisplayName("Should redirect to login when accessing protected page after logout")
     fun shouldRedirectToLoginWhenAccessingProtectedPageAfterLogout() {
         // Given: user is authenticated and then logs out
-        loginPage.open()
-            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
-        dashboardPage.logout()
+        performLoginWithAllowedUser()
+        performLogout()
 
         // When: user tries to access protected page
-        dashboardPage.open()
+        Selenide.open("/dashboard")
+        waitForPageLoad()
 
         // Then: should redirect to login page
-        loginPage.shouldBeDisplayed()
-            .shouldBeOnLoginUrl()
+        assert(isOnLoginPage()) { "User should be redirected to login page when accessing protected page after logout" }
     }
 
     @Test
     @DisplayName("Should redirect authenticated user to dashboard when accessing login page")
     fun shouldRedirectAuthenticatedUserToDashboardWhenAccessingLoginPage() {
         // Given: user is authenticated
-        loginPage.open()
-            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        performLoginWithAllowedUser()
 
         // When: user tries to access login page
-        loginPage.open()
+        Selenide.open("/login")
+        waitForPageLoad()
 
         // Then: should redirect to dashboard
-        dashboardPage.shouldBeDisplayed()
-            .shouldBeOnDashboardUrl()
+        assert(isOnDashboardPage()) { "Authenticated user should be redirected to dashboard when accessing login page" }
     }
 
     @Test

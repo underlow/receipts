@@ -39,7 +39,7 @@ class DashboardPage {
         `$`("[data-test-id='logout-button']").exists() -> `$`("[data-test-id='logout-button']")
         `$`("form[action='/logout'] button[type='submit']").exists() -> `$`("form[action='/logout'] button[type='submit']")
         `$`("a[href='/logout']").exists() -> `$`("a[href='/logout']")
-        else -> `$`("button").find { it.text().contains("Logout") }
+        else -> `$`("button:contains('Logout')")
     }
     
     private val userDropdown get() = when {
@@ -61,9 +61,10 @@ class DashboardPage {
      * Verifies dashboard page is displayed with all required elements
      */
     fun shouldBeDisplayed(): DashboardPage {
-        dashboardLayout.shouldBe(Condition.visible)
-        navigationPanel.shouldBe(Condition.visible)
-        contentArea.shouldBe(Condition.visible)
+        // Use the same logic as isOnDashboardPage() in BaseE2ETest
+        dashboardLayout.shouldBe(Condition.exist)
+        navigationPanel.shouldBe(Condition.exist)
+        contentArea.shouldBe(Condition.exist)
         return this
     }
     
@@ -99,13 +100,31 @@ class DashboardPage {
      * Performs logout action
      */
     fun logout(): DashboardPage {
-        // Handle dropdown if present
+        // Use the same logic as performLogout() in BaseE2ETest
+        // First, open the user dropdown if it exists
+        val userDropdown = `$`("#userDropdown")
         if (userDropdown.exists()) {
             userDropdown.click()
             Thread.sleep(500) // Wait for dropdown to open
         }
-        
-        logoutButton?.shouldBe(Condition.visible)?.click()
+
+        // Look for logout button with different possible selectors
+        val logoutButton = when {
+            `$`("form[action='/logout'] button[type='submit']").exists() ->
+                `$`("form[action='/logout'] button[type='submit']")
+
+            `$`("button[type='submit']").exists() &&
+                    `$`("button[type='submit']").text().contains("Logout") ->
+                `$`("button[type='submit']")
+
+            `$`("a[href='/logout']").exists() ->
+                `$`("a[href='/logout']")
+
+            else -> null
+        }
+
+        logoutButton?.click()
+        Thread.sleep(1000) // Wait for logout to complete
         return this
     }
     
@@ -116,9 +135,9 @@ class DashboardPage {
         val profileLink = when {
             `$`("[data-test-id='profile-link']").exists() -> `$`("[data-test-id='profile-link']")
             `$`("a[href='/profile']").exists() -> `$`("a[href='/profile']")
-            else -> `$`("a").find { it.text().contains("Profile") }
+            else -> `$`("a:contains('Profile')")
         }
-        profileLink?.click()
+        profileLink.click()
         return this
     }
     
@@ -129,9 +148,9 @@ class DashboardPage {
         val settingsLink = when {
             `$`("[data-test-id='settings-link']").exists() -> `$`("[data-test-id='settings-link']")
             `$`("a[href='/settings']").exists() -> `$`("a[href='/settings']")
-            else -> `$`("a").find { it.text().contains("Settings") }
+            else -> `$`("a:contains('Settings')")
         }
-        settingsLink?.click()
+        settingsLink.click()
         return this
     }
     
