@@ -18,7 +18,8 @@ data class ReceiptEntity(
     val state: ReceiptState = ReceiptState.CREATED,
     val createdDate: LocalDateTime,
     val description: String? = null,
-    val merchantName: String? = null
+    val merchantName: String? = null,
+    val serviceProviderId: Long? = null
 ) {
     /**
      * Transitions the receipt entity from CREATED to REMOVED state.
@@ -92,6 +93,17 @@ data class ReceiptEntity(
         return copy(merchantName = normalizedMerchantName)
     }
 
+    /**
+     * Updates the service provider ID of the receipt entity.
+     * The service provider ID can be null to clear the current service provider.
+     * 
+     * @param serviceProviderId the new service provider ID, or null to clear
+     * @return new ReceiptEntity instance with updated service provider ID
+     */
+    fun updateServiceProvider(serviceProviderId: Long?): ReceiptEntity {
+        return copy(serviceProviderId = serviceProviderId)
+    }
+
     companion object {
         /**
          * Creates a new receipt entity from an approved inbox item.
@@ -104,6 +116,7 @@ data class ReceiptEntity(
          * @param inboxEntityId identifier of the linked inbox entity
          * @param description optional description for the receipt
          * @param merchantName optional merchant name for the receipt
+         * @param serviceProviderId optional identifier of the linked service provider
          * @param createdDate timestamp when the receipt was created
          * @return new ReceiptEntity instance created from inbox
          */
@@ -115,6 +128,7 @@ data class ReceiptEntity(
             inboxEntityId: String,
             description: String? = null,
             merchantName: String? = null,
+            serviceProviderId: Long? = null,
             createdDate: LocalDateTime = LocalDateTime.now()
         ): ReceiptEntity {
             return ReceiptEntity(
@@ -126,7 +140,8 @@ data class ReceiptEntity(
                 state = ReceiptState.CREATED,
                 createdDate = createdDate,
                 description = description,
-                merchantName = merchantName
+                merchantName = merchantName,
+                serviceProviderId = serviceProviderId
             )
         }
 
@@ -140,6 +155,7 @@ data class ReceiptEntity(
          * @param amount amount of the receipt
          * @param description optional description for the receipt
          * @param merchantName optional merchant name for the receipt
+         * @param serviceProviderId optional identifier of the linked service provider
          * @param createdDate timestamp when the receipt was created
          * @return new ReceiptEntity instance created manually
          */
@@ -150,6 +166,7 @@ data class ReceiptEntity(
             amount: BigDecimal,
             description: String? = null,
             merchantName: String? = null,
+            serviceProviderId: Long? = null,
             createdDate: LocalDateTime = LocalDateTime.now()
         ): ReceiptEntity {
             return ReceiptEntity(
@@ -161,7 +178,8 @@ data class ReceiptEntity(
                 state = ReceiptState.CREATED,
                 createdDate = createdDate,
                 description = description,
-                merchantName = merchantName
+                merchantName = merchantName,
+                serviceProviderId = serviceProviderId
             )
         }
     }

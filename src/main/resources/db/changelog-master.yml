@@ -3,3 +3,9 @@ databaseChangeLog:
       file: db/changelog/001-create-user-table.sql
   - include:
       file: db/changelog/002-create-inbox-table.sql
+  - include:
+      file: db/changelog/003-create-service-provider-table.sql
+  - include:
+      file: db/changelog/004-create-receipts-table.sql
+  - include:
+      file: db/changelog/005-create-bills-table.sql
