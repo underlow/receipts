@@ -5,6 +5,7 @@ import com.codeborne.selenide.Selenide
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import me.underlow.receipt.config.BaseE2ETest
+import me.underlow.receipt.e2e.helpers.LoginHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.assertTrue
@@ -17,10 +18,12 @@ import java.time.Duration
  */
 class BillsE2ETest : BaseE2ETest() {
 
+    private val loginHelper = LoginHelper()
+
     @BeforeEach
     fun setUpBillsTest() {
         // given - user is logged in and on dashboard
-        performLoginWithAllowedUser()
+        loginHelper.loginAsAllowedUser1()
         waitForPageLoad()
     }
 

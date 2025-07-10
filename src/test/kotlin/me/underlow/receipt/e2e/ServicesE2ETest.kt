@@ -7,6 +7,7 @@ import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.WebDriverRunner
 import me.underlow.receipt.config.BaseE2ETest
 import me.underlow.receipt.config.TestSecurityConfiguration
+import me.underlow.receipt.e2e.helpers.LoginHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -17,10 +18,12 @@ import org.junit.jupiter.api.BeforeEach
  */
 class ServicesE2ETest : BaseE2ETest() {
 
+    private val loginHelper = LoginHelper()
+
     @BeforeEach
     fun setup() {
         // Given: User is authenticated and on dashboard
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        loginHelper.loginAsAllowedUser1()
         assertTrue(isOnDashboardPage())
         
         // When: User navigates to Services tab

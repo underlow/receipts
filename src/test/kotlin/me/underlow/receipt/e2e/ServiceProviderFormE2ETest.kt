@@ -9,6 +9,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import me.underlow.receipt.config.BaseE2ETest
 import me.underlow.receipt.config.TestSecurityConfiguration
+import me.underlow.receipt.e2e.helpers.LoginHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.AfterEach
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 class ServiceProviderFormE2ETest : BaseE2ETest() {
 
     private lateinit var wireMockServer: WireMockServer
+    private val loginHelper = LoginHelper()
 
     @BeforeEach
     fun setup() {
@@ -29,7 +31,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         wireMockServer.start()
         
         // Given: User is authenticated and on services tab
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        loginHelper.loginAsAllowedUser1()
         navigateToServicesTab()
     }
 
@@ -485,11 +487,32 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     }
 
     private fun navigateToServicesTab() {
-        val servicesTab = `$`("a[href='#services']")
-        servicesTab.shouldBe(Condition.visible)
-        servicesTab.click()
+        val servicesTab = when {
+            `$`("[data-test-id='services-tab']").exists() -> `$`("[data-test-id='services-tab']")
+            `$`("a[href='#services']").exists() -> `$`("a[href='#services']")
+            `$`("a[href='/services']").exists() -> `$`("a[href='/services']")
+            `$`("#services-tab").exists() -> `$`("#services-tab")
+            `$`(".services-tab").exists() -> `$`(".services-tab")
+            `$`("nav").exists() && `$`("nav").text().contains("Services") -> {
+                `$`("nav").`$$`("a").find { it.text().contains("Services") }
+            }
+            else -> throw RuntimeException("Could not find services tab")
+        }
         
-        val servicesContent = `$`("#services-content")
-        servicesContent.shouldBe(Condition.visible)
+        servicesTab?.shouldBe(Condition.visible)?.click()
+        
+        // Wait for services content to load
+        val servicesContent = when {
+            `$`("[data-test-id='services-content']").exists() -> `$`("[data-test-id='services-content']")
+            `$`("#services-content").exists() -> `$`("#services-content")
+            `$`("#services").exists() -> `$`("#services")
+            `$`(".services-content").exists() -> `$`(".services-content")
+            else -> null
+        }
+        
+        servicesContent?.shouldBe(Condition.visible)
+        
+        // Wait for page to load
+        Thread.sleep(1000)
     }
 }

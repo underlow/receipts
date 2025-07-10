@@ -44,6 +44,7 @@ after implementing add to ticket information what was implemented and how.
  - Each test must leave the system in a clean state; avoid sharing state or ordering dependencies.
  - Chain readable assertions (e.g. element.shouldHave(text(“…”)).shouldBe(visible)) with clear failure messages
  - Favor clarity over cleverness: explicit steps, small helper names, and sparing comments for non-obvious logic.
+ - helpers are here package me.underlow.receipt.e2e.helpers
 
 ## Planning
 

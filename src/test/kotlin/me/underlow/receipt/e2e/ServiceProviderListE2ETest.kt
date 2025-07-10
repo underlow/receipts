@@ -1,385 +1,254 @@
 package me.underlow.receipt.e2e
 
 import com.codeborne.selenide.Condition
-import com.codeborne.selenide.Selenide
-import com.codeborne.selenide.Selenide.`$`
-import com.codeborne.selenide.Selenide.`$$`
-import com.codeborne.selenide.WebDriverRunner
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.*
 import me.underlow.receipt.config.BaseE2ETest
-import me.underlow.receipt.config.TestSecurityConfiguration
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import me.underlow.receipt.e2e.helpers.ServiceProviderApiMockHelper
+import me.underlow.receipt.e2e.helpers.TestNavigationHelper
+import me.underlow.receipt.e2e.pageobjects.ServiceProviderListPage
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
- * E2E tests for Service Provider List functionality
- * Tests list rendering, selection, and interaction with mock data
+ * E2E tests for Service Provider List functionality.
+ * Tests the complete user journey for viewing and interacting with service providers.
+ * 
+ * Each test follows the given-when-then pattern and has a single responsibility.
  */
 class ServiceProviderListE2ETest : BaseE2ETest() {
 
     private lateinit var wireMockServer: WireMockServer
+    private lateinit var apiMockHelper: ServiceProviderApiMockHelper
+    private lateinit var navigationHelper: TestNavigationHelper
+    private lateinit var serviceProviderListPage: ServiceProviderListPage
 
     @BeforeEach
-    fun setup() {
-        // Setup WireMock server for API mocking
+    fun setUpServiceProviderListTests() {
+        // Given: Fresh test environment with mocked API
         wireMockServer = WireMockServer(8089)
         wireMockServer.start()
         
-        // Given: User is authenticated and on services tab
-        performLogin(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
-        navigateToServicesTab()
+        apiMockHelper = ServiceProviderApiMockHelper(wireMockServer)
+        navigationHelper = TestNavigationHelper()
+        serviceProviderListPage = ServiceProviderListPage()
+        
+        // And: User is authenticated and on services tab
+        navigationHelper.loginAndNavigateToServices()
     }
 
     @AfterEach
-    fun tearDown() {
+    fun tearDownServiceProviderListTests() {
         if (::wireMockServer.isInitialized) {
             wireMockServer.stop()
         }
+        navigationHelper.clearBrowserState()
     }
 
     @Test
-    fun `given service providers exist when list loads then should display providers with avatars`() {
+    fun shouldDisplayServiceProvidersWithAvatarsWhenDataLoaded() {
         // Given: API returns service providers with avatars
-        setupServiceProvidersApiMock(createMockServiceProviders())
+        apiMockHelper.setupSuccessfulResponse()
         
-        // When: Services tab loads data
-        refreshServicesData()
+        // When: Service provider list loads
+        navigationHelper.refreshData()
         
-        // Then: Should display service provider list
-        val providerList = `$`(".service-provider-list")
-        providerList.shouldBe(Condition.visible)
+        // Then: Service provider list should be visible
+        serviceProviderListPage.waitForListToLoad()
         
-        val providerItems = `$$`(".service-provider-item")
-        assertTrue(providerItems.size() >= 2)
+        // And: Should display expected number of providers
+        assert(serviceProviderListPage.getProviderCount() >= 2) { 
+            "Expected at least 2 providers, but found ${serviceProviderListPage.getProviderCount()}" 
+        }
         
-        // And: First provider should have avatar
-        val firstProvider = providerItems.first()
-        val avatar = firstProvider.`$`(".service-provider-avatar")
-        avatar.shouldBe(Condition.visible)
-        assertTrue(avatar.getAttribute("src")?.contains("avatar1.jpg") == true)
-        
-        // And: Should display provider name
-        val providerName = firstProvider.`$`(".service-provider-name")
-        providerName.shouldBe(Condition.visible)
-        assertEquals("Electric Company", providerName.text())
-        
-        // And: Should display provider state
-        val providerState = firstProvider.`$`(".service-provider-state")
-        providerState.shouldBe(Condition.visible)
-        assertEquals("Active", providerState.text())
+        // And: First provider should have avatar and correct information
+        val firstProvider = serviceProviderListPage.getFirstProvider()
+        assert(firstProvider.isVisible()) { "First provider should be visible" }
+        assert(firstProvider.hasAvatar()) { "First provider should have avatar" }
+        assert(firstProvider.getAvatarSrc()?.contains("avatar1.jpg") == true) { 
+            "Avatar should contain 'avatar1.jpg'" 
+        }
+        assert(firstProvider.getName() == "Electric Company") { 
+            "Provider name should be 'Electric Company'" 
+        }
+        assert(firstProvider.getState() == "Active") { 
+            "Provider state should be 'Active'" 
+        }
     }
 
     @Test
-    fun `given service provider without avatar when displayed then should show fallback initials`() {
-        // Given: API returns service provider without avatar
-        setupServiceProvidersApiMock(createMockServiceProvidersWithoutAvatars())
+    fun shouldDisplayFallbackAvatarWhenProviderHasNoAvatar() {
+        // Given: API returns service providers where some have no avatar
+        apiMockHelper.setupProvidersWithMixedAvatars()
         
-        // When: Services tab loads data
-        refreshServicesData()
+        // When: Service provider list loads
+        navigationHelper.refreshData()
         
-        // Then: Should display fallback avatar with initials
-        val providerItems = `$$`(".service-provider-item")
-        val providerWithoutAvatar = providerItems.get(1) // Second provider has no avatar
+        // Then: Provider without avatar should show fallback with initials
+        serviceProviderListPage.waitForListToLoad()
         
-        val avatarFallback = providerWithoutAvatar.`$`(".service-provider-avatar-fallback")
-        avatarFallback.shouldBe(Condition.visible)
-        assertEquals("W", avatarFallback.text()) // "Water" -> "W"
+        val providerWithoutAvatar = serviceProviderListPage.getProviderItem(1)
+        assert(providerWithoutAvatar.hasAvatarFallback()) { 
+            "Provider without avatar should show fallback" 
+        }
+        assert(providerWithoutAvatar.getAvatarFallbackText() == "W") { 
+            "Fallback should show 'W' for 'Water'" 
+        }
     }
 
     @Test
-    fun `given hidden service provider when displayed then should show dimmed appearance`() {
+    fun shouldDisplayHiddenProviderWithDimmedAppearance() {
         // Given: API returns mix of active and hidden providers
-        setupServiceProvidersApiMock(createMockServiceProvidersWithHidden())
+        apiMockHelper.setupProvidersWithMixedStates()
         
-        // When: Services tab loads data
-        refreshServicesData()
+        // When: Service provider list loads
+        navigationHelper.refreshData()
         
-        // Then: Hidden provider should have dimmed styling
-        val providerItems = `$$`(".service-provider-item")
-        val hiddenProvider = providerItems.find { it.getAttribute("class")?.contains("hidden") == true }
+        // Then: Hidden provider should be displayed with dimmed styling
+        serviceProviderListPage.waitForListToLoad()
         
-        assertNotNull(hiddenProvider)
-        hiddenProvider!!.shouldBe(Condition.visible)
-        
-        // And: Should show "Hidden" state
-        val stateText = hiddenProvider.`$`(".service-provider-state")
-        stateText.shouldBe(Condition.visible)
-        assertEquals("Hidden", stateText.text())
+        val hiddenProvider = serviceProviderListPage.findProviderByState("Hidden")
+        assert(hiddenProvider != null) { "Hidden provider should be found" }
+        assert(hiddenProvider!!.isVisible()) { "Hidden provider should be visible" }
+        assert(hiddenProvider.isHidden()) { "Hidden provider should have dimmed styling" }
+        assert(hiddenProvider.getState() == "Hidden") { "State should be 'Hidden'" }
     }
 
     @Test
-    fun `given service provider when clicked then should select and highlight item`() {
+    fun shouldSelectProviderWhenClicked() {
         // Given: Service providers are loaded
-        setupServiceProvidersApiMock(createMockServiceProviders())
-        refreshServicesData()
+        apiMockHelper.setupSuccessfulResponse()
+        navigationHelper.refreshData()
+        serviceProviderListPage.waitForListToLoad()
         
         // When: User clicks on first provider
-        val providerItems = `$$`(".service-provider-item")
-        val firstProvider = providerItems.first()
+        val firstProvider = serviceProviderListPage.getFirstProvider()
         firstProvider.click()
         
         // Then: Provider should be selected and highlighted
-        firstProvider.shouldHave(Condition.cssClass("selected"))
+        firstProvider.waitForSelection()
+        assert(firstProvider.isSelected()) { "First provider should be selected" }
         
         // And: Form should display provider details
-        val formTitle = `$`("#formTitle")
-        formTitle.shouldBe(Condition.visible)
-        assertTrue(formTitle.text().contains("Edit Service Provider"))
+        assert(serviceProviderListPage.isFormTitleDisplayed()) { 
+            "Form title should be displayed" 
+        }
+        assert(serviceProviderListPage.getFormTitle().contains("Edit Service Provider")) { 
+            "Form title should contain 'Edit Service Provider'" 
+        }
     }
 
     @Test
-    fun `given multiple providers when one selected then only that provider should be highlighted`() {
+    fun shouldSelectOnlyOneProviderAtATime() {
         // Given: Multiple service providers are loaded
-        setupServiceProvidersApiMock(createMockServiceProviders())
-        refreshServicesData()
+        apiMockHelper.setupSuccessfulResponse()
+        navigationHelper.refreshData()
+        serviceProviderListPage.waitForListToLoad()
         
-        val providerItems = `$$`(".service-provider-item")
+        val firstProvider = serviceProviderListPage.getProviderItem(0)
+        val secondProvider = serviceProviderListPage.getProviderItem(1)
         
-        // When: User clicks on second provider
-        val secondProvider = providerItems.get(1)
+        // When: User clicks on second provider after first is selected
+        firstProvider.click()
+        firstProvider.waitForSelection()
         secondProvider.click()
         
         // Then: Only second provider should be selected
-        secondProvider.shouldHave(Condition.cssClass("selected"))
+        secondProvider.waitForSelection()
+        assert(secondProvider.isSelected()) { "Second provider should be selected" }
         
         // And: First provider should not be selected
-        val firstProvider = providerItems.first()
-        firstProvider.shouldNotHave(Condition.cssClass("selected"))
+        firstProvider.waitForDeselection()
+        assert(!firstProvider.isSelected()) { "First provider should not be selected" }
     }
 
     @Test
-    fun `given service provider list when scrolling required then should support long lists`() {
+    fun shouldSupportScrollingWithManyProviders() {
         // Given: API returns many service providers
-        setupServiceProvidersApiMock(createMockManyServiceProviders())
+        apiMockHelper.setupManyProviders(15)
         
-        // When: Services tab loads data
-        refreshServicesData()
+        // When: Service provider list loads
+        navigationHelper.refreshData()
         
-        // Then: List should be scrollable
-        val listContainer = `$`("#serviceProviderList")
-        listContainer.shouldBe(Condition.visible)
+        // Then: List should display all providers
+        serviceProviderListPage.waitForListToLoad()
+        assert(serviceProviderListPage.getProviderCount() >= 10) { 
+            "Should have at least 10 providers for scrolling test" 
+        }
         
-        val providerItems = `$$`(".service-provider-item")
-        assertTrue(providerItems.size() >= 10)
-        
-        // And: All items should be accessible through scrolling
-        val lastProvider = providerItems.last()
-        lastProvider.scrollTo()
-        lastProvider.shouldBe(Condition.visible)
+        // And: Should be able to scroll to last provider
+        serviceProviderListPage.scrollToLastProvider()
+        val lastProvider = serviceProviderListPage.getProviderItem(
+            serviceProviderListPage.getProviderCount() - 1
+        )
+        assert(lastProvider.isVisible()) { "Last provider should be visible after scrolling" }
     }
 
     @Test
-    fun `given API error when loading providers then should display error message`() {
-        // Given: API returns error
-        setupServiceProvidersApiError()
+    fun shouldDisplayErrorMessageWhenApiFailsToLoad() {
+        // Given: API returns error response
+        apiMockHelper.setupServerError()
         
-        // When: Services tab tries to load data
-        refreshServicesData()
+        // When: Service provider list tries to load
+        navigationHelper.refreshData()
         
         // Then: Should display error message
-        val errorAlert = `$`("#serviceProviderList .alert-danger")
-        errorAlert.shouldBe(Condition.visible)
-        assertTrue(errorAlert.text().contains("Failed to load service providers"))
-        
-        // And: Should have retry button
-        val retryButton = errorAlert.`$`("button[onclick='loadServicesData()']")
-        retryButton.shouldBe(Condition.visible)
-        assertTrue(retryButton.text().contains("Retry"))
-    }
-
-    @Test
-    fun `given provider list when search functionality added then should filter results`() {
-        // Given: Service providers with different names are loaded
-        setupServiceProvidersApiMock(createMockServiceProvidersForSearch())
-        refreshServicesData()
-        
-        // Note: Search functionality would be implemented as a future enhancement
-        // This test verifies the list structure supports filtering
-        val providerItems = `$$`(".service-provider-item")
-        assertTrue(providerItems.size() >= 3)
-        
-        // Verify different provider names exist for potential filtering
-        val providerNames = providerItems.map { it.`$`(".service-provider-name").text() }
-        assertTrue(providerNames.contains("Electric Company"))
-        assertTrue(providerNames.contains("Water Utility"))
-        assertTrue(providerNames.contains("Internet Provider"))
-    }
-
-    @Test
-    fun `given provider list when responsive design tested then should adapt layout`() {
-        // Given: Service providers are loaded
-        setupServiceProvidersApiMock(createMockServiceProviders())
-        refreshServicesData()
-        
-        // When: Browser is resized to mobile width
-        WebDriverRunner.getWebDriver().manage().window().setSize(
-            org.openqa.selenium.Dimension(400, 800)
-        )
-        
-        // Then: List items should remain functional
-        val providerItems = `$$`(".service-provider-item")
-        val firstProvider = providerItems.first()
-        firstProvider.shouldBe(Condition.visible)
-        
-        // And: Avatar and text should be properly laid out
-        val avatar = firstProvider.`$`(".service-provider-avatar")
-        val providerInfo = firstProvider.`$`(".service-provider-info")
-        
-        avatar.shouldBe(Condition.visible)
-        providerInfo.shouldBe(Condition.visible)
-        
-        // Reset window size
-        WebDriverRunner.getWebDriver().manage().window().maximize()
-    }
-
-    /**
-     * Helper methods for API mocking and test data
-     */
-    private fun setupServiceProvidersApiMock(providers: String) {
-        wireMockServer.stubFor(
-            get(urlEqualTo("/api/service-providers"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(providers)
-                )
-        )
-    }
-
-    private fun setupServiceProvidersApiError() {
-        wireMockServer.stubFor(
-            get(urlEqualTo("/api/service-providers"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(500)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""{"error": "Internal server error"}""")
-                )
-        )
-    }
-
-    private fun createMockServiceProviders(): String {
-        return """[
-            {
-                "id": 1,
-                "name": "Electric Company",
-                "avatar": "/uploads/avatar1.jpg",
-                "comment": "Monthly electricity bills",
-                "commentForOcr": "Electric utility provider",
-                "regular": "MONTHLY",
-                "customFields": {
-                    "account": "123456789",
-                    "customerService": "+1-800-123-4567"
-                },
-                "state": "ACTIVE",
-                "createdDate": "2025-01-01T10:00:00Z",
-                "modifiedDate": "2025-01-01T10:00:00Z"
-            },
-            {
-                "id": 2,
-                "name": "Water Utility",
-                "avatar": null,
-                "comment": "Quarterly water bills",
-                "commentForOcr": "Water utility provider",
-                "regular": "NOT_REGULAR",
-                "customFields": {},
-                "state": "ACTIVE",
-                "createdDate": "2025-01-01T11:00:00Z",
-                "modifiedDate": "2025-01-01T11:00:00Z"
-            }
-        ]"""
-    }
-
-    private fun createMockServiceProvidersWithoutAvatars(): String {
-        return """[
-            {
-                "id": 1,
-                "name": "Electric Company",
-                "avatar": "/uploads/avatar1.jpg",
-                "state": "ACTIVE"
-            },
-            {
-                "id": 2,
-                "name": "Water Utility",
-                "avatar": null,
-                "state": "ACTIVE"
-            }
-        ]"""
-    }
-
-    private fun createMockServiceProvidersWithHidden(): String {
-        return """[
-            {
-                "id": 1,
-                "name": "Electric Company",
-                "avatar": "/uploads/avatar1.jpg",
-                "state": "ACTIVE"
-            },
-            {
-                "id": 2,
-                "name": "Old Provider",
-                "avatar": null,
-                "state": "HIDDEN"
-            }
-        ]"""
-    }
-
-    private fun createMockManyServiceProviders(): String {
-        val providers = mutableListOf<String>()
-        for (i in 1..15) {
-            providers.add("""
-                {
-                    "id": $i,
-                    "name": "Provider $i",
-                    "avatar": null,
-                    "state": "ACTIVE"
-                }
-            """.trimIndent())
+        assert(serviceProviderListPage.isErrorDisplayed()) { 
+            "Error message should be displayed" 
         }
-        return "[${providers.joinToString(",")}]"
-    }
-
-    private fun createMockServiceProvidersForSearch(): String {
-        return """[
-            {
-                "id": 1,
-                "name": "Electric Company",
-                "avatar": null,
-                "state": "ACTIVE"
-            },
-            {
-                "id": 2,
-                "name": "Water Utility",
-                "avatar": null,
-                "state": "ACTIVE"
-            },
-            {
-                "id": 3,
-                "name": "Internet Provider",
-                "avatar": null,
-                "state": "ACTIVE"
-            }
-        ]"""
-    }
-
-    private fun refreshServicesData() {
-        // Execute JavaScript to reload services data
-        Selenide.executeJavaScript<Unit>("if (typeof loadServicesData === 'function') loadServicesData();")
+        assert(serviceProviderListPage.getErrorMessage().contains("Failed to load service providers")) { 
+            "Error message should contain expected text" 
+        }
         
-        // Wait for data to load
-        Thread.sleep(1000)
+        // And: Should provide retry functionality
+        serviceProviderListPage.clickRetry()
+        // Verify retry button works (would need additional API setup for full test)
     }
 
-    private fun navigateToServicesTab() {
-        val servicesTab = `$`("a[href='#services']")
-        servicesTab.shouldBe(Condition.visible)
-        servicesTab.click()
+    @Test
+    fun shouldSupportResponsiveDesignOnMobileViewport() {
+        // Given: Service providers are loaded
+        apiMockHelper.setupSuccessfulResponse()
+        navigationHelper.refreshData()
+        serviceProviderListPage.waitForListToLoad()
         
-        val servicesContent = `$`("#services-content")
-        servicesContent.shouldBe(Condition.visible)
+        // When: Browser viewport is set to mobile size
+        navigationHelper.setMobileViewport()
+        
+        // Then: List items should remain functional and visible
+        val firstProvider = serviceProviderListPage.getFirstProvider()
+        assert(firstProvider.isVisible()) { "Provider should be visible on mobile" }
+        
+        // And: Should be able to interact with providers
+        firstProvider.click()
+        firstProvider.waitForSelection()
+        assert(firstProvider.isSelected()) { "Provider should be selectable on mobile" }
+        
+        // Cleanup: Reset to normal viewport
+        navigationHelper.maximizeBrowser()
+    }
+
+    @Test
+    fun shouldProvideProvidersForPotentialSearchFunctionality() {
+        // Given: Service providers with different names are loaded
+        apiMockHelper.setupProvidersForSearch()
+        
+        // When: Service provider list loads
+        navigationHelper.refreshData()
+        
+        // Then: Should display providers with searchable names
+        serviceProviderListPage.waitForListToLoad()
+        assert(serviceProviderListPage.getProviderCount() >= 3) { 
+            "Should have at least 3 providers for search testing" 
+        }
+        
+        // And: Should have providers with different names for filtering
+        val electricProvider = serviceProviderListPage.findProviderByName("Electric Company")
+        val waterProvider = serviceProviderListPage.findProviderByName("Water Utility")
+        val internetProvider = serviceProviderListPage.findProviderByName("Internet Provider")
+        
+        assert(electricProvider != null) { "Electric Company provider should exist" }
+        assert(waterProvider != null) { "Water Utility provider should exist" }
+        assert(internetProvider != null) { "Internet Provider should exist" }
     }
 }

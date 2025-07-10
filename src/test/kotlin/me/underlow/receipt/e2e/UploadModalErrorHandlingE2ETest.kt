@@ -5,6 +5,7 @@ import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.Selenide.executeJavaScript
 import me.underlow.receipt.config.BaseE2ETest
+import me.underlow.receipt.e2e.helpers.LoginHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.test.context.ActiveProfiles
@@ -20,10 +21,12 @@ import java.time.Duration
 @ActiveProfiles("test")
 class UploadModalErrorHandlingE2ETest : BaseE2ETest() {
 
+    private val loginHelper = LoginHelper()
+
     @BeforeEach
     fun setUpErrorHandlingTest() {
         // given - user is logged in and on dashboard
-        performLoginWithAllowedUser()
+        loginHelper.loginAsAllowedUser1()
         waitForPageLoad()
     }
 
