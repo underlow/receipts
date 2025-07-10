@@ -6,11 +6,15 @@
 <body>
     <!-- Navigation Panel Fragment -->
     <nav th:fragment="navigationPanel(navigationData)" class="nav nav-pills nav-fill flex-column" role="navigation">
-        <th:block th:each="tab : ${navigationData.tabs}">
+        <th:block th:each="tab, iterStat : ${navigationData.tabs}">
+            <!-- Visual separator before Services tab -->
+            <div th:if="${tab.name == 'Services'}" class="tab-separator" style="border-top: 2px solid var(--border); margin: 0.5rem 0; opacity: 0.3;"></div>
             <a class="nav-link" 
                th:classappend="${tab.active} ? 'active' : ''" 
                th:href="'#' + ${tab.name.toLowerCase()}"
                data-bs-toggle="tab" 
+               role="tab"
+               th:attr="aria-selected=${tab.active}, tabindex=${tab.active ? '0' : '-1'}"
                th:text="${tab.name}">Tab Name</a>
         </th:block>
     </nav>

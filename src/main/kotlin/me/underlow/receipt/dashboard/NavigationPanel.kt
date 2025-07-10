@@ -27,7 +27,7 @@ data class NavigationPanelData(
 @Component
 class NavigationPanel {
 
-    private val validTabs = listOf("Inbox", "Bills", "Receipts")
+    private val validTabs = listOf("Inbox", "Bills", "Receipts", "Services")
     private val defaultTab = "Inbox"
 
     /**
@@ -92,6 +92,7 @@ class NavigationPanel {
             "Inbox" -> "inbox"
             "Bills" -> "file-invoice"
             "Receipts" -> "receipt"
+            "Services" -> "cog"
             else -> "file"
         }
     }

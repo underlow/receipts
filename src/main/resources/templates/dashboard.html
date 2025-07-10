@@ -740,6 +740,13 @@
             color: hsl(var(--muted-foreground));
         }
 
+        /* Visual separator styling */
+        .tab-separator {
+            border-top: 2px solid hsl(var(--border));
+            margin: 0.5rem 0;
+            opacity: 0.3;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .modern-table-wrapper {
@@ -773,6 +780,11 @@
             .action-buttons {
                 flex-direction: column;
                 gap: 0.25rem;
+            }
+
+            /* Services tab responsive design */
+            .tab-separator {
+                margin: 0.25rem 0;
             }
         }
     </style>
@@ -914,6 +926,27 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Services Tab -->
+                    <div class="tab-pane fade" id="services">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-cog me-2"></i>
+                                    Service Provider Management
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="services-content">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </section>
@@ -980,6 +1013,13 @@
             if (receiptsTab) {
                 receiptsTab.addEventListener('shown.bs.tab', function() {
                     loadReceiptsData();
+                });
+            }
+
+            const servicesTab = document.querySelector('a[href="#services"]');
+            if (servicesTab) {
+                servicesTab.addEventListener('shown.bs.tab', function() {
+                    loadServicesData();
                 });
             }
 
@@ -1658,6 +1698,31 @@
         function toggleReceiptActions(receiptId) {
             console.log(`Toggle actions for receipt ${receiptId}`);
             // TODO: Implement dropdown toggle functionality
+        }
+
+        // Function to load services data from the API
+        function loadServicesData() {
+            // Set basic content for now - placeholder for future implementation
+            document.getElementById('services-content').innerHTML = `
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            Service Providers
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Service provider management functionality will be implemented here.</p>
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="placeholder-title">Service Providers</div>
+                            <p class="placeholder-text">Manage your service providers and their settings.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Upload functionality is now handled by upload.js module

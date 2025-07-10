@@ -25,10 +25,11 @@ class NavigationPanelTest {
         
         // then - should contain all required tabs
         assertNotNull(navigationData)
-        assertEquals(3, navigationData.tabs.size)
+        assertEquals(4, navigationData.tabs.size)
         assertTrue(navigationData.tabs.any { it.name == "Inbox" })
         assertTrue(navigationData.tabs.any { it.name == "Bills" })
         assertTrue(navigationData.tabs.any { it.name == "Receipts" })
+        assertTrue(navigationData.tabs.any { it.name == "Services" })
     }
 
     @Test
@@ -97,6 +98,8 @@ class NavigationPanelTest {
         assertEquals("file-invoice", billsTab?.icon)
         val receiptsTab = navigationData.tabs.find { it.name == "Receipts" }
         assertEquals("receipt", receiptsTab?.icon)
+        val servicesTab = navigationData.tabs.find { it.name == "Services" }
+        assertEquals("cog", servicesTab?.icon)
     }
 
     @Test
@@ -142,7 +145,7 @@ class NavigationPanelTest {
         
         // then - should maintain consistent tab names
         assertNotNull(navigationData)
-        val expectedTabs = listOf("Inbox", "Bills", "Receipts")
+        val expectedTabs = listOf("Inbox", "Bills", "Receipts", "Services")
         val actualTabNames = navigationData.tabs.map { it.name }
         assertEquals(expectedTabs, actualTabNames)
     }
@@ -200,7 +203,7 @@ class NavigationPanelTest {
         val tabCount = navigationPanel.getTabCount()
         
         // then - should return correct number of tabs
-        assertEquals(3, tabCount)
+        assertEquals(4, tabCount)
     }
 
     @Test
@@ -213,9 +216,10 @@ class NavigationPanelTest {
         
         // then - should return all tab names
         assertNotNull(tabNames)
-        assertEquals(3, tabNames.size)
+        assertEquals(4, tabNames.size)
         assertTrue(tabNames.contains("Inbox"))
         assertTrue(tabNames.contains("Bills"))
         assertTrue(tabNames.contains("Receipts"))
+        assertTrue(tabNames.contains("Services"))
     }
 }
