@@ -142,7 +142,7 @@ class ServicesE2ETest : BaseE2ETest() {
         ocrCommentField.value = "OCR test comment"
         
         val frequencyField = `$`("#providerFrequency")
-        frequencyField.selectOption("MONTHLY")
+        frequencyField.selectOptionByValue("MONTHLY")
         
         // Then: All fields should be properly filled
         assertEquals("Test Service Provider", nameField.value)
@@ -286,6 +286,9 @@ class ServicesE2ETest : BaseE2ETest() {
 
     @Test
     fun `given services tab when accessibility features tested then should be accessible`() {
+        // Given: User opens create form first to make form elements visible
+        `$`("#createServiceButton").click()
+        
         // Then: Form labels should have proper associations
         val nameLabel = `$`("label[for='providerName']")
         nameLabel.shouldBe(Condition.visible)
@@ -303,8 +306,6 @@ class ServicesE2ETest : BaseE2ETest() {
         
         // And: Form should have proper structure
         val form = `$`(".service-provider-form")
-        // Form may not be visible initially, so we test after creating new provider
-        `$`("#createServiceButton").click()
         form.shouldBe(Condition.visible)
     }
 
