@@ -1,0 +1,78 @@
+/* Drag and Drop Zone Components */
+.drop-zone {
+    position: relative;
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px dashed hsl(var(--primary));
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.drop-message {
+    text-align: center;
+    color: hsl(var(--primary));
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.drop-message i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.drop-message p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Drag over state */
+.drag-over {
+    background-color: hsl(var(--muted));
+    border: 2px dashed hsl(var(--primary));
+    border-radius: var(--radius);
+}
+
+/* Animation for drop overlay */
+.drop-overlay {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive design for drag/drop */
+@media (max-width: 768px) {
+    .drop-message {
+        font-size: 1rem;
+    }
+    
+    .drop-message i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .drop-message p {
+        font-size: 0.875rem;
+    }
+}
