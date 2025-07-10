@@ -1,16 +1,21 @@
 package me.underlow.receipt.e2e
 
-import com.codeborne.selenide.Condition
 import com.codeborne.selenide.Selenide
 import me.underlow.receipt.config.BaseE2ETest
 import me.underlow.receipt.config.TestSecurityConfiguration
+import me.underlow.receipt.e2e.pages.DashboardPage
+import me.underlow.receipt.e2e.pages.LoginPage
+import me.underlow.receipt.e2e.pages.ProfilePage
+import me.underlow.receipt.e2e.pages.SettingsPage
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.TestPropertySource
 
 /**
  * End-to-end tests for authentication flow using test security configuration.
- * Tests complete login/logout flow using Selenide browser automation.
+ * Tests complete login/logout flow using Selenide browser automation and Page Objects.
  * Uses TestSecurityConfiguration to bypass OAuth2 for testing.
  */
 @TestPropertySource(
@@ -20,199 +25,197 @@ import org.springframework.test.context.TestPropertySource
 )
 class AuthenticationE2ETest : BaseE2ETest() {
 
+    private lateinit var loginPage: LoginPage
+    private lateinit var dashboardPage: DashboardPage
+    private lateinit var profilePage: ProfilePage
+    private lateinit var settingsPage: SettingsPage
+
+    @BeforeEach
+    fun setupPages() {
+        loginPage = LoginPage()
+        dashboardPage = DashboardPage()
+        profilePage = ProfilePage()
+        settingsPage = SettingsPage()
+    }
+
+    @AfterEach
+    fun cleanupTestState() {
+        try {
+            // Ensure user is logged out after each test for proper isolation
+            dashboardPage.logout()
+        } catch (e: Exception) {
+            // Ignore logout errors during cleanup
+        }
+    }
+
     @Test
-    @DisplayName("Given user visits root URL when unauthenticated then should redirect to login page")
-    fun `given user visits root URL when unauthenticated then should redirect to login page`() {
+    @DisplayName("Should redirect unauthenticated user to login page")
+    fun shouldRedirectUnauthenticatedUserToLoginPage() {
         // Given: unauthenticated user
         // When: user visits root URL
         Selenide.open("/")
 
-        // Then: should redirect to login page
-        waitForPageLoad()
-        assert(isOnLoginPage()) { "User should be redirected to login page" }
-
-        // And: login page should contain required elements
-        Selenide.`$`("input[name='username']").shouldBe(Condition.visible)
-        Selenide.`$`("input[name='password']").shouldBe(Condition.visible)
-        Selenide.`$`("button[type='submit']").shouldBe(Condition.visible)
+        // Then: should redirect to login page with all required elements
+        loginPage.shouldBeDisplayed()
+            .shouldBeOnLoginUrl()
     }
 
     @Test
-    @DisplayName("Given user enters valid credentials when logging in then should redirect to dashboard")
-    fun `given user enters valid credentials when logging in then should redirect to dashboard`() {
+    @DisplayName("Should login successfully with valid credentials")
+    fun shouldLoginSuccessfullyWithValidCredentials() {
         // Given: user is on login page
-        Selenide.open("/login")
-        waitForPageLoad()
-
-        // When: user enters valid credentials
-        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1, TestSecurityConfiguration.Companion.TEST_PASSWORD)
+        // When: user enters valid credentials and logs in
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
 
         // Then: should redirect to dashboard
-        waitForPageLoad()
-        assert(isOnDashboardPage()) { "User should be redirected to dashboard after successful login" }
+        dashboardPage.shouldBeDisplayed()
+            .shouldBeOnDashboardUrl()
     }
 
     @Test
-    @DisplayName("Given user enters invalid credentials when logging in then should show error message")
-    fun `given user enters invalid credentials when logging in then should show error message`() {
+    @DisplayName("Should show error message with invalid credentials")
+    fun shouldShowErrorMessageWithInvalidCredentials() {
         // Given: user is on login page
-        Selenide.open("/login")
-        waitForPageLoad()
+        // When: user enters invalid credentials and attempts login
+        loginPage.open()
+            .loginWith("invalid@example.com", "wrongpassword")
 
-        // When: user enters invalid credentials
-        performLogin("invalid@example.com", "wrongpassword")
-
-        // Then: should remain on login page with error
-        waitForPageLoad()
-        assert(isOnLoginPage()) { "User should remain on login page after failed login" }
-
-        // And: should show error message
-        Selenide.`$`(".alert-danger").shouldBe(Condition.visible)
+        // Then: should remain on login page with error message
+        loginPage.shouldStillBeOnLoginPage()
+            .shouldShowErrorMessage()
     }
 
     @Test
-    @DisplayName("Given user with non-allowed email when logging in then should show access denied error")
-    fun `given user with non-allowed email when logging in then should show access denied error`() {
+    @DisplayName("Should deny access for non-allowed email")
+    fun shouldDenyAccessForNonAllowedEmail() {
         // Given: user is on login page
-        Selenide.open("/login")
-        waitForPageLoad()
-
         // When: user enters credentials with non-allowed email
-        performLogin(TestSecurityConfiguration.Companion.NOT_ALLOWED_EMAIL, TestSecurityConfiguration.Companion.TEST_PASSWORD)
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.NOT_ALLOWED_EMAIL, TestSecurityConfiguration.TEST_PASSWORD)
 
-        // Then: should remain on login page with error
-        waitForPageLoad()
-        assert(isOnLoginPage()) { "User should remain on login page after access denied" }
-
-        // And: should show appropriate error message
-        Selenide.`$`(".alert-danger").shouldBe(Condition.visible)
+        // Then: should remain on login page with error message
+        loginPage.shouldStillBeOnLoginPage()
+            .shouldShowErrorMessage()
     }
 
     @Test
-    @DisplayName("Given authenticated user when accessing dashboard then should show user profile")
-    fun `given authenticated user when accessing dashboard then should show user profile`() {
+    @DisplayName("Should show user profile when authenticated user accesses dashboard")
+    fun shouldShowUserProfileWhenAuthenticatedUserAccessesDashboard() {
         // Given: user is authenticated
-        performLoginWithAllowedUser()
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
 
         // When: user accesses dashboard
-        Selenide.open("/dashboard")
-        waitForPageLoad()
+        dashboardPage.open()
 
         // Then: should show dashboard with user information
-        assert(isOnDashboardPage()) { "User should be on dashboard page" }
-
-        // And: user profile information should be visible
-        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1))
+        dashboardPage.shouldBeDisplayed()
+            .shouldShowUserEmail(TestSecurityConfiguration.ALLOWED_EMAIL_1)
     }
 
     @Test
-    @DisplayName("Given authenticated user when logging out then should redirect to login page")
-    fun `given authenticated user when logging out then should redirect to login page`() {
+    @DisplayName("Should redirect to login page after logout")
+    fun shouldRedirectToLoginPageAfterLogout() {
         // Given: user is authenticated
-        performLoginWithAllowedUser()
-
-        // When: user clicks logout
-        performLogout()
-
-        // Then: should redirect to login page
-        waitForPageLoad()
-        assert(isOnLoginPage()) { "User should be redirected to login page after logout" }
-    }
-
-    @Test
-    @DisplayName("Given user logs out when accessing protected page then should redirect to login")
-    fun `given user logs out when accessing protected page then should redirect to login`() {
-        // Given: user is authenticated
-        performLoginWithAllowedUser()
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
 
         // When: user logs out
-        performLogout()
-
-        // And: tries to access protected page
-        Selenide.open("/dashboard")
-        waitForPageLoad()
+        dashboardPage.logout()
 
         // Then: should redirect to login page
-        assert(isOnLoginPage()) { "User should be redirected to login page when accessing protected page after logout" }
+        loginPage.shouldBeDisplayed()
+            .shouldBeOnLoginUrl()
     }
 
     @Test
-    @DisplayName("Given authenticated user when accessing login page then should redirect to dashboard")
-    fun `given authenticated user when accessing login page then should redirect to dashboard`() {
+    @DisplayName("Should redirect to login when accessing protected page after logout")
+    fun shouldRedirectToLoginWhenAccessingProtectedPageAfterLogout() {
+        // Given: user is authenticated and then logs out
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        dashboardPage.logout()
+
+        // When: user tries to access protected page
+        dashboardPage.open()
+
+        // Then: should redirect to login page
+        loginPage.shouldBeDisplayed()
+            .shouldBeOnLoginUrl()
+    }
+
+    @Test
+    @DisplayName("Should redirect authenticated user to dashboard when accessing login page")
+    fun shouldRedirectAuthenticatedUserToDashboardWhenAccessingLoginPage() {
         // Given: user is authenticated
-        performLoginWithAllowedUser()
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
 
         // When: user tries to access login page
-        Selenide.open("/login")
-        waitForPageLoad()
+        loginPage.open()
 
         // Then: should redirect to dashboard
-        assert(isOnDashboardPage()) { "Authenticated user should be redirected to dashboard when accessing login page" }
+        dashboardPage.shouldBeDisplayed()
+            .shouldBeOnDashboardUrl()
     }
 
     @Test
-    @DisplayName("Given user session when navigating between pages then should maintain authentication state")
-    fun `given user session when navigating between pages then should maintain authentication state`() {
+    @DisplayName("Should maintain authentication state when navigating between pages")
+    fun shouldMaintainAuthenticationStateWhenNavigatingBetweenPages() {
         // Given: user is authenticated
-        performLoginWithAllowedUser()
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
 
         // When: user navigates to different pages
-        Selenide.open("/dashboard")
-        waitForPageLoad()
-        assert(isOnDashboardPage()) { "User should be on dashboard page" }
+        dashboardPage.open()
+            .shouldBeDisplayed()
 
-        Selenide.open("/profile")
-        waitForPageLoad()
-        Selenide.`$`("h1").shouldHave(Condition.text("User Profile"))
+        profilePage.open()
+            .shouldBeDisplayed()
 
-        Selenide.open("/settings")
-        waitForPageLoad()
-        Selenide.`$`("h1").shouldHave(Condition.text("Settings"))
+        settingsPage.open()
+            .shouldBeDisplayed()
 
-        // Then: user should remain authenticated throughout navigation
-        // And: should be able to access dashboard again
-        Selenide.open("/dashboard")
-        waitForPageLoad()
-        assert(isOnDashboardPage()) { "User should still be authenticated and able to access dashboard" }
+        // Then: user should remain authenticated and able to access dashboard again
+        dashboardPage.open()
+            .shouldBeDisplayed()
+            .shouldBeOnDashboardUrl()
     }
 
     @Test
-    @DisplayName("Given multiple users when logging in with different accounts then should handle user switching")
-    fun `given multiple users when logging in with different accounts then should handle user switching`() {
+    @DisplayName("Should handle user switching between different accounts")
+    fun shouldHandleUserSwitchingBetweenDifferentAccounts() {
         // Given: first user is authenticated
-        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_1, TestSecurityConfiguration.Companion.TEST_PASSWORD)
-        waitForPageLoad()
-        assert(isOnDashboardPage()) { "First user should be authenticated" }
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        dashboardPage.shouldBeDisplayed()
 
         // When: user logs out and second user logs in
-        performLogout()
-        performLogin(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_2, TestSecurityConfiguration.Companion.TEST_PASSWORD)
-        waitForPageLoad()
+        dashboardPage.logout()
+        loginPage.loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_2, TestSecurityConfiguration.TEST_PASSWORD)
 
-        // Then: second user should be authenticated
-        assert(isOnDashboardPage()) { "Second user should be authenticated" }
-
-        // And: should show second user's email
-        Selenide.`$`("body").shouldHave(Condition.text(TestSecurityConfiguration.Companion.ALLOWED_EMAIL_2))
+        // Then: second user should be authenticated with their email displayed
+        dashboardPage.shouldBeDisplayed()
+            .shouldShowUserEmail(TestSecurityConfiguration.ALLOWED_EMAIL_2)
     }
 
     @Test
-    @DisplayName("Given browser back button when user is authenticated then should handle navigation correctly")
-    fun `given browser back button when user is authenticated then should handle navigation correctly`() {
+    @DisplayName("Should handle browser back button navigation correctly")
+    fun shouldHandleBrowserBackButtonNavigationCorrectly() {
         // Given: user is authenticated and on dashboard
-        performLoginWithAllowedUser()
-        Selenide.open("/dashboard")
-        waitForPageLoad()
+        loginPage.open()
+            .loginWith(TestSecurityConfiguration.ALLOWED_EMAIL_1, TestSecurityConfiguration.TEST_PASSWORD)
+        dashboardPage.shouldBeDisplayed()
 
-        // When: user navigates to profile
-        Selenide.open("/profile")
-        waitForPageLoad()
-
-        // And: uses browser back button
-        Selenide.back()
-        waitForPageLoad()
+        // When: user navigates to profile and uses browser back button
+        dashboardPage.navigateToProfile()
+        profilePage.shouldBeDisplayed()
+        
+        dashboardPage.goBack()
 
         // Then: should be back on dashboard and still authenticated
-        assert(isOnDashboardPage()) { "User should be back on dashboard after browser back button" }
+        dashboardPage.shouldBeDisplayed()
+            .shouldBeOnDashboardUrl()
     }
 }
