@@ -1,0 +1,166 @@
+/* Modern Table Styles */
+
+/* Table Wrapper */
+.modern-table-wrapper {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* Main Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Table Header */
+.modern-table-header {
+    background-color: hsl(var(--muted));
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.modern-table-header th {
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    text-align: left;
+    border: none;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    height: 3rem;
+}
+
+.modern-table-header th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.modern-table-header th.sortable:hover {
+    background-color: hsl(var(--muted));
+}
+
+.modern-table-header .header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Table Body */
+.modern-table-body {
+    background-color: hsl(var(--card));
+}
+
+.modern-table-row {
+    border-bottom: 1px solid hsl(var(--border));
+    transition: background-color 0.2s ease;
+}
+
+.modern-table-row:hover {
+    background-color: hsl(var(--muted));
+}
+
+.modern-table-row:last-child {
+    border-bottom: none;
+}
+
+.modern-table-cell {
+    padding: 0.875rem 1rem;
+    border: none;
+    vertical-align: middle;
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.modern-table-cell:first-child {
+    font-weight: 500;
+}
+
+/* Special Table Cell Types */
+.modern-table-cell-select {
+    width: 3rem;
+    padding: 0.75rem 1rem;
+}
+
+.modern-table-cell-actions {
+    width: 3.75rem;
+    padding: 0.75rem 1rem;
+    text-align: right;
+}
+
+/* Drop Zone Styles for Tables */
+.drop-zone {
+    position: relative;
+    min-height: 200px;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    background-color: hsl(214.3 31.8% 91.4%);
+    border: 2px dashed hsl(222.2 84% 4.9%);
+    border-radius: var(--radius);
+}
+
+/* Actions Dropdown in Table */
+.actions-dropdown {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dropdown-toggle-btn {
+    background: none;
+    border: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: calc(var(--radius) / 2);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+}
+
+.dropdown-toggle-btn:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .modern-table-wrapper {
+        margin-bottom: 1rem;
+        overflow-x: auto;
+    }
+    
+    .modern-table-header th,
+    .modern-table-cell {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .modern-table-header th {
+        font-size: 0.75rem;
+    }
+    
+    .modern-table-cell {
+        font-size: 0.8125rem;
+    }
+    
+    .modern-table-cell-select {
+        width: 2.5rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .modern-table-cell-actions {
+        width: 3.125rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
