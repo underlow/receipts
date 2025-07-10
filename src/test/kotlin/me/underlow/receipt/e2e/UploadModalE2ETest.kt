@@ -237,10 +237,14 @@ class UploadModalE2ETest : BaseE2ETest() {
         openUploadModal()
 
         // when - error occurs during upload or processing (simulated via JavaScript)
-        executeJavaScript<Any>("window.showErrorMessage('Upload failed. Please try again.')")
+        executeJavaScript<Any>("window.showModalErrorMessage('Upload failed. Please try again.')")
 
-        // then - error message should be displayed in modal
-        val modalErrorContainer = `$`("#uploadModal .alert-danger")
+        // then - error container should be visible
+        val errorContainer = `$`("#uploadErrorContainer")
+        errorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
+        
+        // and - error message should be displayed in modal
+        val modalErrorContainer = `$`("#uploadModal #uploadErrorContainer .alert-danger")
         modalErrorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
         assertTrue(modalErrorContainer.text().isNotEmpty())
         assertTrue(modalErrorContainer.text().contains("Upload failed"))

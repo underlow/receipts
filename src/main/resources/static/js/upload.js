@@ -1166,6 +1166,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Expose handleFileSelect function globally for integration with other modules
 window.handleFileSelect = handleFileSelect;
 
+// Expose showErrorMessage and showModalErrorMessage for testing
+window.showErrorMessage = showErrorMessage;
+window.showModalErrorMessage = showModalErrorMessage;
+
 // Expose upload state for testing
 window.uploadState = uploadState;
 
