@@ -86,15 +86,12 @@ If you are asked to implement a plan:
 - use kotlin official code style
 - use immutable data structures when possible 
 - write comments to data structures and functions
+- keep files small. split them when possible
+  - for html extract css and fragments 
+  - for tests separate tests into several classes grouped by logic
 
 to explore a codebase read ./docs/code.md
 update ./docs/code.md after each change in code structure
-
-
-# Using Gemini CLI for Analysis
-
-When analyzing codebase or multiple files, use the Gemini CLI. 
-Use `gemini -p` to leverage Google Gemini's large context capacity.
 
 ## File and Directory Inclusion Syntax
 
