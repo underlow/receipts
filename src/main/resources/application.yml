@@ -52,3 +52,4 @@ ALLOWED_EMAILS: ${ALLOWED_EMAILS:admin@example.com}
 
 receipts:
   inbox-path: file to upload folder
+  attachments-path: file to avatar folder
