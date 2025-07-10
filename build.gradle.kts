@@ -39,7 +39,6 @@ dependencies {
 	testImplementation("org.testcontainers:selenium")
 	testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-	testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.1")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.13.2")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

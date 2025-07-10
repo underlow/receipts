@@ -114,10 +114,10 @@ class UploadModalE2ETest : BaseE2ETest() {
         // when - user clicks cancel button
         val cancelButton = `$`("#cancelUpload")
         cancelButton.shouldBe(Condition.visible)
-        
+
         // Add a small delay to ensure modal is fully initialized
         Thread.sleep(500)
-        
+
         // Click the cancel button
         cancelButton.click()
 
@@ -125,7 +125,7 @@ class UploadModalE2ETest : BaseE2ETest() {
         val modal = `$`("#uploadModal")
         // Wait for modal to fade out completely and check that it's no longer visible
         modal.shouldNotBe(Condition.visible, Duration.ofSeconds(10))
-        
+
         // Additionally verify that the modal has the correct Bootstrap classes indicating it's closed
         modal.shouldNotHave(Condition.cssClass("show"), Duration.ofSeconds(5))
     }

@@ -40,9 +40,8 @@ class TestNavigationHelper {
      */
     fun navigateToServicesTab() {
         val servicesTab = when {
-            `$`("[data-test-id='services-tab']").exists() -> `$`("[data-test-id='services-tab']")
             `$`("a[href='#services']").exists() -> `$`("a[href='#services']")
-            `$`("a[href='/services']").exists() -> `$`("a[href='/services']")
+            `$`("[data-test-id='services-tab']").exists() -> `$`("[data-test-id='services-tab']")
             `$`("#services-tab").exists() -> `$`("#services-tab")
             `$`(".services-tab").exists() -> `$`(".services-tab")
             `$`("nav").exists() && `$`("nav").text().contains("Services") -> {
@@ -55,9 +54,8 @@ class TestNavigationHelper {
         
         // Wait for services content to load
         val servicesContent = when {
-            `$`("[data-test-id='services-content']").exists() -> `$`("[data-test-id='services-content']")
-            `$`("#services-content").exists() -> `$`("#services-content")
             `$`("#services").exists() -> `$`("#services")
+            `$`("#services-content").exists() -> `$`("#services-content")
             `$`(".services-content").exists() -> `$`(".services-content")
             else -> null
         }
@@ -80,11 +78,9 @@ class TestNavigationHelper {
         
         // Wait for service provider list to be visible using multiple selectors
         val serviceProviderList = when {
-            `$`("[data-test-id='service-provider-list']").exists() -> `$`("[data-test-id='service-provider-list']")
-            `$`("#service-provider-list").exists() -> `$`("#service-provider-list")
+            `$`("#serviceProviderList").exists() -> `$`("#serviceProviderList")
             `$`(".service-provider-list").exists() -> `$`(".service-provider-list")
-            `$`(".service-providers").exists() -> `$`(".service-providers")
-            `$`("[id*='provider']").exists() -> `$`("[id*='provider']")
+            `$`(".split-panel-left").exists() -> `$`(".split-panel-left")
             `$`("[class*='provider']").exists() -> `$`("[class*='provider']")
             else -> null
         }
@@ -112,14 +108,8 @@ class TestNavigationHelper {
      * Triggers data refresh and waits for completion
      */
     fun refreshData() {
-        // Look for refresh button first
-        val refreshButton = `$`("[data-test-id='refresh-button']")
-        if (refreshButton.exists()) {
-            refreshButton.click()
-        } else {
-            // Fallback to JavaScript if refresh button doesn't exist
-            Selenide.executeJavaScript<Unit>("if (typeof loadServicesData === 'function') loadServicesData();")
-        }
+        // Trigger data loading using the JavaScript function from dashboard.html
+        Selenide.executeJavaScript<Unit>("if (typeof loadServicesData === 'function') loadServicesData();")
         
         waitForDataLoad()
     }

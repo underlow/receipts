@@ -12,13 +12,11 @@ import com.codeborne.selenide.SelenideElement
  */
 class ServiceProviderListPage {
 
-    // Main container elements using multiple selector strategies
+    // Main container elements using correct selectors from dashboard.html
     private fun getServiceProviderList(): SelenideElement {
         return when {
-            `$`("[data-test-id='service-provider-list']").exists() -> `$`("[data-test-id='service-provider-list']")
-            `$`("#service-provider-list").exists() -> `$`("#service-provider-list")
+            `$`("#serviceProviderList").exists() -> `$`("#serviceProviderList")
             `$`(".service-provider-list").exists() -> `$`(".service-provider-list")
-            `$`(".service-providers").exists() -> `$`(".service-providers")
             `$`(".split-panel-left").exists() -> `$`(".split-panel-left")
             else -> `$`("body") // fallback to body if nothing else is found
         }
@@ -26,9 +24,8 @@ class ServiceProviderListPage {
     
     private fun getServicesTab(): SelenideElement {
         return when {
-            `$`("[data-test-id='services-tab']").exists() -> `$`("[data-test-id='services-tab']")
             `$`("a[href='#services']").exists() -> `$`("a[href='#services']")
-            `$`("a[href='/services']").exists() -> `$`("a[href='/services']")
+            `$`("[data-test-id='services-tab']").exists() -> `$`("[data-test-id='services-tab']")
             `$`("#services-tab").exists() -> `$`("#services-tab")
             else -> `$`("nav a:contains('Services')").takeIf { it.exists() } ?: `$`("body")
         }
@@ -36,21 +33,19 @@ class ServiceProviderListPage {
     
     private fun getServicesContent(): SelenideElement {
         return when {
-            `$`("[data-test-id='services-content']").exists() -> `$`("[data-test-id='services-content']")
-            `$`("#services-content").exists() -> `$`("#services-content")
             `$`("#services").exists() -> `$`("#services")
+            `$`("#services-content").exists() -> `$`("#services-content")
             `$`(".services-content").exists() -> `$`(".services-content")
             else -> `$`("body") // fallback to body if nothing else is found
         }
     }
 
-    // Service provider items using multiple selector strategies
+    // Service provider items using correct selectors from dashboard.html
     private fun getServiceProviderItems(): ElementsCollection {
         return when {
-            `$$`("[data-test-id='service-provider-item']").size() > 0 -> `$$`("[data-test-id='service-provider-item']")
             `$$`(".service-provider-item").size() > 0 -> `$$`(".service-provider-item")
+            `$$`("[data-test-id='service-provider-item']").size() > 0 -> `$$`("[data-test-id='service-provider-item']")
             `$$`(".provider-item").size() > 0 -> `$$`(".provider-item")
-            `$$`("li").size() > 0 -> `$$`("li")
             else -> `$$`("div") // fallback
         }
     }
@@ -62,6 +57,13 @@ class ServiceProviderListPage {
         getServicesTab().shouldBe(Condition.visible).click()
         getServicesContent().shouldBe(Condition.visible)
         return this
+    }
+
+    /**
+     * Returns the service provider list container element
+     */
+    fun getServiceProviderListElement(): SelenideElement {
+        return getServiceProviderList()
     }
 
     /**
@@ -99,7 +101,7 @@ class ServiceProviderListPage {
      */
     fun findProviderByName(name: String): ServiceProviderItem? {
         val items = getServiceProviderItems().filter { item ->
-            item.`$`("[data-test-id='provider-name']").text() == name ||
+            item.`$`(".service-provider-name").text() == name ||
             item.text().contains(name)
         }
         return if (items.isNotEmpty()) ServiceProviderItem(items.first()) else null
@@ -110,7 +112,7 @@ class ServiceProviderListPage {
      */
     fun findProviderByState(state: String): ServiceProviderItem? {
         val items = getServiceProviderItems().filter { item ->
-            item.`$`("[data-test-id='provider-state']").text() == state
+            item.`$`(".service-provider-state").text() == state
         }
         return if (items.isNotEmpty()) ServiceProviderItem(items.first()) else null
     }
@@ -169,9 +171,9 @@ class ServiceProviderListPage {
      */
     fun isFormTitleDisplayed(): Boolean {
         val titleElement = when {
-            `$`("[data-test-id='form-title']").exists() -> `$`("[data-test-id='form-title']")
             `$`("#formTitle").exists() -> `$`("#formTitle")
             `$`(".form-title").exists() -> `$`(".form-title")
+            `$`("[data-test-id='form-title']").exists() -> `$`("[data-test-id='form-title']")
             else -> null
         }
         return titleElement?.isDisplayed ?: false
@@ -182,9 +184,9 @@ class ServiceProviderListPage {
      */
     fun getFormTitle(): String {
         val titleElement = when {
-            `$`("[data-test-id='form-title']").exists() -> `$`("[data-test-id='form-title']")
             `$`("#formTitle").exists() -> `$`("#formTitle")
             `$`(".form-title").exists() -> `$`(".form-title")
+            `$`("[data-test-id='form-title']").exists() -> `$`("[data-test-id='form-title']")
             else -> `$`("body")
         }
         return titleElement.text()
@@ -206,11 +208,11 @@ class ServiceProviderListPage {
      */
     class ServiceProviderItem(private val element: SelenideElement) {
 
-        private val avatar = element.`$`("[data-test-id='provider-avatar']")
-        private val avatarFallback = element.`$`("[data-test-id='provider-avatar-fallback']")
-        private val name = element.`$`("[data-test-id='provider-name']")
-        private val state = element.`$`("[data-test-id='provider-state']")
-        private val info = element.`$`("[data-test-id='provider-info']")
+        private val avatar = element.`$`(".service-provider-avatar")
+        private val avatarFallback = element.`$`(".service-provider-avatar-fallback")
+        private val name = element.`$`(".service-provider-name")
+        private val state = element.`$`(".service-provider-state")
+        private val info = element.`$`(".service-provider-info")
 
         /**
          * Clicks on the service provider item
