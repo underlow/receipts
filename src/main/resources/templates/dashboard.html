@@ -793,12 +793,11 @@
     <!-- Upload JavaScript Module -->
     <script src="/static/js/upload.js"></script>
 
+    <!-- Inbox JavaScript Module -->
+    <script src="/static/js/modules/inbox.js"></script>
+
     <!-- Dashboard JavaScript -->
     <script>
-        let currentPage = 0;
-        let currentSort = 'uploadDate';
-        let currentDirection = 'DESC';
-        let currentSearch = '';
 
         // Bills tab state
         let billsCurrentPage = 0;
@@ -814,15 +813,10 @@
 
         // Load inbox data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
-            loadInboxData();
+            // Initialize inbox module
+            inboxModule.init();
 
             // Set up tab change event to refresh data when tabs are activated
-            const inboxTab = document.querySelector('a[href="#inbox"]');
-            if (inboxTab) {
-                inboxTab.addEventListener('shown.bs.tab', function() {
-                    loadInboxData();
-                });
-            }
 
             const billsTab = document.querySelector('a[href="#bills"]');
             if (billsTab) {
@@ -845,237 +839,8 @@
                 });
             }
 
-            // Initialize inbox table drag-and-drop functionality
-            setupInboxDragAndDrop();
         });
 
-        // Function to set up drag-and-drop functionality for inbox table
-        function setupInboxDragAndDrop() {
-            const inboxTableContainer = document.getElementById('inboxTableContainer');
-            const dropOverlay = document.getElementById('dropOverlay');
-
-            if (!inboxTableContainer || !dropOverlay) {
-                console.error('Inbox drag-and-drop elements not found');
-                return;
-            }
-
-            // Track drag count to handle multiple drag enter/leave events
-            let dragCounter = 0;
-
-            // Prevent default drag behaviors
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                inboxTableContainer.addEventListener(eventName, preventDefaults, false);
-                document.body.addEventListener(eventName, preventDefaults, false);
-            });
-
-            // Handle drag enter
-            inboxTableContainer.addEventListener('dragenter', function(e) {
-                dragCounter++;
-                handleDragEnter(e);
-            });
-
-            // Handle drag over
-            inboxTableContainer.addEventListener('dragover', function(e) {
-                handleDragOver(e);
-            });
-
-            // Handle drag leave
-            inboxTableContainer.addEventListener('dragleave', function(e) {
-                dragCounter--;
-                if (dragCounter === 0) {
-                    handleDragLeave(e);
-                }
-            });
-
-            // Handle drop
-            inboxTableContainer.addEventListener('drop', function(e) {
-                dragCounter = 0;
-                handleDrop(e);
-            });
-        }
-
-        // Function to prevent default drag behaviors
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        // Function to handle drag enter events
-        function handleDragEnter(e) {
-            const inboxTableContainer = document.getElementById('inboxTableContainer');
-            const dropOverlay = document.getElementById('dropOverlay');
-
-            if (inboxTableContainer && dropOverlay) {
-                inboxTableContainer.classList.add('drag-over');
-                dropOverlay.style.display = 'flex';
-            }
-        }
-
-        // Function to handle drag over events
-        function handleDragOver(e) {
-            // Allow drop
-            e.dataTransfer.dropEffect = 'copy';
-        }
-
-        // Function to handle drag leave events
-        function handleDragLeave(e) {
-            const inboxTableContainer = document.getElementById('inboxTableContainer');
-            const dropOverlay = document.getElementById('dropOverlay');
-
-            if (inboxTableContainer && dropOverlay) {
-                inboxTableContainer.classList.remove('drag-over');
-                dropOverlay.style.display = 'none';
-            }
-        }
-
-        // Function to handle drop events
-        function handleDrop(e) {
-            const inboxTableContainer = document.getElementById('inboxTableContainer');
-            const dropOverlay = document.getElementById('dropOverlay');
-
-            // Remove visual feedback
-            if (inboxTableContainer && dropOverlay) {
-                inboxTableContainer.classList.remove('drag-over');
-                dropOverlay.style.display = 'none';
-            }
-
-            // Get dropped files
-            const files = e.dataTransfer.files;
-
-            if (files.length > 0) {
-                // Process the first file
-                const file = files[0];
-
-                // Validate file type
-                if (file.type.startsWith('image/')) {
-                    // Try using existing upload.js functionality first
-                    if (typeof handleFileSelect === 'function') {
-                        handleFileSelect(file);
-                    } else {
-                        // Fallback: trigger upload modal manually
-                        console.warn('handleFileSelect function not found, using fallback');
-                        triggerUploadModalWithFile(file);
-                    }
-                } else {
-                    showDashboardErrorMessage('Please drop a valid image file');
-                }
-            }
-        }
-
-        // Function to load inbox data from the API
-        function loadInboxData(page = 0, search = '') {
-            currentPage = page;
-            currentSearch = search;
-
-            const params = new URLSearchParams({
-                page: page,
-                size: 10,
-                sortBy: currentSort,
-                sortDirection: currentDirection
-            });
-
-            if (search && search.trim() !== '') {
-                params.append('search', search.trim());
-            }
-
-            fetch(`/api/inbox?${params.toString()}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load inbox data');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    renderInboxTable(data);
-                    document.getElementById('inbox-content').innerHTML = getRenderedTable(data);
-
-                    // Set up event listeners for the loaded content
-                    setupTableEventListeners();
-                })
-                .catch(error => {
-                    console.error('Error loading inbox data:', error);
-                    document.getElementById('inbox-content').innerHTML = `
-                        <div class="alert alert-danger" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Failed to load inbox data. Please try again.
-                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInboxData()">
-                                <i class="fas fa-redo me-1"></i> Retry
-                            </button>
-                        </div>
-                    `;
-                });
-        }
-
-        // Set up event listeners for table interactions
-        function setupTableEventListeners() {
-            // Search functionality
-            const searchInput = document.getElementById('inbox-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    const searchTerm = e.target.value;
-                    clearTimeout(searchInput.timeout);
-                    searchInput.timeout = setTimeout(() => {
-                        loadInboxData(0, searchTerm);
-                    }, 500);
-                });
-            }
-
-            // Pagination
-            const paginationLinks = document.querySelectorAll('.pagination .page-link');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = parseInt(this.getAttribute('data-page'));
-                    if (!isNaN(page) && page > 0) {
-                        loadInboxData(page - 1, currentSearch); // Convert to 0-based
-                    }
-                });
-            });
-
-            // Sorting
-            const sortableHeaders = document.querySelectorAll('th.sortable');
-            sortableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortKey = this.getAttribute('data-sort');
-                    if (sortKey) {
-                        // Toggle direction if same column, otherwise use DESC as default
-                        if (currentSort === sortKey) {
-                            currentDirection = currentDirection === 'ASC' ? 'DESC' : 'ASC';
-                        } else {
-                            currentSort = sortKey;
-                            currentDirection = 'DESC';
-                        }
-                        loadInboxData(0, currentSearch);
-                    }
-                });
-
-                // Add cursor pointer style
-                header.style.cursor = 'pointer';
-            });
-        }
-
-        // Functions for action buttons
-        function approveItem(itemId, entityType) {
-            if (confirm(`Approve this item as a ${entityType.toLowerCase()}?`)) {
-                // TODO: Implement approve functionality
-                console.log(`Approving item ${itemId} as ${entityType}`);
-                alert(`Item ${itemId} approved as ${entityType}. (Functionality not yet implemented)`);
-            }
-        }
-
-        function retryItem(itemId) {
-            if (confirm('Retry OCR processing for this item?')) {
-                // TODO: Implement retry functionality
-                console.log(`Retrying OCR for item ${itemId}`);
-                alert(`Retrying OCR for item ${itemId}. (Functionality not yet implemented)`);
-            }
-        }
-
-        function showImageModal(imagePath) {
-            // TODO: Implement image modal
-            console.log(`Showing image modal for ${imagePath}`);
-            alert(`Image viewer for ${imagePath}. (Functionality not yet implemented)`);
-        }
 
         // Function to load bills data from the API
         function loadBillsData(page = 0, search = '') {
@@ -1362,7 +1127,7 @@
 
                         // Special formatting for status column in inbox table
                         if (data.tableId === 'inbox' && column.key === 'status') {
-                            formattedValue = formatStatusBadge(cellValue);
+                            formattedValue = inboxModule.formatStatusBadge(cellValue);
                         }
 
                         // Special formatting for actions column in bills table
@@ -1433,30 +1198,12 @@
             return html;
         }
 
-        function renderInboxTable(data) {
-            // Any inbox-specific rendering logic can go here
-            console.log('Rendering inbox table with data:', data);
-        }
 
         function renderBillsTable(data) {
             // Any bills-specific rendering logic can go here
             console.log('Rendering bills table with data:', data);
         }
 
-        // Function to format status badges for inbox table
-        function formatStatusBadge(statusText) {
-            const statusMappings = {
-                'Pending': 'status-pending',
-                'Processed': 'status-done',
-                'Done': 'status-done',
-                'Failed': 'status-pending',
-                'Approved': 'status-done',
-                'In Process': 'status-in-progress'
-            };
-
-            const statusClass = statusMappings[statusText] || 'status-pending';
-            return `<span class="status-indicator ${statusClass}">${statusText}</span>`;
-        }
 
         // Function to format action buttons for bills table
         function formatBillsActions(actionsText, billId) {
@@ -1950,67 +1697,7 @@
 
         // Upload functionality is now handled by upload.js module
 
-        // Function to show error message specific to dashboard
-        function showDashboardErrorMessage(message) {
-            const alertHtml = `
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
 
-            const alertContainer = document.createElement('div');
-            alertContainer.innerHTML = alertHtml;
-
-            const dashboardLayout = document.querySelector('.dashboard-layout');
-            if (dashboardLayout) {
-                dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
-            }
-
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => {
-                const alert = document.querySelector('.alert-danger');
-                if (alert) {
-                    alert.remove();
-                }
-            }, 5000);
-        }
-
-        // Function to trigger upload modal with file as fallback
-        function triggerUploadModalWithFile(file) {
-            // Use the upload.js handleFileSelect function directly
-            if (typeof handleFileSelect === 'function') {
-                handleFileSelect(file);
-            } else {
-                // Fallback: Store the file and show modal manually
-                window.dragDroppedFile = file;
-
-                // Show the upload modal
-                const uploadModal = document.getElementById('uploadModal');
-                if (uploadModal) {
-                    const modal = new bootstrap.Modal(uploadModal);
-                    modal.show();
-
-                    // Try to simulate file selection after modal is shown
-                    setTimeout(() => {
-                        const fileInput = document.getElementById('fileInput');
-                        if (fileInput) {
-                            // Create a new FileList with our file
-                            const dataTransfer = new DataTransfer();
-                            dataTransfer.items.add(file);
-                            fileInput.files = dataTransfer.files;
-
-                            // Trigger the file change event
-                            const changeEvent = new Event('change', { bubbles: true });
-                            fileInput.dispatchEvent(changeEvent);
-                        }
-                    }, 100);
-                } else {
-                    showDashboardErrorMessage('Upload modal not found');
-                }
-            }
-        }
     </script>
 </body>
 </html>
