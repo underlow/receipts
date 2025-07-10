@@ -38,7 +38,13 @@ class UploadHelper {
         
         init {
             // Ensure temp directory exists
-            ensureDirectoryExists(TEMP_FILES_DIR)
+            if (!Files.exists(TEMP_FILES_DIR)) {
+                try {
+                    Files.createDirectories(TEMP_FILES_DIR)
+                } catch (e: Exception) {
+                    // Ignore directory creation errors
+                }
+            }
         }
     }
     

@@ -5,6 +5,7 @@ import com.codeborne.selenide.ElementsCollection
 import com.codeborne.selenide.SelenideElement
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
+import com.codeborne.selenide.CollectionCondition
 import java.time.Duration
 
 /**
@@ -56,12 +57,12 @@ class BillsPage {
     // Action buttons
     private val editButtons get() = when {
         `$$`("[data-test-id='edit-bill-button']").size() > 0 -> `$$`("[data-test-id='edit-bill-button']")
-        else -> `$$`("button").filter { it.text().contains("Edit") }
+        else -> `$$`("button").filterBy(Condition.text("Edit"))
     }
     
     private val deleteButtons get() = when {
         `$$`("[data-test-id='delete-bill-button']").size() > 0 -> `$$`("[data-test-id='delete-bill-button']")
-        else -> `$$`("button").filter { it.text().contains("Remove") || it.text().contains("Delete") }
+        else -> `$$`("button").filterBy(Condition.matchText(".*(?i)(remove|delete).*"))
     }
     
     // Pagination elements
@@ -118,7 +119,7 @@ class BillsPage {
     fun shouldHaveExpectedHeaders(): BillsPage {
         val expectedHeaders = listOf("BILL DATE", "SERVICE PROVIDER", "AMOUNT", "DESCRIPTION", "CREATED DATE", "ACTIONS")
         
-        tableHeaders.shouldHave(Condition.sizeGreaterThanOrEqual(expectedHeaders.size))
+        tableHeaders.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedHeaders.size))
         
         expectedHeaders.forEach { expectedHeader ->
             tableHeaders.find { it.text().contains(expectedHeader, ignoreCase = true) }
@@ -132,7 +133,7 @@ class BillsPage {
      * Verifies bills table contains data rows
      */
     fun shouldHaveDataRows(): BillsPage {
-        tableRows.shouldHave(Condition.sizeGreaterThan(0))
+        tableRows.shouldHave(CollectionCondition.sizeGreaterThan(0))
         return this
     }
     
@@ -141,7 +142,7 @@ class BillsPage {
      */
     fun shouldDisplayFormattedCurrency(): BillsPage {
         val amountCells = getCellsContainingText("$")
-        amountCells.shouldHave(Condition.sizeGreaterThan(0))
+        amountCells.shouldHave(CollectionCondition.sizeGreaterThan(0))
         
         amountCells.forEach { cell ->
             cell.text() shouldMatch Regex(".*\\$[0-9,]+\\.[0-9]{2}.*")
@@ -212,9 +213,10 @@ class BillsPage {
      * Verifies edit buttons are present and enabled
      */
     fun shouldHaveEditButtons(): BillsPage {
-        editButtons.shouldHave(Condition.sizeGreaterThan(0))
+        editButtons.shouldHave(CollectionCondition.sizeGreaterThan(0))
         editButtons.forEach { button ->
-            button.shouldBe(Condition.visible, Condition.enabled)
+            button.shouldBe(Condition.visible)
+            button.shouldBe(Condition.enabled)
         }
         return this
     }
@@ -223,9 +225,10 @@ class BillsPage {
      * Verifies delete buttons are present and enabled
      */
     fun shouldHaveDeleteButtons(): BillsPage {
-        deleteButtons.shouldHave(Condition.sizeGreaterThan(0))
+        deleteButtons.shouldHave(CollectionCondition.sizeGreaterThan(0))
         deleteButtons.forEach { button ->
-            button.shouldBe(Condition.visible, Condition.enabled)
+            button.shouldBe(Condition.visible)
+            button.shouldBe(Condition.enabled)
         }
         return this
     }
@@ -271,7 +274,7 @@ class BillsPage {
      * Verifies no error messages are displayed
      */
     fun shouldNotHaveErrors(): BillsPage {
-        errorMessages.filter { it.isDisplayed }.shouldHave(Condition.size(0))
+        errorMessages.filterBy(Condition.visible).shouldHave(CollectionCondition.size(0))
         return this
     }
     
@@ -308,16 +311,14 @@ class BillsPage {
      * Gets all cells containing the specified text
      */
     private fun getCellsContainingText(text: String): ElementsCollection {
-        return billsTable.`$$`("td").filter { it.text().contains(text) }
+        return billsTable.`$$`("td").filterBy(Condition.text(text))
     }
     
     /**
      * Gets all cells containing any of the specified text patterns
      */
     private fun getCellsContainingAnyText(patterns: List<String>): ElementsCollection {
-        return billsTable.`$$`("td").filter { cell ->
-            patterns.any { pattern -> cell.text().contains(pattern, ignoreCase = true) }
-        }
+        return billsTable.`$$`("td").filterBy(Condition.matchText(".*(" + patterns.joinToString("|") + ").*"))
     }
     
     /**

@@ -68,7 +68,7 @@ class UploadModalPage {
      * Drags and drops a file onto the drop zone
      */
     fun dragAndDropFile(file: File): UploadModalPage {
-        fileDropZone.dragAndDropFile(file)
+        fileDropZone.uploadFile(file)
         waitForImageToLoad()
         return this
     }

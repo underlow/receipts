@@ -5,6 +5,7 @@ import com.codeborne.selenide.ElementsCollection
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.SelenideElement
+import com.codeborne.selenide.CollectionCondition
 import java.time.Duration
 
 /**
@@ -50,7 +51,7 @@ class InboxPage {
      * Verifies the inbox contains at least one uploaded item
      */
     fun shouldContainUploadedItem(): InboxPage {
-        inboxRows.shouldHaveSize(1)
+        inboxRows.shouldHave(CollectionCondition.size(1))
         return this
     }
     
@@ -58,7 +59,7 @@ class InboxPage {
      * Verifies the inbox contains the expected number of items
      */
     fun shouldContainItems(expectedCount: Int): InboxPage {
-        inboxRows.shouldHaveSize(expectedCount)
+        inboxRows.shouldHave(CollectionCondition.size(expectedCount))
         return this
     }
     
@@ -77,7 +78,7 @@ class InboxPage {
      * Verifies the inbox is empty
      */
     fun shouldBeEmpty(): InboxPage {
-        inboxRows.shouldHaveSize(0)
+        inboxRows.shouldHave(CollectionCondition.size(0))
         emptyInboxMessage.shouldBe(Condition.visible)
         return this
     }
@@ -129,7 +130,7 @@ class InboxPage {
     fun shouldShowMetadata(): InboxPage {
         val firstRow = getFirstRow()
         val metadata = firstRow.`$$`("[data-test-id*='metadata']")
-        metadata.shouldHaveSize(1)
+        metadata.shouldHave(CollectionCondition.size(1))
         return this
     }
     
