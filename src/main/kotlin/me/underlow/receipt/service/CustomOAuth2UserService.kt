@@ -2,9 +2,12 @@ package me.underlow.receipt.service
 
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 
@@ -16,7 +19,7 @@ import org.springframework.stereotype.Service
 @Service
 class CustomOAuth2UserService(
     private val userService: UserService
-) : DefaultOAuth2UserService() {
+) : OidcUserService()  {
 
     private val logger = LoggerFactory.getLogger(CustomOAuth2UserService::class.java)
 
@@ -28,13 +31,13 @@ class CustomOAuth2UserService(
      * @return The authenticated OAuth2 user
      * @throws OAuth2AuthenticationException if email is not allowed or required attributes are missing
      */
-    override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
+    override fun loadUser(userRequest: OidcUserRequest): OidcUser {
 
         try {
             logger.debug("OAUTH2_USER_LOADING: Starting OAuth2 user loading process")
 
             // Load the OAuth2 user from the parent class
-            val oauth2User = callSuperLoadUser(userRequest)
+            val oauth2User = super.loadUser(userRequest)
 
             // Extract user attributes from OAuth2 response
             val attributes = oauth2User.attributes
@@ -90,9 +93,9 @@ class CustomOAuth2UserService(
      * @param userRequest The OAuth2 user request
      * @return The OAuth2 user from the parent class
      */
-    fun callSuperLoadUser(userRequest: OAuth2UserRequest): OAuth2User {
-        return super.loadUser(userRequest)
-    }
+//    fun callSuperLoadUser(userRequest: OAuth2UserRequest): OAuth2User {
+//        return super.loadUser(userRequest)
+//    }
 
     /**
      * Generates a unique correlation ID for request tracking.

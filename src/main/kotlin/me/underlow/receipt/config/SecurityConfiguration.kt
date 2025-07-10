@@ -43,7 +43,8 @@ class SecurityConfiguration(
                     .successHandler(customAuthenticationSuccessHandler)
                     .failureHandler(customAuthenticationFailureHandler)
                     .userInfoEndpoint { userInfo ->
-                        userInfo.userService(customOAuth2UserService)
+//                        userInfo.userService(customOAuth2UserService)
+                        userInfo.oidcUserService(customOAuth2UserService)
                     }
             }
             .logout { logout ->
