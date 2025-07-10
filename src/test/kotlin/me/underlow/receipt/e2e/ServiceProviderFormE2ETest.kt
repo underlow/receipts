@@ -228,16 +228,16 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         val frequencyField = `$`("#providerFrequency")
         
         // When: User selects different frequencies
-        frequencyField.selectOption("YEARLY")
+        frequencyField.selectOptionByValue("YEARLY")
         assertEquals("YEARLY", frequencyField.value)
         
-        frequencyField.selectOption("MONTHLY")
+        frequencyField.selectOptionByValue("MONTHLY")
         assertEquals("MONTHLY", frequencyField.value)
         
-        frequencyField.selectOption("WEEKLY")
+        frequencyField.selectOptionByValue("WEEKLY")
         assertEquals("WEEKLY", frequencyField.value)
         
-        frequencyField.selectOption("NOT_REGULAR")
+        frequencyField.selectOptionByValue("NOT_REGULAR")
         assertEquals("NOT_REGULAR", frequencyField.value)
     }
 
@@ -356,7 +356,8 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         if (ocrComment.isNotEmpty()) {
             `$`("#providerOcrComment").value = ocrComment
         }
-        `$`("#providerFrequency").selectOption(frequency)
+        // Select by value instead of text to match HTML option values
+        `$`("#providerFrequency").selectOptionByValue(frequency)
         
         val stateToggle = `$`("#providerState")
         val currentlyChecked = stateToggle.getAttribute("checked") != null

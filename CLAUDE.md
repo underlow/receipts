@@ -36,6 +36,15 @@ after implementing add to ticket information what was implemented and how.
 - do not disable tests
 - do not write trivial tests. for example do not test constructors
 
+### e2e tests
+
+ - Give each test a single responsibility and a descriptive name (e.g. shouldShowErrorWhenPasswordTooShort)
+ - Use Page Objects or modules to wrap selectors and actions—tests should read like a story, not low-level clicks.
+ - Rely on data-test-id or similarly dedicated attributes instead of brittle CSS/XPath paths.
+ - Each test must leave the system in a clean state; avoid sharing state or ordering dependencies.
+ - Chain readable assertions (e.g. element.shouldHave(text(“…”)).shouldBe(visible)) with clear failure messages
+ - Favor clarity over cleverness: explicit steps, small helper names, and sparing comments for non-obvious logic.
+
 ## Planning
 
 A proper plan should follow the TDD approach: implement → test → verify → commit for each small change.
