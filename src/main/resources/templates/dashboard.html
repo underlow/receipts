@@ -50,10 +50,13 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: hsl(var(--background));
             color: hsl(var(--foreground));
-            min-height: 100vh;
+            height: 100vh;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .dashboard-header {
@@ -171,15 +174,6 @@
             font-size: 0.875rem;
         }
 
-        .dashboard-card {
-            background: hsl(var(--card));
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid hsl(var(--border));
-            transition: all 0.2s ease;
-        }
-
         .dashboard-card:hover {
             box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1);
         }
@@ -260,6 +254,9 @@
         .dashboard-layout {
             padding: 1.5rem;
             background: hsl(var(--background));
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .top-bar {
@@ -272,6 +269,9 @@
             padding: 1rem;
             margin-bottom: 1.5rem;
             border: 1px solid hsl(var(--border));
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .navigation-panel .nav-link {
@@ -300,10 +300,67 @@
 
         .content-area {
             min-height: 400px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .tab-content {
             padding: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane.active {
+            display: flex !important;
+        }
+
+        .dashboard-card {
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid hsl(var(--border));
+            transition: all 0.2s ease;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Ensure the row takes full height */
+        .dashboard-layout .row {
+            flex: 1;
+            margin: 0;
+            align-items: stretch;
+        }
+
+        /* Make navigation and content areas same height */
+        .dashboard-layout .row > * {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Ensure all columns have equal height */
+        .dashboard-layout .row {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .dashboard-layout .row .col-md-3,
+        .dashboard-layout .row .col-lg-2,
+        .dashboard-layout .row .col-md-9,
+        .dashboard-layout .row .col-lg-10 {
+            display: flex;
+            flex-direction: column;
         }
 
         @media (max-width: 768px) {
@@ -326,14 +383,22 @@
 
             .dashboard-card {
                 padding: 1rem;
+                margin-bottom: 1rem;
             }
 
             .dashboard-layout {
                 padding: 1rem;
             }
 
+            .dashboard-layout .row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
             .navigation-panel {
                 margin-bottom: 1rem;
+                height: auto;
+                align-self: stretch;
             }
 
             .navigation-panel .nav {
@@ -751,8 +816,8 @@
         .split-panel-container {
             display: flex;
             gap: 1rem;
-            height: 600px;
-            min-height: 400px;
+            flex: 1;
+            min-height: 0;
         }
 
         .split-panel-left {
@@ -764,6 +829,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
 
         .split-panel-right {
@@ -775,6 +841,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
 
         .split-panel-header {
@@ -785,6 +852,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
+            flex-shrink: 0;
         }
 
         .split-panel-title {
@@ -798,6 +866,7 @@
             flex: 1;
             overflow: auto;
             padding: 0;
+            min-height: 0;
         }
 
         /* Service provider list styles */
@@ -1117,14 +1186,14 @@
         @media (max-width: 768px) {
             .split-panel-container {
                 flex-direction: column;
-                height: auto;
                 gap: 0.5rem;
             }
 
             .split-panel-left,
             .split-panel-right {
                 min-width: 0;
-                height: 300px;
+                min-height: 300px;
+                flex: 1;
             }
 
             .split-panel-header {
@@ -1322,7 +1391,7 @@
 
                     <!-- Services Tab -->
                     <div class="tab-pane fade" id="services">
-                        <div id="services-content">
+                        <div id="services-content" style="flex: 1; display: flex; flex-direction: column;">
                             <div class="split-panel-container">
                                 <!-- Left Panel: Service Provider List -->
                                 <div class="split-panel-left">
