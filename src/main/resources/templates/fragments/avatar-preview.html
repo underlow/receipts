@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Avatar Preview Fragment -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-preview :: avatarPreview(${serviceProvider}, 'medium')}"
+        Parameters:
+        - serviceProvider: ServiceProvider object with id, name, and avatar fields
+        - size: 'small' (32px), 'medium' (64px), 'large' (128px), 'xlarge' (200px)
+    -->
+    <div th:fragment="avatarPreview(serviceProvider, size)" 
+         th:class="'avatar-preview avatar-preview-' + ${size}"
+         th:data-service-provider-id="${serviceProvider?.id}"
+         th:title="${serviceProvider?.name}">
+        
+        <!-- Avatar Image (if exists) -->
+        <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
+             th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+             th:alt="${serviceProvider.name + ' avatar'}"
+             th:class="'avatar-image avatar-image-' + ${size}"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        
+        <!-- Default Avatar Placeholder (if no image) -->
+        <div th:class="'avatar-placeholder avatar-placeholder-' + ${size}"
+             th:style="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'display: none;' : 'display: flex;'">
+            <i th:class="'fas fa-building avatar-icon avatar-icon-' + ${size}"></i>
+        </div>
+    </div>
+
+    <!-- Clickable Avatar Preview with Upload -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-preview :: clickableAvatarPreview(${serviceProvider}, 'medium')}"
+        This variant includes click handler to open avatar upload modal
+    -->
+    <div th:fragment="clickableAvatarPreview(serviceProvider, size)" 
+         th:class="'avatar-preview avatar-preview-' + ${size} + ' avatar-preview-clickable'"
+         th:data-service-provider-id="${serviceProvider?.id}"
+         th:title="'Click to update ' + ${serviceProvider?.name} + ' avatar'"
+         onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+         style="cursor: pointer;">
+        
+        <!-- Avatar Image (if exists) -->
+        <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
+             th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+             th:alt="${serviceProvider.name + ' avatar'}"
+             th:class="'avatar-image avatar-image-' + ${size}"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        
+        <!-- Default Avatar Placeholder (if no image) -->
+        <div th:class="'avatar-placeholder avatar-placeholder-' + ${size}"
+             th:style="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'display: none;' : 'display: flex;'">
+            <i th:class="'fas fa-building avatar-icon avatar-icon-' + ${size}"></i>
+        </div>
+
+        <!-- Upload Overlay (visible on hover) -->
+        <div th:class="'avatar-upload-overlay avatar-upload-overlay-' + ${size}">
+            <i class="fas fa-camera"></i>
+        </div>
+    </div>
+
+    <!-- Avatar Preview with Upload Button -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-preview :: avatarPreviewWithButton(${serviceProvider}, 'medium')}"
+        This variant includes a separate upload button next to the avatar
+    -->
+    <div th:fragment="avatarPreviewWithButton(serviceProvider, size)" 
+         class="avatar-preview-with-button d-flex align-items-center">
+        
+        <!-- Avatar Preview -->
+        <div th:class="'avatar-preview avatar-preview-' + ${size} + ' me-2'"
+             th:data-service-provider-id="${serviceProvider?.id}"
+             th:title="${serviceProvider?.name}">
+            
+            <!-- Avatar Image (if exists) -->
+            <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
+                 th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+                 th:alt="${serviceProvider.name + ' avatar'}"
+                 th:class="'avatar-image avatar-image-' + ${size}"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            
+            <!-- Default Avatar Placeholder (if no image) -->
+            <div th:class="'avatar-placeholder avatar-placeholder-' + ${size}"
+                 th:style="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'display: none;' : 'display: flex;'">
+                <i th:class="'fas fa-building avatar-icon avatar-icon-' + ${size}"></i>
+            </div>
+        </div>
+
+        <!-- Upload Button -->
+        <div class="avatar-upload-actions">
+            <button type="button" 
+                    class="btn btn-outline-primary btn-sm"
+                    th:data-service-provider-id="${serviceProvider?.id}"
+                    onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)">
+                <i class="fas fa-camera me-1"></i>
+                <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change' : 'Upload'">Upload</span>
+            </button>
+            
+            <!-- Remove Button (only show if avatar exists) -->
+            <button type="button" 
+                    th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}"
+                    class="btn btn-outline-danger btn-sm ms-1"
+                    th:data-service-provider-id="${serviceProvider?.id}"
+                    onclick="removeServiceProviderAvatar(this.dataset.serviceProviderId)"
+                    title="Remove avatar">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Form Input Avatar Preview -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-preview :: formAvatarPreview(${serviceProvider})}"
+        This variant is designed for use in forms with hidden input for avatar data
+    -->
+    <div th:fragment="formAvatarPreview(serviceProvider)" class="form-avatar-preview">
+        <label class="form-label">Service Provider Avatar</label>
+        
+        <div class="d-flex align-items-start">
+            <!-- Avatar Preview -->
+            <div class="avatar-preview avatar-preview-large me-3"
+                 th:data-service-provider-id="${serviceProvider?.id}"
+                 th:title="${serviceProvider?.name}">
+                
+                <!-- Avatar Image (if exists) -->
+                <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
+                     th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+                     th:alt="${serviceProvider.name + ' avatar'}"
+                     class="avatar-image avatar-image-large"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                
+                <!-- Default Avatar Placeholder (if no image) -->
+                <div class="avatar-placeholder avatar-placeholder-large"
+                     th:style="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'display: none;' : 'display: flex;'">
+                    <i class="fas fa-building avatar-icon avatar-icon-large"></i>
+                </div>
+            </div>
+
+            <!-- Form Controls -->
+            <div class="flex-grow-1">
+                <!-- Hidden input for avatar filename -->
+                <input type="hidden" 
+                       name="avatar" 
+                       th:value="${serviceProvider?.avatar}"
+                       id="serviceProviderAvatar">
+                
+                <!-- Upload Button -->
+                <button type="button" 
+                        class="btn btn-outline-primary mb-2"
+                        th:data-service-provider-id="${serviceProvider?.id}"
+                        onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateFormAvatar)">
+                    <i class="fas fa-camera me-2"></i>
+                    <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change Avatar' : 'Upload Avatar'">Upload Avatar</span>
+                </button>
+                
+                <!-- Remove Button (only show if avatar exists) -->
+                <button type="button" 
+                        th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}"
+                        class="btn btn-outline-danger mb-2 ms-2"
+                        th:data-service-provider-id="${serviceProvider?.id}"
+                        onclick="removeFormAvatar(this.dataset.serviceProviderId)"
+                        title="Remove avatar">
+                    <i class="fas fa-trash me-1"></i>Remove
+                </button>
+                
+                <div class="form-text">
+                    Recommended size: 200x200 pixels. Supported formats: JPEG, PNG, GIF, WebP.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

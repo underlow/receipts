@@ -19,6 +19,13 @@ class LoginHelper {
     }
 
     /**
+     * Performs login with test user (default allowed user 1)
+     */
+    fun loginAsTestUser() {
+        loginAsAllowedUser1()
+    }
+
+    /**
      * Performs login with allowed user 1 and navigates to dashboard
      */
     fun loginAsAllowedUser1() {

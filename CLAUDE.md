@@ -46,7 +46,7 @@ after implementing add to ticket information what was implemented and how.
  - Favor clarity over cleverness: explicit steps, small helper names, and sparing comments for non-obvious logic.
  - helpers are here package me.underlow.receipt.e2e.helpers
  - pages objects are here package me.underlow.receipt.e2e.pages
- - e2e test must test full code flow, do not implement shortcuts and mock only when it is completely necessary
+ - e2e test must test full code flow from frontend layer to db layes, do not implement shortcuts in the middle. bad: add js code raising error on frontend. good: initiate actions which lead to error
 
 ## Planning
 

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Avatar Upload Button Fragment -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: avatarUploadButton(${serviceProvider}, 'primary', 'normal')}"
+        Parameters:
+        - serviceProvider: ServiceProvider object with id, name, and avatar fields
+        - variant: 'primary', 'secondary', 'outline-primary', 'outline-secondary', 'link'
+        - size: 'small', 'normal', 'large'
+    -->
+    <button th:fragment="avatarUploadButton(serviceProvider, variant, size)" 
+            type="button"
+            th:class="'btn btn-' + ${variant} + 
+                     (${size == 'small'} ? ' btn-sm' : 
+                      ${size == 'large'} ? ' btn-lg' : '') + 
+                     ' avatar-upload-btn'"
+            th:data-service-provider-id="${serviceProvider?.id}"
+            th:data-service-provider-name="${serviceProvider?.name}"
+            onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+            th:title="'Upload avatar for ' + ${serviceProvider?.name}">
+        <i class="fas fa-camera me-2"></i>
+        <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change Avatar' : 'Upload Avatar'">Upload Avatar</span>
+    </button>
+
+    <!-- Icon Only Avatar Upload Button -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: iconAvatarUploadButton(${serviceProvider}, 'primary', 'normal')}"
+        Parameters: same as above
+    -->
+    <button th:fragment="iconAvatarUploadButton(serviceProvider, variant, size)" 
+            type="button"
+            th:class="'btn btn-' + ${variant} + 
+                     (${size == 'small'} ? ' btn-sm' : 
+                      ${size == 'large'} ? ' btn-lg' : '') + 
+                     ' avatar-upload-btn avatar-upload-btn-icon'"
+            th:data-service-provider-id="${serviceProvider?.id}"
+            th:data-service-provider-name="${serviceProvider?.name}"
+            onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+            th:title="'Upload avatar for ' + ${serviceProvider?.name}">
+        <i class="fas fa-camera"></i>
+    </button>
+
+    <!-- Avatar Upload Button with Dropdown -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: avatarUploadButtonDropdown(${serviceProvider}, 'primary', 'normal')}"
+        Includes upload and remove options
+    -->
+    <div th:fragment="avatarUploadButtonDropdown(serviceProvider, variant, size)" 
+         class="btn-group avatar-upload-dropdown">
+        <button type="button"
+                th:class="'btn btn-' + ${variant} + 
+                         (${size == 'small'} ? ' btn-sm' : 
+                          ${size == 'large'} ? ' btn-lg' : '') + 
+                         ' avatar-upload-btn'"
+                th:data-service-provider-id="${serviceProvider?.id}"
+                th:data-service-provider-name="${serviceProvider?.name}"
+                onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)">
+            <i class="fas fa-camera me-2"></i>
+            <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change' : 'Upload'">Upload</span>
+        </button>
+        
+        <button type="button" 
+                th:class="'btn btn-' + ${variant} + ' dropdown-toggle dropdown-toggle-split' + 
+                         (${size == 'small'} ? ' btn-sm' : 
+                          ${size == 'large'} ? ' btn-lg' : '')"
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" 
+                   href="#"
+                   th:data-service-provider-id="${serviceProvider?.id}"
+                   onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)">
+                    <i class="fas fa-camera me-2"></i>
+                    <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change Avatar' : 'Upload Avatar'">Upload Avatar</span>
+                </a>
+            </li>
+            <li th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}">
+                <hr class="dropdown-divider">
+            </li>
+            <li th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}">
+                <a class="dropdown-item text-danger" 
+                   href="#"
+                   th:data-service-provider-id="${serviceProvider?.id}"
+                   onclick="removeServiceProviderAvatar(this.dataset.serviceProviderId)">
+                    <i class="fas fa-trash me-2"></i>Remove Avatar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Floating Avatar Upload Button -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: floatingAvatarUploadButton(${serviceProvider})}"
+        Circular floating action button style
+    -->
+    <button th:fragment="floatingAvatarUploadButton(serviceProvider)" 
+            type="button"
+            class="btn btn-primary btn-floating avatar-upload-btn-floating"
+            th:data-service-provider-id="${serviceProvider?.id}"
+            th:data-service-provider-name="${serviceProvider?.name}"
+            onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+            th:title="'Upload avatar for ' + ${serviceProvider?.name}">
+        <i class="fas fa-camera"></i>
+    </button>
+
+    <!-- Simple Text Link Avatar Upload -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: linkAvatarUpload(${serviceProvider})}"
+        Simple text link for inline use
+    -->
+    <a th:fragment="linkAvatarUpload(serviceProvider)" 
+       href="#"
+       class="avatar-upload-link"
+       th:data-service-provider-id="${serviceProvider?.id}"
+       th:data-service-provider-name="${serviceProvider?.name}"
+       onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+       th:title="'Upload avatar for ' + ${serviceProvider?.name}">
+        <i class="fas fa-camera me-1"></i>
+        <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change avatar' : 'Add avatar'">Add avatar</span>
+    </a>
+
+    <!-- Card Action Avatar Upload Button -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: cardAvatarUploadButton(${serviceProvider})}"
+        Designed for use in card footers or action areas
+    -->
+    <div th:fragment="cardAvatarUploadButton(serviceProvider)" class="avatar-upload-card-actions">
+        <button type="button"
+                class="btn btn-outline-primary btn-sm me-2"
+                th:data-service-provider-id="${serviceProvider?.id}"
+                th:data-service-provider-name="${serviceProvider?.name}"
+                onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)">
+            <i class="fas fa-camera me-1"></i>
+            <span th:text="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank} ? 'Change' : 'Upload'">Upload</span>
+        </button>
+        
+        <button type="button" 
+                th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}"
+                class="btn btn-outline-danger btn-sm"
+                th:data-service-provider-id="${serviceProvider?.id}"
+                onclick="removeServiceProviderAvatar(this.dataset.serviceProviderId)"
+                title="Remove avatar">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+
+    <!-- Inline Avatar Upload Controls -->
+    <!-- 
+        Usage: th:replace="~{fragments/avatar-upload-button :: inlineAvatarUploadControls(${serviceProvider})}"
+        Compact inline controls with upload and remove options
+    -->
+    <div th:fragment="inlineAvatarUploadControls(serviceProvider)" 
+         class="avatar-upload-inline-controls d-inline-flex align-items-center">
+        <button type="button"
+                class="btn btn-link btn-sm p-1 me-1"
+                th:data-service-provider-id="${serviceProvider?.id}"
+                th:data-service-provider-name="${serviceProvider?.name}"
+                onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
+                th:title="'Upload avatar for ' + ${serviceProvider?.name}">
+            <i class="fas fa-camera text-primary"></i>
+        </button>
+        
+        <button type="button" 
+                th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}"
+                class="btn btn-link btn-sm p-1"
+                th:data-service-provider-id="${serviceProvider?.id}"
+                onclick="removeServiceProviderAvatar(this.dataset.serviceProviderId)"
+                title="Remove avatar">
+            <i class="fas fa-trash text-danger"></i>
+        </button>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,452 @@
+/* Avatar Component Styles */
+
+/* Base Avatar Preview Styles */
+.avatar-preview {
+    position: relative;
+    display: inline-block;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-preview:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+/* Avatar Image Styles */
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+}
+
+/* Avatar Placeholder Styles */
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border-radius: 6px;
+}
+
+/* Avatar Icon Styles */
+.avatar-icon {
+    color: #6c757d;
+}
+
+/* Avatar Size Variants */
+.avatar-preview-small,
+.avatar-image-small,
+.avatar-placeholder-small {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-icon-small {
+    font-size: 12px;
+}
+
+.avatar-preview-medium,
+.avatar-image-medium,
+.avatar-placeholder-medium {
+    width: 64px;
+    height: 64px;
+}
+
+.avatar-icon-medium {
+    font-size: 20px;
+}
+
+.avatar-preview-large,
+.avatar-image-large,
+.avatar-placeholder-large {
+    width: 128px;
+    height: 128px;
+}
+
+.avatar-icon-large {
+    font-size: 40px;
+}
+
+.avatar-preview-xlarge,
+.avatar-image-xlarge,
+.avatar-placeholder-xlarge {
+    width: 200px;
+    height: 200px;
+}
+
+.avatar-icon-xlarge {
+    font-size: 60px;
+}
+
+/* Clickable Avatar Styles */
+.avatar-preview-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-preview-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.avatar-preview-clickable:active {
+    transform: translateY(0);
+}
+
+/* Avatar Upload Overlay */
+.avatar-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    border-radius: 6px;
+}
+
+.avatar-preview-clickable:hover .avatar-upload-overlay {
+    opacity: 1;
+}
+
+.avatar-upload-overlay-small {
+    font-size: 10px;
+}
+
+.avatar-upload-overlay-medium {
+    font-size: 16px;
+}
+
+.avatar-upload-overlay-large {
+    font-size: 24px;
+}
+
+.avatar-upload-overlay-xlarge {
+    font-size: 32px;
+}
+
+/* Avatar Upload Modal Styles */
+.avatar-image-preview {
+    background-image: 
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 0, 10px 10px, 10px 10px;
+    border-radius: 8px;
+}
+
+.avatar-preview-box {
+    background-image: 
+        linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
+        linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f8f9fa 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 0, 5px 5px, 5px 5px;
+}
+
+.avatar-error-container .alert {
+    margin-bottom: 0;
+}
+
+/* Avatar Upload Button Styles */
+.avatar-upload-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-upload-btn:active {
+    transform: translateY(0);
+}
+
+.avatar-upload-btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.avatar-upload-btn-icon.btn-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-upload-btn-icon.btn-lg {
+    width: 48px;
+    height: 48px;
+}
+
+/* Floating Avatar Upload Button */
+.avatar-upload-btn-floating {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-upload-btn-floating:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-upload-btn-floating:active {
+    transform: scale(1.05);
+}
+
+/* Avatar Upload Link Styles */
+.avatar-upload-link {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.avatar-upload-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Avatar Upload Dropdown Styles */
+.avatar-upload-dropdown .dropdown-menu {
+    min-width: 180px;
+}
+
+.avatar-upload-dropdown .dropdown-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-upload-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Card Action Styles */
+.avatar-upload-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Inline Controls Styles */
+.avatar-upload-inline-controls .btn-link {
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-upload-inline-controls .btn-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Form Avatar Preview Styles */
+.form-avatar-preview {
+    margin-bottom: 1rem;
+}
+
+.form-avatar-preview .avatar-preview {
+    margin-bottom: 0;
+}
+
+/* Avatar Preview with Button Styles */
+.avatar-preview-with-button {
+    gap: 12px;
+}
+
+.avatar-upload-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Drag and Drop Styles */
+#avatarFileDropZone {
+    transition: all 0.2s ease-in-out;
+}
+
+#avatarFileDropZone.border-primary {
+    background-color: rgba(0, 123, 255, 0.05);
+    border-color: #007bff !important;
+}
+
+#avatarFileDropZone:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+    border-color: #007bff;
+}
+
+/* Progress Bar Styles */
+#avatarProgressContainer .progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+#avatarProgressContainer .progress-bar {
+    background-color: #007bff;
+    transition: width 0.3s ease-in-out;
+    border-radius: 4px;
+}
+
+#avatarProgressText {
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Avatar Cropper Rotation Handles */
+.avatar-rotation-handle {
+    transition: all 0.2s ease-in-out;
+}
+
+.avatar-rotation-handle:hover {
+    background-color: #0056b3 !important;
+    transform: scale(1.1);
+}
+
+.avatar-rotation-handle:active {
+    transform: scale(0.95);
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .avatar-preview-with-button {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .avatar-upload-actions {
+        flex-direction: row;
+        width: 100%;
+    }
+    
+    .avatar-upload-btn-floating {
+        bottom: 15px;
+        right: 15px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .form-avatar-preview .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-avatar-preview .avatar-preview {
+        margin-bottom: 1rem;
+        margin-right: 0 !important;
+    }
+}
+
+/* Accessibility Improvements */
+.avatar-upload-btn:focus,
+.avatar-upload-link:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.avatar-preview-clickable:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .avatar-preview {
+        border-color: #000;
+        border-width: 3px;
+    }
+    
+    .avatar-placeholder {
+        background-color: #fff;
+        border: 2px solid #000;
+    }
+    
+    .avatar-icon {
+        color: #000;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .avatar-preview,
+    .avatar-upload-btn,
+    .avatar-upload-link,
+    .avatar-upload-overlay,
+    .avatar-rotation-handle,
+    #avatarFileDropZone,
+    #avatarProgressContainer .progress-bar {
+        transition: none;
+    }
+    
+    .avatar-preview-clickable:hover,
+    .avatar-upload-btn:hover,
+    .avatar-upload-btn-floating:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .avatar-preview {
+        background-color: #343a40;
+        border-color: #495057;
+    }
+    
+    .avatar-placeholder {
+        background-color: #343a40;
+        color: #adb5bd;
+    }
+    
+    .avatar-icon {
+        color: #adb5bd;
+    }
+    
+    .avatar-image-preview {
+        background-color: #343a40;
+    }
+    
+    .avatar-preview-box {
+        background-color: #343a40;
+    }
+    
+    #avatarFileDropZone {
+        background-color: #343a40;
+        border-color: #495057;
+        color: #adb5bd;
+    }
+    
+    #avatarFileDropZone.border-primary {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+}
