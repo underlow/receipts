@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.*
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
-import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -25,10 +25,10 @@ class CustomOAuth2UserServiceTest {
     private lateinit var userService: UserService
     
     @Mock
-    private lateinit var oauth2UserRequest: OAuth2UserRequest
+    private lateinit var oidcUserRequest: OidcUserRequest
     
     @Mock
-    private lateinit var oauth2User: OAuth2User
+    private lateinit var oidcUser: OidcUser
     
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
     
@@ -51,16 +51,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to userAvatar
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         whenever(userService.isEmailAllowed(allowedEmail)).thenReturn(true)
         whenever(userService.createOrUpdateUser(allowedEmail, userName, userAvatar)).thenReturn(savedUser)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user
-        val result = customService.loadUser(oauth2UserRequest)
+        val result = customService.loadUser(oidcUserRequest)
         
         // then - returns authenticated user with proper attributes
         assertNotNull(result)
@@ -85,17 +85,17 @@ class CustomOAuth2UserServiceTest {
             "picture" to userAvatar
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         whenever(userService.isEmailAllowed(nonAllowedEmail)).thenReturn(false)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user with non-allowed email
         // then - throws OAuth2AuthenticationException
         assertFailsWith<OAuth2AuthenticationException> {
-            customService.loadUser(oauth2UserRequest)
+            customService.loadUser(oidcUserRequest)
         }
         
         verify(userService).isEmailAllowed(nonAllowedEmail)
@@ -116,16 +116,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to newAvatar
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         whenever(userService.isEmailAllowed(newEmail)).thenReturn(true)
         whenever(userService.createOrUpdateUser(newEmail, newName, newAvatar)).thenReturn(createdUser)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading new OAuth2 user
-        val result = customService.loadUser(oauth2UserRequest)
+        val result = customService.loadUser(oidcUserRequest)
         
         // then - creates new user in database
         assertNotNull(result)
@@ -146,16 +146,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to updatedAvatar
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         whenever(userService.isEmailAllowed(existingEmail)).thenReturn(true)
         whenever(userService.createOrUpdateUser(existingEmail, updatedName, updatedAvatar)).thenReturn(updatedUser)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading existing OAuth2 user
-        val result = customService.loadUser(oauth2UserRequest)
+        val result = customService.loadUser(oidcUserRequest)
         
         // then - updates existing user in database
         assertNotNull(result)
@@ -170,16 +170,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to "https://example.com/avatar.jpg"
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user without email
         // then - throws OAuth2AuthenticationException
         assertFailsWith<OAuth2AuthenticationException> {
-            customService.loadUser(oauth2UserRequest)
+            customService.loadUser(oidcUserRequest)
         }
         
         verify(userService, never()).isEmailAllowed(any())
@@ -194,16 +194,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to "https://example.com/avatar.jpg"
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user without name
         // then - throws OAuth2AuthenticationException
         assertFailsWith<OAuth2AuthenticationException> {
-            customService.loadUser(oauth2UserRequest)
+            customService.loadUser(oidcUserRequest)
         }
         
         verify(userService, never()).isEmailAllowed(any())
@@ -222,16 +222,16 @@ class CustomOAuth2UserServiceTest {
             "name" to userName
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         whenever(userService.isEmailAllowed(allowedEmail)).thenReturn(true)
         whenever(userService.createOrUpdateUser(allowedEmail, userName, null)).thenReturn(savedUser)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user without picture
-        val result = customService.loadUser(oauth2UserRequest)
+        val result = customService.loadUser(oidcUserRequest)
         
         // then - handles null avatar correctly
         assertNotNull(result)
@@ -247,16 +247,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to "https://example.com/avatar.jpg"
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user with empty email
         // then - throws OAuth2AuthenticationException
         assertFailsWith<OAuth2AuthenticationException> {
-            customService.loadUser(oauth2UserRequest)
+            customService.loadUser(oidcUserRequest)
         }
         
         verify(userService, never()).isEmailAllowed(any())
@@ -272,16 +272,16 @@ class CustomOAuth2UserServiceTest {
             "picture" to "https://example.com/avatar.jpg"
         )
         
-        whenever(oauth2User.attributes).thenReturn(userAttributes)
+        whenever(oidcUser.attributes).thenReturn(userAttributes)
         
         // Mock parent class behavior
         val customService = spy(customOAuth2UserService)
-        doReturn(oauth2User).whenever(customService).callSuperLoadUser(oauth2UserRequest)
+        doReturn(oidcUser).whenever(customService).loadUser(oidcUserRequest)
         
         // when - loading OAuth2 user with empty name
         // then - throws OAuth2AuthenticationException
         assertFailsWith<OAuth2AuthenticationException> {
-            customService.loadUser(oauth2UserRequest)
+            customService.loadUser(oidcUserRequest)
         }
         
         verify(userService, never()).isEmailAllowed(any())

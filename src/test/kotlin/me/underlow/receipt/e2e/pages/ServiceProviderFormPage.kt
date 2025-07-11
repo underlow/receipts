@@ -56,7 +56,8 @@ class ServiceProviderFormPage {
      * Enters provider name
      */
     fun enterName(name: String): ServiceProviderFormPage {
-        nameField.shouldBe(Condition.visible).clear().setValue(name)
+        nameField.shouldBe(Condition.visible).clear()
+        nameField.setValue(name)
         return this
     }
 
@@ -64,7 +65,8 @@ class ServiceProviderFormPage {
      * Enters provider comment
      */
     fun enterComment(comment: String): ServiceProviderFormPage {
-        commentField.shouldBe(Condition.visible).clear().setValue(comment)
+        commentField.shouldBe(Condition.visible).clear()
+        commentField.setValue(comment)
         return this
     }
 
@@ -72,7 +74,8 @@ class ServiceProviderFormPage {
      * Enters OCR comment
      */
     fun enterOcrComment(ocrComment: String): ServiceProviderFormPage {
-        ocrCommentField.shouldBe(Condition.visible).clear().setValue(ocrComment)
+        ocrCommentField.shouldBe(Condition.visible).clear()
+        ocrCommentField.setValue(ocrComment)
         return this
     }
 
