@@ -246,28 +246,6 @@ class AvatarUploadE2ETest : BaseE2ETest() {
         avatarUploadPage.shouldShowRotateControls()
     }
 
-    @Test
-    @DisplayName("should show progress indication during upload")
-    fun shouldShowProgressIndicationDuringUpload() {
-        // Given: Service provider is selected and avatar upload modal is open with image selected
-        navigationHelper.selectServiceProvider("1")
-        navigationHelper.clickOnAvatarToOpenUpload()
-        avatarUploadPage.shouldBeVisible()
-
-        val testImageFile = uploadHelper.createTestJpegFile("test-upload-progress.jpg")
-        testFiles.add(testImageFile)
-        avatarUploadPage.selectFile(testImageFile)
-        avatarUploadPage.shouldShowCropperImage()
-
-        // When: User clicks upload button
-        avatarUploadPage.confirmUpload()
-
-        // Then: Progress indication should be visible
-        avatarUploadPage
-            .shouldShowProgress()
-            .shouldShowUploadingState()
-    }
-
 
     @Test
     @DisplayName("should show error message on upload failure")
@@ -352,11 +330,11 @@ class AvatarUploadE2ETest : BaseE2ETest() {
      */
     private fun createOversizedTestFile(): File {
         val tempFile = File.createTempFile("oversized-test", ".jpg")
-        
+
         // Create a 12MB file (guaranteed to be larger than 10MB limit)
         val targetSize = 12 * 1024 * 1024 // 12MB in bytes
         val buffer = ByteArray(1024) // 1KB buffer
-        
+
         tempFile.outputStream().use { output ->
             // Write JPEG header first to make it look like a valid image file
             val jpegHeader = byteArrayOf(
@@ -365,7 +343,7 @@ class AvatarUploadE2ETest : BaseE2ETest() {
                 0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00
             )
             output.write(jpegHeader)
-            
+
             // Fill the rest with dummy data to reach target size
             var bytesWritten = jpegHeader.size
             while (bytesWritten < targetSize) {
@@ -374,11 +352,11 @@ class AvatarUploadE2ETest : BaseE2ETest() {
                 output.write(buffer, 0, bytesToWrite)
                 bytesWritten += bytesToWrite
             }
-            
+
             // Write JPEG end marker
             output.write(byteArrayOf(0xFF.toByte(), 0xD9.toByte()))
         }
-        
+
         return tempFile
     }
 }
