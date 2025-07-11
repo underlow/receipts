@@ -18,7 +18,7 @@
         
         <!-- Avatar Image (if exists) -->
         <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
-             th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+             th:src="@{'/attachments/avatars/' + ${serviceProvider.avatar}}"
              th:alt="${serviceProvider.name + ' avatar'}"
              th:class="'avatar-image avatar-image-' + ${size}"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -44,7 +44,7 @@
         
         <!-- Avatar Image (if exists) -->
         <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
-             th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+             th:src="@{'/attachments/avatars/' + ${serviceProvider.avatar}}"
              th:alt="${serviceProvider.name + ' avatar'}"
              th:class="'avatar-image avatar-image-' + ${size}"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -76,7 +76,7 @@
             
             <!-- Avatar Image (if exists) -->
             <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
-                 th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+                 th:src="@{'/attachments/avatars/' + ${serviceProvider.avatar}}"
                  th:alt="${serviceProvider.name + ' avatar'}"
                  th:class="'avatar-image avatar-image-' + ${size}"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -126,7 +126,7 @@
                 
                 <!-- Avatar Image (if exists) -->
                 <img th:if="${serviceProvider?.avatar != null and !serviceProvider.avatar.blank}" 
-                     th:src="@{'/attachments/' + ${serviceProvider.avatar}}"
+                     th:src="@{'/attachments/avatars/' + ${serviceProvider.avatar}}"
                      th:alt="${serviceProvider.name + ' avatar'}"
                      class="avatar-image avatar-image-large"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

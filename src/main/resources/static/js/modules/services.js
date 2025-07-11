@@ -83,7 +83,7 @@ class ServicesModule {
                     <li class="service-provider-item ${provider.state === 'HIDDEN' ? 'hidden' : ''} ${this.selectedServiceProvider && this.selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
                         onclick="servicesModule.selectServiceProvider(${provider.id})">
                         ${provider.avatar ? 
-                            `<img src="${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
+                            `<img src="/attachments/avatars/${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
                             `<div class="service-provider-avatar-fallback">${provider.name.substring(0, 1).toUpperCase()}</div>`
                         }
                         <div class="service-provider-info">
@@ -146,7 +146,7 @@ class ServicesModule {
                     <label class="form-label">Avatar</label>
                     <div class="avatar-upload-section">
                         ${this.selectedServiceProvider.avatar ? 
-                            `<img src="${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview">` :
+                            `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview">` :
                             `<div class="avatar-preview-fallback" id="avatarPreview">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
                         }
                         <div class="avatar-upload-controls">

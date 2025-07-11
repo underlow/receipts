@@ -56,7 +56,7 @@ function updateFormAvatarPreview(avatarPath) {
 
     if (avatarPath) {
         // Update to show new avatar
-        avatarPreview.innerHTML = `<img src="/attachments/${avatarPath}" alt="Avatar" class="avatar-image avatar-image-large">`;
+        avatarPreview.innerHTML = `<img src="/attachments/avatars/${avatarPath}" alt="Avatar" class="avatar-image avatar-image-large">`;
         avatarPreview.className = 'avatar-preview avatar-preview-large';
         
         // Update controls to show remove option
@@ -115,7 +115,7 @@ function updateListItemAvatar(serviceProviderId, avatarPath) {
     }
 
     if (avatarPath) {
-        avatarElement.innerHTML = `<img src="/attachments/${avatarPath}" alt="Avatar" class="avatar-image avatar-image-medium">`;
+        avatarElement.innerHTML = `<img src="/attachments/avatars/${avatarPath}" alt="Avatar" class="avatar-image avatar-image-medium">`;
         avatarElement.className = 'service-provider-avatar avatar-preview avatar-preview-medium';
     } else {
         const provider = serviceProviders.find(p => p.id === serviceProviderId);
@@ -258,7 +258,7 @@ function renderServiceProviderFormWithAvatar() {
 
     const avatarSection = selectedServiceProvider.avatar ? `
         <div class="avatar-preview avatar-preview-large">
-            <img src="/attachments/${selectedServiceProvider.avatar}" alt="Avatar" class="avatar-image avatar-image-large">
+            <img src="/attachments/avatars/${selectedServiceProvider.avatar}" alt="Avatar" class="avatar-image avatar-image-large">
         </div>
     ` : `
         <div class="avatar-preview avatar-preview-large">

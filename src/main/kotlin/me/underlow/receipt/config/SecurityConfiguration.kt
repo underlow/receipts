@@ -34,7 +34,7 @@ class SecurityConfiguration(
         http
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/login", "/error", "/css/**", "/js/**", "/images/**", "/static/**").permitAll()
+                    .requestMatchers("/login", "/error", "/css/**", "/js/**", "/images/**", "/static/**", "/attachments/**").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->

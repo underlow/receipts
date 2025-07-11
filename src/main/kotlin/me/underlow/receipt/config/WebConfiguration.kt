@@ -1,5 +1,6 @@
 package me.underlow.receipt.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
@@ -11,7 +12,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * Configures proper serving of static CSS, JS, and other resources.
  */
 @Configuration
-class WebConfiguration : WebMvcConfigurer {
+class WebConfiguration(
+    @Value("\${receipts.attachments-path}") private val attachmentsPath: String
+) : WebMvcConfigurer {
 
     /**
      * Configure static resource handlers with proper MIME types.
@@ -22,6 +25,13 @@ class WebConfiguration : WebMvcConfigurer {
         registry
             .addResourceHandler("/static/**")
             .addResourceLocations("classpath:/static/")
+            .setCachePeriod(3600)
+            .resourceChain(true)
+            
+        // Configure avatar/attachment serving from file system
+        registry
+            .addResourceHandler("/attachments/**")
+            .addResourceLocations("file:$attachmentsPath/")
             .setCachePeriod(3600)
             .resourceChain(true)
     }
