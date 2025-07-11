@@ -164,7 +164,9 @@ class InboxPage {
      */
     fun searchForItems(searchTerm: String): InboxPage {
         searchInput.shouldBe(Condition.visible).setValue(searchTerm)
-        searchButton.click()
+        // The search is triggered by input event, not button click
+        // Wait for the search timeout to complete (500ms as per inbox.js)
+        Thread.sleep(600)
         waitForSearchResults()
         return this
     }

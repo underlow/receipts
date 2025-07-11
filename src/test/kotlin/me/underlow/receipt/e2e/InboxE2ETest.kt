@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
+import com.codeborne.selenide.Selenide.`$`
+import com.codeborne.selenide.Condition
 
 /**
  * End-to-end tests for Inbox functionality.
@@ -201,12 +203,23 @@ class InboxE2ETest : BaseE2ETest() {
         // Given - user has applied search filters in inbox
         inboxPage.navigateToInbox()
         inboxPage.searchForItems("grocery")
+        
+        // Store the current search value to verify later
+        val searchInput = `$`("[data-test-id='search-input']")
+        val initialSearchValue = searchInput.getValue()
 
-        // When - user navigates away and returns
-        // Navigate to another page and back
-        // This would need proper navigation implementation
+        // When - user navigates away to services tab and returns
+        val servicesTab = `$`("[data-test-id='services-tab']")
+        servicesTab.shouldBe(Condition.visible).click()
+        waitForPageLoad()
+        
+        // Navigate back to inbox
+        inboxPage.navigateToInbox()
 
         // Then - search filters should be maintained
-        // Note: This depends on whether the app maintains state or resets
+        val currentSearchValue = searchInput.getValue()
+        assert(currentSearchValue == initialSearchValue) {
+            "Search filter was not maintained. Expected: '$initialSearchValue', but got: '$currentSearchValue'"
+        }
     }
 }
