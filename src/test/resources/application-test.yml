@@ -24,3 +24,6 @@ spring:
 
 # Environment variable for tests
 ALLOWED_EMAILS: test@example.com,admin@example.com
+
+receipts:
+  attachments-path: ${java.io.tmpdir}/test-avatars

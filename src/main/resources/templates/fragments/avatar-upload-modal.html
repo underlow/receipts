@@ -80,6 +80,22 @@
                         </button>
                     </div>
                     
+                    <!-- Avatar Preview Section -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Preview (200x200)</h6>
+                            <div class="d-flex justify-content-center">
+                                <div class="avatar-preview-container" style="width: 200px; height: 200px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                    <img id="avatarPreviewImage" data-test-id="avatar-preview-image" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px; display: none;" alt="Avatar preview">
+                                    <div id="avatarPreviewPlaceholder" data-test-id="avatar-preview-placeholder" class="text-center text-muted">
+                                        <i class="fas fa-user-circle fa-3x mb-2"></i>
+                                        <div>Preview will appear here</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Success Alert -->
                     <div id="avatarSuccessAlert" class="alert alert-success d-none" data-test-id="avatar-success-alert" role="alert">
                         <i class="fas fa-check-circle me-2"></i>

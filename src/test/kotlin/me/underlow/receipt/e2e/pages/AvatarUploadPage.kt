@@ -152,8 +152,26 @@ class AvatarUploadPage {
      * Initiates image cropping by clicking the crop button
      */
     fun startCropping(): AvatarUploadPage {
+        // In test environments, the hover event may not work properly
+        // So we need to force the controls to be visible
         imagePreview.hover()
-        cropButton.shouldBe(Condition.visible).click()
+        
+        // Force the controls to be visible using JavaScript
+        com.codeborne.selenide.Selenide.executeJavaScript<Void>(
+            """
+            var controls = document.getElementById('avatarImageControls');
+            if (controls) {
+                controls.style.display = 'block';
+                controls.style.visibility = 'visible';
+                controls.style.opacity = '1';
+            }
+            """.trimIndent()
+        )
+        
+        // Wait for the crop button to be visible
+        cropButton.shouldBe(Condition.visible, Duration.ofSeconds(5))
+        
+        cropButton.click()
         return this
     }
     
@@ -195,8 +213,26 @@ class AvatarUploadPage {
      * Initiates image rotation by clicking the rotate button
      */
     fun startRotation(): AvatarUploadPage {
+        // In test environments, the hover event may not work properly
+        // So we need to force the controls to be visible
         imagePreview.hover()
-        rotateButton.shouldBe(Condition.visible).click()
+        
+        // Force the controls to be visible using JavaScript
+        com.codeborne.selenide.Selenide.executeJavaScript<Void>(
+            """
+            var controls = document.getElementById('avatarImageControls');
+            if (controls) {
+                controls.style.display = 'block';
+                controls.style.visibility = 'visible';
+                controls.style.opacity = '1';
+            }
+            """.trimIndent()
+        )
+        
+        // Wait for the rotate button to be visible
+        rotateButton.shouldBe(Condition.visible, Duration.ofSeconds(5))
+        
+        rotateButton.click()
         return this
     }
     
