@@ -243,7 +243,7 @@ class AvatarUploadControllerTest {
             // Then
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
             assertFalse(response.body!!.success)
-            assertEquals("Avatar upload failed", response.body!!.error)
+            assertEquals("Upload failed. Please try again", response.body!!.error)
 
             verify(avatarService).validateAvatarFile(avatarFile)
             verify(serviceProviderService).findById(serviceProviderId)
@@ -276,7 +276,7 @@ class AvatarUploadControllerTest {
             // Then
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
             assertFalse(response.body!!.success)
-            assertEquals("Avatar upload failed", response.body!!.error)
+            assertEquals("Upload failed. Please try again", response.body!!.error)
 
             verify(avatarService).validateAvatarFile(avatarFile)
             verify(serviceProviderService).findById(serviceProviderId)
