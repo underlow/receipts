@@ -1,4 +1,4 @@
-package me.underlow.receipt.e2e
+package me.underlow.receipt.controller
 
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
@@ -43,9 +43,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
         "spring.security.oauth2.client.registration.google.client-secret=test-secret"
     ]
 )
-class ControllerE2ETest {
+class ControllerTest {
 
-    companion object {
+    companion object Companion {
         @Container
         @JvmStatic
         val postgres = PostgreSQLContainer<Nothing>("postgres:15-alpine").apply {

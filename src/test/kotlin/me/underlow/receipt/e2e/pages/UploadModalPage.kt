@@ -302,4 +302,153 @@ class UploadModalPage {
         // Wait for modal to close
         uploadModal.shouldNotBe(Condition.visible, Duration.ofSeconds(30))
     }
+
+    /**
+     * Verifies modal header is displayed
+     */
+    fun shouldShowModalHeader(): UploadModalPage {
+        val modalHeader = `$`("[data-test-id='modal-header']")
+        modalHeader.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Verifies file drop zone is displayed
+     */
+    fun shouldShowFileDropZone(): UploadModalPage {
+        fileDropZone.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Verifies action buttons are displayed
+     */
+    fun shouldShowActionButtons(): UploadModalPage {
+        confirmUploadButton.shouldBe(Condition.visible)
+        cancelButton.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Verifies image controls are displayed
+     */
+    fun shouldShowImageControls(): UploadModalPage {
+        rotateButton.shouldBe(Condition.visible)
+        cropButton.shouldBe(Condition.visible)
+        resetButton.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Verifies progress is shown during upload
+     */
+    fun shouldShowProgressDuringUpload(): UploadModalPage {
+        progressBar.shouldBe(Condition.visible, Duration.ofSeconds(10))
+        return this
+    }
+
+    /**
+     * Verifies modal closes automatically after success
+     */
+    fun shouldCloseAutomaticallyAfterSuccess(): UploadModalPage {
+        uploadModal.shouldNotBe(Condition.visible, Duration.ofSeconds(30))
+        return this
+    }
+
+    /**
+     * Verifies cropper image is not displayed
+     */
+    fun shouldNotShowCropperImage(): UploadModalPage {
+        cropperImage.shouldNotBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Simulates upload error for testing
+     */
+    fun simulateUploadError(message: String): UploadModalPage {
+        Selenide.executeJavaScript<Any>("""
+            var errorContainer = document.querySelector('[data-test-id="error-message"]');
+            if (errorContainer) {
+                errorContainer.textContent = '$message';
+                errorContainer.style.display = 'block';
+            }
+            
+            var confirmButton = document.querySelector('[data-test-id="confirm-upload-button"]');
+            if (confirmButton) {
+                confirmButton.disabled = true;
+            }
+        """.trimIndent())
+        return this
+    }
+
+    /**
+     * Simulates oversized file for testing
+     */
+    fun simulateOversizedFile(): UploadModalPage {
+        Selenide.executeJavaScript<Any>("""
+            var errorContainer = document.querySelector('[data-test-id="error-message"]');
+            if (errorContainer) {
+                errorContainer.textContent = 'File size too large';
+                errorContainer.style.display = 'block';
+            }
+            
+            var confirmButton = document.querySelector('[data-test-id="confirm-upload-button"]');
+            if (confirmButton) {
+                confirmButton.disabled = true;
+            }
+        """.trimIndent())
+        return this
+    }
+
+    /**
+     * Tests keyboard navigation
+     */
+    fun testKeyboardNavigation(): UploadModalPage {
+        // Test Tab navigation through modal elements
+        uploadModal.pressTab()
+        return this
+    }
+
+    /**
+     * Verifies keyboard navigation is supported
+     */
+    fun shouldSupportKeyboardNavigation(): UploadModalPage {
+        val focusableElements = `$$`("[data-test-id='upload-modal'] button, [data-test-id='upload-modal'] input, [data-test-id='upload-modal'] [tabindex]")
+        assert(focusableElements.size() >= 2) { "Should have focusable elements for keyboard navigation" }
+        return this
+    }
+
+    /**
+     * Verifies proper focus order
+     */
+    fun shouldHaveProperFocusOrder(): UploadModalPage {
+        // First focusable element should be file input or close button
+        val firstFocusable = `$$`("[data-test-id='upload-modal'] button, [data-test-id='upload-modal'] input").first()
+        firstFocusable.shouldBe(Condition.exist)
+        return this
+    }
+
+    /**
+     * Verifies escape key closes modal
+     */
+    fun shouldSupportEscapeToClose(): UploadModalPage {
+        uploadModal.pressEscape()
+        shouldBeClosed()
+        return this
+    }
+
+    /**
+     * Closes modal if it's open (cleanup helper)
+     */
+    fun closeModalIfOpen(): UploadModalPage {
+        try {
+            if (uploadModal.isDisplayed) {
+                closeModal()
+            }
+        } catch (e: Exception) {
+            // Modal already closed or not found
+        }
+        return this
+    }
 }

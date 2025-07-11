@@ -1,7 +1,5 @@
-package me.underlow.receipt.e2e
+package me.underlow.receipt.dao
 
-import me.underlow.receipt.dao.UserDao
-import me.underlow.receipt.dao.UserRowMapper
 import me.underlow.receipt.model.User
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

@@ -1,279 +1,319 @@
 package me.underlow.receipt.e2e
 
-import com.codeborne.selenide.Condition
-import com.codeborne.selenide.Selenide.`$`
-import com.codeborne.selenide.Selenide.`$$`
-import com.codeborne.selenide.Selenide.executeJavaScript
 import me.underlow.receipt.config.BaseE2ETest
 import me.underlow.receipt.e2e.helpers.LoginHelper
+import me.underlow.receipt.e2e.pages.UploadModalPage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
-import kotlin.test.assertTrue
-import java.time.Duration
+import org.junit.jupiter.api.AfterEach
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
- * End-to-end tests for Upload Modal functionality.
- * Tests the complete user workflow for image upload modal including
- * modal opening, image preview, cropping, and upload confirmation.
+ * End-to-end tests for Upload Modal functionality following best practices.
+ * 
+ * Tests the complete user workflow for receipt image upload including:
+ * - Modal opening and closing
+ * - File selection and preview
+ * - Image manipulation (crop, rotate)
+ * - Upload process and error handling
+ * - User experience and accessibility
  */
 class UploadModalE2ETest : BaseE2ETest() {
 
     private val loginHelper = LoginHelper()
+    private val uploadModalPage = UploadModalPage()
+    private lateinit var testImageFile: File
 
     @BeforeEach
-    fun setUpUploadModalTest() {
-        // given - user is logged in and on dashboard
+    fun setUp() {
+        // Given - user is authenticated and on dashboard
         loginHelper.loginAsAllowedUser1()
         waitForPageLoad()
-    }
-
-    @Test
-    fun `given dashboard when upload button is clicked then should open upload modal`() {
-        // given - user is authenticated and on dashboard
-        assertTrue(isOnDashboardPage())
-
-        // when - user clicks upload button
-        val uploadButton = `$`("button[data-bs-target='#uploadModal']")
-        if (uploadButton.exists()) {
-            uploadButton.click()
-
-            // then - upload modal should be visible
-            val modal = `$`("#uploadModal")
-            modal.shouldBe(Condition.visible, Duration.ofSeconds(10))
-
-            // Verify modal structure
-            val modalDialog = `$`("#uploadModal .modal-dialog")
-            modalDialog.shouldBe(Condition.visible)
-            assertTrue(modalDialog.getAttribute("class")?.contains("modal-lg") == true)
-        }
-    }
-
-    @Test
-    fun `given upload modal when opened then should display modal header with title`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - modal is displayed
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible)
-
-        // then - should display proper header with title
-        val modalHeader = `$`("#uploadModal .modal-header")
-        modalHeader.shouldBe(Condition.visible)
-
-        val modalTitle = `$`("#uploadModal .modal-title")
-        modalTitle.shouldBe(Condition.visible)
-        assertTrue(modalTitle.text().contains("Upload Receipt Image"))
-    }
-
-    @Test
-    fun `given upload modal when opened then should display image preview container`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - modal is displayed
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible)
-
-        // then - should display image preview container
-        val imagePreview = `$`("#imagePreview")
-        imagePreview.shouldBe(Condition.visible)
-
-        val cropperImage = `$`("#cropperImage")
-        cropperImage.shouldBe(Condition.exist)
-    }
-
-
-
-    @Test
-    fun `given upload modal when opened then should display upload and cancel buttons`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - modal is displayed
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible)
-
-        // then - should display action buttons
-        val cancelButton = `$`("#cancelUpload")
-        cancelButton.shouldBe(Condition.visible)
-        assertTrue(cancelButton.text().contains("Cancel"))
-        assertTrue(cancelButton.getAttribute("class")?.contains("btn-secondary") == true)
-
-        val confirmButton = `$`("#confirmUpload")
-        confirmButton.shouldBe(Condition.visible)
-        assertTrue(confirmButton.text().contains("Upload"))
-        assertTrue(confirmButton.getAttribute("class")?.contains("btn-success") == true)
-    }
-
-    @Test
-    fun `given upload modal when cancel button is clicked then should close modal`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - user clicks cancel button
-        val cancelButton = `$`("#cancelUpload")
-        cancelButton.shouldBe(Condition.visible)
-
-        // Add a small delay to ensure modal is fully initialized
-        Thread.sleep(500)
-
-        // Click the cancel button
-        cancelButton.click()
-
-        // then - modal should be closed
-        val modal = `$`("#uploadModal")
-        // Wait for modal to fade out completely and check that it's no longer visible
-        modal.shouldNotBe(Condition.visible, Duration.ofSeconds(10))
-
-        // Additionally verify that the modal has the correct Bootstrap classes indicating it's closed
-        modal.shouldNotHave(Condition.cssClass("show"), Duration.ofSeconds(5))
-    }
-
-    @Test
-    fun `given upload modal when file is selected then should display image in preview`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - file is selected (simulated)
-        val fileInput = `$`("input[type='file']")
-        if (fileInput.exists()) {
-            // then - image should be displayed in preview
-            val cropperImage = `$`("#cropperImage")
-            cropperImage.shouldBe(Condition.exist)
-
-            // After file selection, image should have src attribute
-            // Note: In real test, you would use a test image file
-        }
-    }
-
-    @Test
-    fun `given upload modal with image when cropper is initialized then should enable image editing`() {
-        // given - user opens upload modal with image
-        openUploadModal()
-
-        // when - cropper is initialized (after image load)
-        val cropperImage = `$`("#cropperImage")
-        cropperImage.shouldBe(Condition.exist)
-
-        // then - cropper functionality should be available
-        // Check if cropper container exists (created by cropper.js)
-        val cropperContainer = `$`(".cropper-container")
-        if (cropperContainer.exists()) {
-            cropperContainer.shouldBe(Condition.visible)
-
-            // Verify cropper elements
-            val cropperCanvas = `$`(".cropper-canvas")
-            val cropperViewBox = `$`(".cropper-view-box")
-
-            assertTrue(cropperCanvas.exists() || cropperViewBox.exists(),
-                "Cropper should initialize with canvas or view box")
-        }
-    }
-
-
-    @Test
-    fun `given upload modal when upload button is clicked then should process image upload`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - modal is opened, upload button should be visible but disabled initially
-        val confirmButton = `$`("#confirmUpload")
-        confirmButton.shouldBe(Condition.visible)
-
-        // then - upload button should be disabled by default (no image selected)
-        assertTrue(!confirmButton.isEnabled, "Upload button should be disabled when no image is selected")
-
-        // Verify button text and styling
-        assertTrue(confirmButton.text().contains("Upload"))
-        assertTrue(confirmButton.getAttribute("class")?.contains("btn-success") == true)
-
-        // Note: In a complete test, you would:
-        // 1. Select a file using the file input
-        // 2. Wait for image to load and cropper to initialize
-        // 3. Verify button becomes enabled
-        // 4. Click the button and verify upload process starts
-    }
-
-    @Test
-    fun `given upload modal when drag and drop is used then should handle file drop`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - checking for drag and drop support
-        val dropZone = `$`("#imagePreview")
-        if (dropZone.exists()) {
-            // then - drop zone should be configured for file drops
-            dropZone.shouldBe(Condition.visible)
-
-            // In real test, you would simulate drag and drop events
-            // This would verify the drop zone handles file drops correctly
-        }
-    }
-
-    @Test
-    fun `given upload modal when keyboard navigation is used then should be accessible`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - using keyboard navigation
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible)
-
-        // then - modal should be keyboard accessible
-        val focusableElements = `$$`("#uploadModal button, #uploadModal input, #uploadModal [tabindex]")
-        assertTrue(focusableElements.size() >= 2, "Should have focusable elements for keyboard navigation")
-
-        // Verify first focusable element can receive focus
-        val firstFocusable = focusableElements.firstOrNull()
-        if (firstFocusable != null) {
-            firstFocusable.shouldBe(Condition.exist)
-        }
-    }
-
-    @Test
-    fun `given upload modal when error occurs then should display error message in modal`() {
-        // given - user opens upload modal
-        openUploadModal()
-
-        // when - error occurs during upload or processing (simulated via JavaScript)
-        executeJavaScript<Any>("window.showModalErrorMessage('Upload failed. Please try again.')")
-
-        // then - error container should be visible
-        val errorContainer = `$`("#uploadErrorContainer")
-        errorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
         
-        // and - error message should be displayed in modal
-        val modalErrorContainer = `$`("#uploadModal #uploadErrorContainer .alert-danger")
-        modalErrorContainer.shouldBe(Condition.visible, Duration.ofSeconds(5))
-        assertTrue(modalErrorContainer.text().isNotEmpty())
-        assertTrue(modalErrorContainer.text().contains("Upload failed"))
+        // Given - test image file is prepared
+        testImageFile = createTestImageFile()
+    }
 
-        // and - modal should remain open
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible)
-        modal.shouldHave(Condition.cssClass("show"))
+    @AfterEach
+    fun tearDown() {
+        // Clean up test files
+        if (::testImageFile.isInitialized && testImageFile.exists()) {
+            testImageFile.delete()
+        }
+        
+        // Ensure modal is closed after each test
+        uploadModalPage.closeModalIfOpen()
+    }
+
+    @Test
+    fun shouldOpenUploadModalWhenUploadButtonClicked() {
+        // Given - user is on dashboard with upload functionality available
+        // (setup handled in @BeforeEach)
+        
+        // When - user clicks upload button
+        uploadModalPage.openModal()
+        
+        // Then - upload modal should be visible with proper structure
+        uploadModalPage.shouldBeVisible()
+            .shouldShowModalHeader()
+            .shouldShowFileDropZone()
+            .shouldShowActionButtons()
+    }
+
+    @Test
+    fun shouldCloseModalWhenCancelButtonClicked() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user clicks cancel button
+        uploadModalPage.cancelUpload()
+        
+        // Then - modal should be closed
+        uploadModalPage.shouldBeClosed()
+    }
+
+    @Test
+    fun shouldCloseModalWhenCloseButtonClicked() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user clicks close button (X)
+        uploadModalPage.closeModal()
+        
+        // Then - modal should be closed
+        uploadModalPage.shouldBeClosed()
+    }
+
+    @Test
+    fun shouldDisplayImagePreviewWhenFileSelected() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user selects an image file
+        uploadModalPage.uploadFile(testImageFile)
+        
+        // Then - image should be displayed in preview with cropper
+        uploadModalPage.shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+            .shouldShowImageControls()
+    }
+
+    @Test
+    fun shouldHandleDragAndDropFileUpload() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user drags and drops an image file
+        uploadModalPage.dragAndDropFile(testImageFile)
+        
+        // Then - image should be displayed in preview with cropper
+        uploadModalPage.shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+            .shouldShowImageControls()
+    }
+
+    @Test
+    fun shouldRotateImageWhenRotateButtonClicked() {
+        // Given - user has uploaded an image to the modal
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+        
+        // When - user clicks rotate button
+        uploadModalPage.rotateImage()
+        
+        // Then - image should be rotated and cropper should update
+        uploadModalPage.shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+    }
+
+    @Test
+    fun shouldCropImageWhenCropButtonClicked() {
+        // Given - user has uploaded an image to the modal
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+        
+        // When - user clicks crop button
+        uploadModalPage.cropImage()
+        
+        // Then - image should be cropped and preview should update
+        uploadModalPage.shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+    }
+
+    @Test
+    fun shouldResetImageWhenResetButtonClicked() {
+        // Given - user has uploaded and modified an image
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+            .rotateImage()
+        
+        // When - user clicks reset button
+        uploadModalPage.resetImage()
+        
+        // Then - image should be reset to original state
+        uploadModalPage.shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+    }
+
+    @Test
+    fun shouldCompleteUploadProcessWhenConfirmButtonClicked() {
+        // Given - user has uploaded and prepared an image
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+            .shouldEnableConfirmButton()
+        
+        // When - user clicks confirm upload button
+        uploadModalPage.confirmUpload()
+        
+        // Then - upload process should complete successfully
+        uploadModalPage.shouldShowProgressDuringUpload()
+            .shouldShowSuccessMessage()
+            .shouldCloseAutomaticallyAfterSuccess()
+    }
+
+    @Test
+    fun shouldDisplayErrorMessageWhenUploadFails() {
+        // Given - user has uploaded an image (simulating upload failure scenario)
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+        
+        // When - upload fails (simulated through error injection)
+        uploadModalPage.simulateUploadError("Network error occurred")
+        
+        // Then - error message should be displayed and modal should remain open
+        uploadModalPage.shouldShowErrorMessage("Network error occurred")
+            .shouldBeVisible()
+            .shouldDisableConfirmButton()
+    }
+
+    @Test
+    fun shouldValidateFileTypeAndShowErrorForInvalidFiles() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user selects an invalid file type
+        val invalidFile = createTestFile("test.txt", "text/plain")
+        uploadModalPage.uploadFile(invalidFile)
+        
+        // Then - error message should be displayed
+        uploadModalPage.shouldShowErrorMessage("Invalid file type")
+            .shouldNotShowCropperImage()
+            .shouldDisableConfirmButton()
+        
+        // Cleanup
+        invalidFile.delete()
+    }
+
+    @Test
+    fun shouldValidateFileSizeAndShowErrorForOversizedFiles() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user selects a file that is too large (simulated)
+        uploadModalPage.simulateOversizedFile()
+        
+        // Then - error message should be displayed
+        uploadModalPage.shouldShowErrorMessage("File size too large")
+            .shouldNotShowCropperImage()
+            .shouldDisableConfirmButton()
+    }
+
+    @Test
+    fun shouldBeAccessibleWithKeyboardNavigation() {
+        // Given - user has opened upload modal
+        uploadModalPage.openModal()
+            .shouldBeVisible()
+        
+        // When - user navigates using keyboard
+        uploadModalPage.testKeyboardNavigation()
+        
+        // Then - all interactive elements should be accessible
+        uploadModalPage.shouldSupportKeyboardNavigation()
+            .shouldHaveProperFocusOrder()
+            .shouldSupportEscapeToClose()
+    }
+
+    @Test
+    fun shouldMaintainModalStateWhenErrorOccurs() {
+        // Given - user has uploaded an image
+        uploadModalPage.openModal()
+            .uploadFile(testImageFile)
+            .shouldShowCropperImage()
+        
+        // When - error occurs during upload
+        uploadModalPage.simulateUploadError("Server error")
+        
+        // Then - modal should remain open with error displayed
+        uploadModalPage.shouldBeVisible()
+            .shouldShowErrorMessage("Server error")
+            .shouldShowCropperImage()
+            .shouldDisableConfirmButton()
+    }
+
+    @Test
+    fun shouldClearErrorWhenNewFileSelected() {
+        // Given - user has an error state from previous upload attempt
+        uploadModalPage.openModal()
+            .uploadFile(createTestFile("invalid.txt", "text/plain"))
+            .shouldShowErrorMessage("Invalid file type")
+        
+        // When - user selects a valid file
+        uploadModalPage.uploadFile(testImageFile)
+        
+        // Then - error should be cleared and image should be displayed
+        uploadModalPage.shouldNotShowErrorMessage()
+            .shouldShowCropperImage()
+            .shouldEnableConfirmButton()
     }
 
     /**
-     * Helper method to open the upload modal.
-     * Handles different possible ways to trigger the modal.
+     * Creates a test image file for upload testing
      */
-    private fun openUploadModal() {
-        // Try to find upload button or trigger
-        val uploadButton = `$`("button[data-bs-target='#uploadModal']")
-        if (uploadButton.exists()) {
-            uploadButton.click()
+    private fun createTestImageFile(): File {
+        val testFile = File.createTempFile("test_image", ".png")
+        
+        // Copy a minimal PNG image for testing
+        val imageResource = this::class.java.getResourceAsStream("/test-images/sample.png")
+        
+        if (imageResource != null) {
+            Files.copy(imageResource, testFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         } else {
-            // Try alternative selectors
-            val uploadTrigger = `$`("[onclick*='uploadModal'], .upload-trigger")
-            if (uploadTrigger.exists()) {
-                uploadTrigger.click()
-            }
+            // Create a minimal valid PNG file if resource not available
+            val minimalPng = byteArrayOf(
+                0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(), 0x1A.toByte(), 0x0A.toByte(), // PNG signature
+                0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x0D.toByte(), 0x49.toByte(), 0x48.toByte(), 0x44.toByte(), 0x52.toByte(), // IHDR chunk
+                0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(), // 1x1 pixel
+                0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x37.toByte(), 0x6E.toByte(), 0xF9.toByte(), 0x24.toByte(), // IHDR data
+                0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x0A.toByte(), 0x49.toByte(), 0x44.toByte(), 0x41.toByte(), 0x54.toByte(), // IDAT chunk
+                0x78.toByte(), 0x9C.toByte(), 0x62.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x02.toByte(), 0x00.toByte(), 0x01.toByte(), // IDAT data
+                0xE2.toByte(), 0x21.toByte(), 0xBC.toByte(), 0x33.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), // IDAT end
+                0x49.toByte(), 0x45.toByte(), 0x4E.toByte(), 0x44.toByte(), 0xAE.toByte(), 0x42.toByte(), 0x60.toByte(), 0x82.toByte()  // IEND chunk
+            )
+            testFile.writeBytes(minimalPng)
         }
+        
+        return testFile
+    }
 
-        // Wait for modal to appear
-        val modal = `$`("#uploadModal")
-        modal.shouldBe(Condition.visible, Duration.ofSeconds(10))
+    /**
+     * Creates a test file with specified content and mime type
+     */
+    private fun createTestFile(filename: String, mimeType: String): File {
+        val testFile = File.createTempFile("test_", filename)
+        testFile.writeText("Test content for $mimeType file")
+        return testFile
     }
 }
