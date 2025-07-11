@@ -147,7 +147,7 @@ class AvatarUploadE2ETest : BaseE2ETest() {
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects an oversized file (larger than 10MB)
-        val largeFile = uploadHelper.createLargeTestFile("large-test-image.jpg", 11 * 1024 * 1024) // 11MB
+        val largeFile = uploadHelper.createLargeTestFile("large-test-image.jpg", 15 * 1024) // 15MB in KB
         testFiles.add(largeFile)
         avatarUploadPage.selectFile(largeFile)
 
