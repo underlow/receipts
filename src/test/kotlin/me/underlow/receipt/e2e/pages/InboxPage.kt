@@ -30,6 +30,12 @@ class InboxPage {
     private val sortByNameButton get() = `$`("[data-test-id='sort-by-name-button']")
     private val errorMessage get() = `$`("[data-test-id='error-message']")
     
+    // Drag and drop elements
+    private val dropZone get() = `$`("[data-test-id='inbox-drop-zone']")
+    private val dropOverlay get() = `$`("[data-test-id='drop-overlay']")
+    private val dropMessage get() = `$`("[data-test-id='drop-message']")
+    private val uploadIcon get() = `$`("[data-test-id='upload-icon']")
+    
     /**
      * Navigates to the inbox tab
      */
@@ -273,5 +279,175 @@ class InboxPage {
         
         // Wait for table to update
         inboxTable.shouldBe(Condition.visible)
+    }
+    
+    /**
+     * Verifies drop zone is properly configured for drag and drop
+     */
+    fun shouldHaveDropZone(): InboxPage {
+        dropZone.shouldBe(Condition.visible)
+        dropZone.shouldHave(Condition.cssClass("drop-zone"))
+        return this
+    }
+    
+    /**
+     * Verifies drop overlay is initially hidden
+     */
+    fun shouldHaveHiddenDropOverlay(): InboxPage {
+        dropOverlay.shouldBe(Condition.exist)
+        dropOverlay.shouldNotBe(Condition.visible)
+        return this
+    }
+    
+    /**
+     * Simulates dragging a file over the inbox drop zone
+     */
+    fun dragFileOverDropZone(fileName: String, mimeType: String = "image/jpeg"): InboxPage {
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var fileName = arguments[1];
+            var mimeType = arguments[2];
+            
+            var dataTransfer = new DataTransfer();
+            var file = new File(['test file content'], fileName, {
+                type: mimeType,
+                lastModified: Date.now()
+            });
+            dataTransfer.items.add(file);
+            
+            var dragEnterEvent = new DragEvent('dragenter', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            var dragOverEvent = new DragEvent('dragover', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dragEnterEvent);
+            element.dispatchEvent(dragOverEvent);
+        """, dropZone, fileName, mimeType)
+        return this
+    }
+    
+    /**
+     * Simulates dragging a file away from the inbox drop zone
+     */
+    fun dragFileAwayFromDropZone(): InboxPage {
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var dragLeaveEvent = new DragEvent('dragleave', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+            element.dispatchEvent(dragLeaveEvent);
+        """, dropZone)
+        return this
+    }
+    
+    /**
+     * Simulates dropping a file on the inbox drop zone
+     */
+    fun dropFileOnDropZone(fileName: String, mimeType: String = "image/jpeg"): InboxPage {
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var fileName = arguments[1];
+            var mimeType = arguments[2];
+            
+            var dataTransfer = new DataTransfer();
+            var file = new File(['test file content'], fileName, {
+                type: mimeType,
+                lastModified: Date.now()
+            });
+            dataTransfer.items.add(file);
+            
+            var dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dropEvent);
+        """, dropZone, fileName, mimeType)
+        return this
+    }
+    
+    /**
+     * Simulates dropping multiple files on the inbox drop zone
+     */
+    fun dropMultipleFilesOnDropZone(fileNames: List<String>, mimeTypes: List<String> = listOf("image/jpeg")): InboxPage {
+        val defaultMimeType = "image/jpeg"
+        Selenide.executeJavaScript<Unit>("""
+            var element = arguments[0];
+            var fileNames = arguments[1];
+            var mimeTypes = arguments[2];
+            var defaultMimeType = arguments[3];
+            
+            var dataTransfer = new DataTransfer();
+            
+            for (var i = 0; i < fileNames.length; i++) {
+                var mimeType = i < mimeTypes.length ? mimeTypes[i] : defaultMimeType;
+                var file = new File(['test file content'], fileNames[i], {
+                    type: mimeType,
+                    lastModified: Date.now()
+                });
+                dataTransfer.items.add(file);
+            }
+            
+            var dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer
+            });
+            
+            element.dispatchEvent(dropEvent);
+        """, dropZone, fileNames.toTypedArray(), mimeTypes.toTypedArray(), defaultMimeType)
+        return this
+    }
+    
+    /**
+     * Verifies drop zone shows drag-over styling
+     */
+    fun shouldShowDragOverStyling(): InboxPage {
+        dropZone.shouldHave(Condition.cssClass("drag-over"))
+        return this
+    }
+    
+    /**
+     * Verifies drop zone does not show drag-over styling
+     */
+    fun shouldNotShowDragOverStyling(): InboxPage {
+        dropZone.shouldNotHave(Condition.cssClass("drag-over"))
+        return this
+    }
+    
+    /**
+     * Verifies drop overlay becomes visible
+     */
+    fun shouldShowDropOverlay(): InboxPage {
+        dropOverlay.shouldBe(Condition.visible)
+        return this
+    }
+    
+    /**
+     * Verifies drop overlay is hidden
+     */
+    fun shouldHideDropOverlay(): InboxPage {
+        dropOverlay.shouldNotBe(Condition.visible)
+        return this
+    }
+    
+    /**
+     * Verifies drop overlay shows upload icon and message
+     */
+    fun shouldShowDropOverlayContent(): InboxPage {
+        dropOverlay.shouldBe(Condition.visible)
+        uploadIcon.shouldBe(Condition.visible)
+        dropMessage.shouldBe(Condition.visible)
+        dropMessage.shouldHave(Condition.text("Drop images here to upload"))
+        return this
     }
 }
