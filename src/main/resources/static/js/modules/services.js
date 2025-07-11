@@ -130,32 +130,27 @@ class ServicesModule {
 
         const formHtml = `
             <form class="service-provider-form" onsubmit="saveServiceProvider(event)">
-                <!-- Avatar Upload Section -->
+                <!-- Avatar and Name Section -->
                 <div class="form-group">
-                    <label class="form-label">Avatar</label>
-                    <div class="avatar-upload-section">
-                        ${this.selectedServiceProvider.avatar ? 
-                            `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
-                            `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
-                        }
-                        <div class="avatar-upload-controls">
-                            <button type="button" class="btn-upload" data-test-id="avatar-upload-button-${this.selectedServiceProvider.id}" onclick="uploadAvatar()">
-                                <i class="fas fa-upload me-1"></i> Upload Avatar
-                            </button>
-                            ${this.selectedServiceProvider.avatar ? 
-                                `<button type="button" class="btn-upload" onclick="removeAvatar()">
-                                    <i class="fas fa-trash me-1"></i> Remove
-                                </button>` : ''
-                            }
+                    <div style="display: flex; align-items: flex-start; gap: 20px;">
+                        <div>
+                            <label class="form-label">Avatar</label>
+                            <div class="avatar-upload-section">
+                                ${this.selectedServiceProvider.avatar ? 
+                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
+                                    `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
+                                }
+                                <div class="avatar-upload-controls">
+                                    <!-- Upload and remove buttons removed -->
+                                </div>
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="providerName" class="form-label">Name *</label>
+                            <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
+                            <div class="invalid-feedback" id="nameError"></div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Name Field -->
-                <div class="form-group">
-                    <label for="providerName" class="form-label">Name *</label>
-                    <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
-                    <div class="invalid-feedback" id="nameError"></div>
                 </div>
 
                 <!-- Comment Field -->
