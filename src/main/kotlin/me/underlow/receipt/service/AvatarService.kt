@@ -160,6 +160,7 @@ class AvatarService(
     /**
      * Resizes image to specified dimensions while maintaining quality.
      * Uses high-quality scaling algorithms for best results.
+     * Preserves transparency for PNG images.
      * 
      * @param originalImage Image to resize
      * @param targetWidth Target width in pixels
@@ -167,13 +168,23 @@ class AvatarService(
      * @return Resized image
      */
     fun resizeImage(originalImage: BufferedImage, targetWidth: Int, targetHeight: Int): BufferedImage {
-        val resizedImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
+        // Determine image type based on original image to preserve transparency
+        val imageType = if (originalImage.colorModel.hasAlpha()) {
+            BufferedImage.TYPE_INT_ARGB
+        } else {
+            BufferedImage.TYPE_INT_RGB
+        }
+        
+        val resizedImage = BufferedImage(targetWidth, targetHeight, imageType)
         val graphics = resizedImage.createGraphics()
         
         // Set high-quality rendering hints
-        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
         graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        graphics.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY)
+        graphics.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE)
+        graphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY)
         
         // Draw the scaled image
         graphics.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null)
