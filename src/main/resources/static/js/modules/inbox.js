@@ -188,16 +188,22 @@ class InboxModule {
         const files = e.dataTransfer.files;
 
         if (files.length > 0) {
-            const file = files[0];
+            // Find the first valid image file
+            let firstImageFile = null;
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) {
+                    firstImageFile = files[i];
+                    break;
+                }
+            }
 
-            // Validate file type
-            if (file.type.startsWith('image/')) {
+            if (firstImageFile) {
                 // Try using existing upload.js functionality first
                 if (typeof handleFileSelect === 'function') {
-                    handleFileSelect(file);
+                    handleFileSelect(firstImageFile);
                 } else {
                     console.warn('handleFileSelect function not found, using fallback');
-                    this.triggerUploadModalWithFile(file);
+                    this.triggerUploadModalWithFile(firstImageFile);
                 }
             } else {
                 this.showDashboardErrorMessage('Please drop a valid image file');

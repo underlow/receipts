@@ -171,6 +171,9 @@ class InboxDragDropE2ETest : BaseE2ETest() {
         
         // Then - system should process only the first valid image file
         uploadModalPage.shouldBeVisible()
+        
+        // Wait for file processing to complete and show cropper image
+        Thread.sleep(500)
         uploadModalPage.shouldShowCropperImage()
     }
 

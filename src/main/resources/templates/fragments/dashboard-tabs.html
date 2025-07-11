@@ -8,19 +8,19 @@
     <th:block th:fragment="dashboardTabs">
         <div class="tab-content">
             <!-- Inbox Tab -->
-            <div class="tab-pane fade show active" id="inbox">
+            <div class="tab-pane fade show active" id="inbox" data-test-id="inbox-tab-pane">
                 <div class="dashboard-card">
-                    <div id="inboxTableContainer" class="drop-zone">
-                        <div id="inbox-content">
+                    <div id="inboxTableContainer" class="drop-zone" data-test-id="inbox-drop-zone">
+                        <div id="inbox-content" data-test-id="inbox-table-container">
                             <div class="d-flex justify-content-center">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="drop-overlay" id="dropOverlay" style="display: none;">
-                            <div class="drop-message">
-                                <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="drop-overlay" id="dropOverlay" style="display: none;" data-test-id="drop-overlay">
+                            <div class="drop-message" data-test-id="drop-message">
+                                <i class="fas fa-cloud-upload-alt" data-test-id="upload-icon"></i>
                                 <p>Drop images here to upload</p>
                             </div>
                         </div>

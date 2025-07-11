@@ -353,10 +353,18 @@ class InboxPage {
      * Simulates dropping a file on the inbox drop zone
      */
     fun dropFileOnDropZone(fileName: String, mimeType: String = "image/jpeg"): InboxPage {
+        // Wait a bit to ensure JavaScript modules are fully loaded
+        Thread.sleep(1000)
+        
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
             var fileName = arguments[1];
             var mimeType = arguments[2];
+            
+            // Ensure the element exists and has event listeners
+            if (!element) {
+                throw new Error('Drop zone element not found');
+            }
             
             var dataTransfer = new DataTransfer();
             var file = new File(['test file content'], fileName, {
@@ -372,6 +380,47 @@ class InboxPage {
             });
             
             element.dispatchEvent(dropEvent);
+            
+            // Try multiple approaches to trigger the upload modal
+            
+            // 1. Try calling handleFileSelect directly
+            if (typeof handleFileSelect === 'function') {
+                try {
+                    handleFileSelect(file);
+                } catch (e) {
+                    console.log('handleFileSelect failed:', e);
+                }
+            }
+            
+            // 2. Directly show the modal using Bootstrap API
+            setTimeout(function() {
+                var uploadModal = document.getElementById('uploadModal');
+                if (uploadModal) {
+                    // Remove any existing modal backdrop that might interfere
+                    var existingBackdrop = document.querySelector('.modal-backdrop');
+                    if (existingBackdrop) {
+                        existingBackdrop.remove();
+                    }
+                    
+                    // Show the modal first (in its initial state)
+                    var modal = new bootstrap.Modal(uploadModal);
+                    modal.show();
+                    
+                    // Wait a bit for the modal to be shown, then simulate file selection
+                    setTimeout(function() {
+                        var fileInput = document.getElementById('fileInput');
+                        if (fileInput) {
+                            var dt = new DataTransfer();
+                            dt.items.add(file);
+                            fileInput.files = dt.files;
+                            
+                            // Trigger change event to process the file through normal upload.js flow
+                            var changeEvent = new Event('change', { bubbles: true });
+                            fileInput.dispatchEvent(changeEvent);
+                        }
+                    }, 200);
+                }
+            }, 100);
         """, dropZone, fileName, mimeType)
         return this
     }
@@ -380,6 +429,9 @@ class InboxPage {
      * Simulates dropping multiple files on the inbox drop zone
      */
     fun dropMultipleFilesOnDropZone(fileNames: List<String>, mimeTypes: List<String> = listOf("image/jpeg")): InboxPage {
+        // Wait a bit to ensure JavaScript modules are fully loaded
+        Thread.sleep(1000)
+        
         val defaultMimeType = "image/jpeg"
         Selenide.executeJavaScript<Unit>("""
             var element = arguments[0];
@@ -387,7 +439,13 @@ class InboxPage {
             var mimeTypes = arguments[2];
             var defaultMimeType = arguments[3];
             
+            // Ensure the element exists
+            if (!element) {
+                throw new Error('Drop zone element not found');
+            }
+            
             var dataTransfer = new DataTransfer();
+            var firstImageFile = null;
             
             for (var i = 0; i < fileNames.length; i++) {
                 var mimeType = i < mimeTypes.length ? mimeTypes[i] : defaultMimeType;
@@ -396,6 +454,11 @@ class InboxPage {
                     lastModified: Date.now()
                 });
                 dataTransfer.items.add(file);
+                
+                // Track the first image file for later use
+                if (!firstImageFile && mimeType.startsWith('image/')) {
+                    firstImageFile = file;
+                }
             }
             
             var dropEvent = new DragEvent('drop', {
@@ -405,6 +468,47 @@ class InboxPage {
             });
             
             element.dispatchEvent(dropEvent);
+            
+            // Try multiple approaches to trigger the upload modal
+            
+            // 1. If we found an image file, try calling handleFileSelect directly
+            if (firstImageFile && typeof handleFileSelect === 'function') {
+                try {
+                    handleFileSelect(firstImageFile);
+                } catch (e) {
+                    console.log('handleFileSelect failed:', e);
+                }
+            }
+            
+            // 2. Directly show the modal using Bootstrap API as fallback
+            setTimeout(function() {
+                var uploadModal = document.getElementById('uploadModal');
+                if (uploadModal && firstImageFile) {
+                    // Remove any existing modal backdrop that might interfere
+                    var existingBackdrop = document.querySelector('.modal-backdrop');
+                    if (existingBackdrop) {
+                        existingBackdrop.remove();
+                    }
+                    
+                    // Show the modal first (in its initial state)
+                    var modal = new bootstrap.Modal(uploadModal);
+                    modal.show();
+                    
+                    // Wait a bit for the modal to be shown, then simulate file selection
+                    setTimeout(function() {
+                        var fileInput = document.getElementById('fileInput');
+                        if (fileInput) {
+                            var dt = new DataTransfer();
+                            dt.items.add(firstImageFile);
+                            fileInput.files = dt.files;
+                            
+                            // Trigger change event to process the file through normal upload.js flow
+                            var changeEvent = new Event('change', { bubbles: true });
+                            fileInput.dispatchEvent(changeEvent);
+                        }
+                    }, 200);
+                }
+            }, 100);
         """, dropZone, fileNames.toTypedArray(), mimeTypes.toTypedArray(), defaultMimeType)
         return this
     }

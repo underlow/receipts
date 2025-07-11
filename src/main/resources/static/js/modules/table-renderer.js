@@ -155,7 +155,7 @@ class TableRenderer {
                     <span class="input-group-text">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" class="form-control" id="${tableId}-search" placeholder="Search..." aria-label="Search table data">
+                    <input type="text" class="form-control" id="${tableId}-search" placeholder="Search..." aria-label="Search table data" data-test-id="search-input">
                 </div>
             </div>
         `;
@@ -169,7 +169,7 @@ class TableRenderer {
     renderTableWrapper(data) {
         let html = `
             <div class="modern-table-wrapper">
-                <table class="modern-table" role="table" aria-label="Data table">
+                <table class="modern-table" role="table" aria-label="Data table" data-test-id="${data.tableId}-table">
                     <thead class="modern-table-header">
                         <tr>
         `;
@@ -182,7 +182,7 @@ class TableRenderer {
         html += `
                         </tr>
                     </thead>
-                    <tbody class="modern-table-body">
+                    <tbody class="modern-table-body" data-test-id="${data.tableId}-table-body">
         `;
 
         // Add data rows or empty state
@@ -232,7 +232,7 @@ class TableRenderer {
      * @returns {string} HTML string for table row
      */
     renderTableRow(row, data) {
-        let html = '<tr class="modern-table-row">';
+        let html = `<tr class="modern-table-row" data-test-id="${data.tableId}-row">`;
         
         data.columns.forEach(column => {
             const cellValue = row[column.key] || '';
