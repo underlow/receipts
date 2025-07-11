@@ -133,7 +133,7 @@ class ReceiptsPage {
             "PAYMENT TYPE", "DESCRIPTION", "CREATED DATE", "ACTIONS"
         )
         
-        tableHeaders.should(Condition.size(expectedHeaders.size))
+        assert(tableHeaders.size() == expectedHeaders.size) { "Expected ${expectedHeaders.size} headers, but found ${tableHeaders.size()}" }
         
         expectedHeaders.forEach { expectedHeader ->
             tableHeaders.find { it.text().contains(expectedHeader, ignoreCase = true) }
@@ -148,7 +148,7 @@ class ReceiptsPage {
      * Verifies table contains receipt data
      */
     fun shouldHaveReceiptData(): ReceiptsPage {
-        tableRows.shouldHave(Condition.sizeGreaterThan(0))
+        assert(tableRows.size() > 0) { "Expected table to have rows, but found ${tableRows.size()}" }
         return this
     }
     
