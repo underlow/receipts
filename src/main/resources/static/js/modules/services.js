@@ -52,7 +52,7 @@ class ServicesModule {
                     <div class="alert alert-danger m-3" role="alert">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         Failed to load service providers. Please try again.
-                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="servicesModule.loadServicesData()">
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadServicesData()">
                             <i class="fas fa-redo me-1"></i> Retry
                         </button>
                     </div>
@@ -81,7 +81,7 @@ class ServicesModule {
             <ul class="service-provider-list">
                 ${this.serviceProviders.map(provider => `
                     <li class="service-provider-item ${provider.state === 'HIDDEN' ? 'hidden' : ''} ${this.selectedServiceProvider && this.selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
-                        onclick="servicesModule.selectServiceProvider(${provider.id})">
+                        onclick="selectServiceProvider(${provider.id})">
                         ${provider.avatar ? 
                             `<img src="/attachments/avatars/${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
                             `<div class="service-provider-avatar-fallback">${provider.name.substring(0, 1).toUpperCase()}</div>`
@@ -136,7 +136,7 @@ class ServicesModule {
         const isNewProvider = this.selectedServiceProvider.id === null;
 
         const formHtml = `
-            <form class="service-provider-form" onsubmit="servicesModule.saveServiceProvider(event)">
+            <form class="service-provider-form" onsubmit="saveServiceProvider(event)">
                 <!-- Avatar Upload Section -->
                 <div class="form-group">
                     <label class="form-label">Avatar</label>
@@ -146,11 +146,11 @@ class ServicesModule {
                             `<div class="avatar-preview-fallback" id="avatarPreview">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
                         }
                         <div class="avatar-upload-controls">
-                            <button type="button" class="btn-upload" data-test-id="avatar-upload-button-${this.selectedServiceProvider.id}" onclick="servicesModule.uploadAvatar()">
+                            <button type="button" class="btn-upload" data-test-id="avatar-upload-button-${this.selectedServiceProvider.id}" onclick="uploadAvatar()">
                                 <i class="fas fa-upload me-1"></i> Upload Avatar
                             </button>
                             ${this.selectedServiceProvider.avatar ? 
-                                `<button type="button" class="btn-upload" onclick="servicesModule.removeAvatar()">
+                                `<button type="button" class="btn-upload" onclick="removeAvatar()">
                                     <i class="fas fa-trash me-1"></i> Remove
                                 </button>` : ''
                             }
@@ -203,7 +203,7 @@ class ServicesModule {
                     <div id="customFieldsContainer">
                         ${this.renderCustomFields(this.selectedServiceProvider.customFields)}
                     </div>
-                    <button type="button" class="btn-upload" onclick="servicesModule.addCustomField()">
+                    <button type="button" class="btn-upload" onclick="addCustomField()">
                         <i class="fas fa-plus me-1"></i> Add Custom Field
                     </button>
                 </div>
@@ -213,11 +213,11 @@ class ServicesModule {
                     <button type="submit" class="btn-save" id="saveButton">
                         <i class="fas fa-save me-1"></i> Save
                     </button>
-                    <button type="button" class="btn-cancel" onclick="servicesModule.cancelEdit()">
+                    <button type="button" class="btn-cancel" onclick="cancelEdit()">
                         <i class="fas fa-times me-1"></i> Cancel
                     </button>
                     ${!isNewProvider ? 
-                        `<button type="button" class="btn-cancel" onclick="servicesModule.deleteServiceProvider()" style="margin-left: auto;">
+                        `<button type="button" class="btn-cancel" onclick="deleteServiceProvider()" style="margin-left: auto;">
                             <i class="fas fa-trash me-1"></i> Delete
                         </button>` : ''
                     }
@@ -242,13 +242,13 @@ class ServicesModule {
             <div class="custom-field-item mb-2">
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="text" class="form-control" placeholder="Field name" value="${key}" onchange="servicesModule.updateCustomFieldKey(${index}, this.value)">
+                        <input type="text" class="form-control" placeholder="Field name" value="${key}" onchange="updateCustomFieldKey(${index}, this.value)">
                     </div>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" placeholder="Field value" value="${value}" onchange="servicesModule.updateCustomFieldValue('${key}', this.value)">
+                        <input type="text" class="form-control" placeholder="Field value" value="${value}" onchange="updateCustomFieldValue('${key}', this.value)">
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn-upload" onclick="servicesModule.removeCustomField('${key}')">
+                        <button type="button" class="btn-upload" onclick="removeCustomField('${key}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
