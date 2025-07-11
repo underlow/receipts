@@ -14,7 +14,7 @@
                th:href="'#' + ${tab.name.toLowerCase()}"
                data-bs-toggle="tab" 
                role="tab"
-               th:attr="aria-selected=${tab.active}, tabindex=${tab.active ? '0' : '-1'}"
+               th:attr="aria-selected=${tab.active}, aria-current=${tab.active ? 'page' : null}, tabindex=${tab.active ? '0' : '-1'}"
                th:text="${tab.name}">Tab Name</a>
         </th:block>
     </nav>
