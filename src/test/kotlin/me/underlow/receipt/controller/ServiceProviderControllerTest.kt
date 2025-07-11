@@ -307,14 +307,14 @@ class ServiceProviderControllerTest {
     fun `given valid avatar file when POST avatar then uploads and returns success`() {
         // given - valid avatar file, existing provider, and successful upload
         val avatarFile = MockMultipartFile(
-            "avatar", 
-            "test-avatar.png", 
-            "image/png", 
+            "avatar",
+            "test-avatar.png",
+            "image/png",
             "fake-image-data".toByteArray()
         )
         val avatarFilename = "avatar_20240101_12345678_abcd.png"
         val updatedProvider = sampleServiceProvider.copy(avatar = avatarFilename)
-        
+
         `when`(avatarService.validateAvatarFile(avatarFile)).thenReturn(true)
         `when`(serviceProviderService.findById(1L)).thenReturn(sampleServiceProvider)
         `when`(avatarService.uploadAndResizeAvatar(avatarFile)).thenReturn(avatarFilename)
@@ -350,9 +350,9 @@ class ServiceProviderControllerTest {
     fun `given invalid avatar file when POST avatar then returns validation error`() {
         // given - invalid avatar file format
         val invalidFile = MockMultipartFile(
-            "avatar", 
-            "invalid.txt", 
-            "text/plain", 
+            "avatar",
+            "invalid.txt",
+            "text/plain",
             "invalid-content".toByteArray()
         )
         `when`(avatarService.validateAvatarFile(invalidFile)).thenReturn(false)
@@ -372,9 +372,9 @@ class ServiceProviderControllerTest {
     fun `given non-existing provider when POST avatar then returns not found`() {
         // given - valid file but non-existing provider
         val avatarFile = MockMultipartFile(
-            "avatar", 
-            "test-avatar.png", 
-            "image/png", 
+            "avatar",
+            "test-avatar.png",
+            "image/png",
             "fake-image-data".toByteArray()
         )
         `when`(avatarService.validateAvatarFile(avatarFile)).thenReturn(true)
@@ -393,9 +393,9 @@ class ServiceProviderControllerTest {
     fun `given upload failure when POST avatar then returns error`() {
         // given - valid file but upload service throws exception
         val avatarFile = MockMultipartFile(
-            "avatar", 
-            "test-avatar.png", 
-            "image/png", 
+            "avatar",
+            "test-avatar.png",
+            "image/png",
             "fake-image-data".toByteArray()
         )
         `when`(avatarService.validateAvatarFile(avatarFile)).thenReturn(true)
@@ -410,7 +410,7 @@ class ServiceProviderControllerTest {
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.error").value("Avatar upload failed"))
+            .andExpect(jsonPath("$.error").value("Upload failed. Please try again"))
     }
 
     @Test
@@ -420,14 +420,14 @@ class ServiceProviderControllerTest {
         val oldAvatar = "old_avatar.png"
         val existingProvider = sampleServiceProvider.copy(avatar = oldAvatar)
         val avatarFile = MockMultipartFile(
-            "avatar", 
-            "new-avatar.png", 
-            "image/png", 
+            "avatar",
+            "new-avatar.png",
+            "image/png",
             "fake-image-data".toByteArray()
         )
         val newAvatarFilename = "new_avatar_20240101_12345678_abcd.png"
         val updatedProvider = sampleServiceProvider.copy(avatar = newAvatarFilename)
-        
+
         `when`(avatarService.validateAvatarFile(avatarFile)).thenReturn(true)
         `when`(serviceProviderService.findById(1L)).thenReturn(existingProvider)
         `when`(avatarService.uploadAndResizeAvatar(avatarFile)).thenReturn(newAvatarFilename)
@@ -440,7 +440,7 @@ class ServiceProviderControllerTest {
             // then - returns success and cleanup is called
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
-        
+
         // verify cleanup was called with old avatar
         verify(avatarService).cleanupOldAvatar(oldAvatar)
     }
