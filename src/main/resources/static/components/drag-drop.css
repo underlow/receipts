@@ -1,6 +1,18 @@
 /* Drag and Drop Zone Components */
 .drop-zone {
     position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Global drag state */
+body.dragging-files {
+    cursor: copy;
+}
+
+body.dragging-files .drop-zone {
+    border: 2px dashed hsl(var(--primary));
+    background-color: hsl(var(--muted));
+    opacity: 0.8;
 }
 
 .drop-overlay {

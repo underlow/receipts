@@ -41,6 +41,25 @@ body {
     flex-direction: column;
 }
 
+/* Accessibility: Skip to main content link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 8px;
+    text-decoration: none;
+    border-radius: var(--radius);
+    z-index: 1000;
+    font-weight: 500;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
 /* Dashboard Layout Styles */
 .dashboard-layout {
     padding: 1.5rem;

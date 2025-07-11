@@ -63,19 +63,37 @@ function initializeUpload() {
         }
     });
 
-    // Handle drag and drop events
+    // Setup drag and drop using the drag-drop module
     if (fileDropZone) {
-        fileDropZone.addEventListener('dragover', function(event) {
-            handleDragDrop(event);
-        });
+        // Use the drag-drop module for enhanced functionality
+        if (window.dragDropModule) {
+            dragDropModule.setupDropZone(fileDropZone, {
+                acceptedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+                maxFiles: 1,
+                maxSize: 20 * 1024 * 1024, // 20MB
+                onDrop: function(files) {
+                    if (files.length > 0) {
+                        handleFileSelect(files[0]);
+                    }
+                },
+                onError: function(error) {
+                    showErrorMessage(error);
+                }
+            });
+        } else {
+            // Fallback to legacy drag-drop handling
+            fileDropZone.addEventListener('dragover', function(event) {
+                handleDragDrop(event);
+            });
 
-        fileDropZone.addEventListener('dragleave', function(event) {
-            handleDragDrop(event);
-        });
+            fileDropZone.addEventListener('dragleave', function(event) {
+                handleDragDrop(event);
+            });
 
-        fileDropZone.addEventListener('drop', function(event) {
-            handleDragDrop(event);
-        });
+            fileDropZone.addEventListener('drop', function(event) {
+                handleDragDrop(event);
+            });
+        }
     }
 
     // Handle crop button

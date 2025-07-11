@@ -22,6 +22,7 @@
         <script src="/static/js/upload.js"></script>
 
         <!-- JavaScript Modules -->
+        <script src="/static/js/modules/drag-drop.js"></script>
         <script src="/static/js/modules/table-renderer.js"></script>
         <script src="/static/js/modules/inbox.js"></script>
         <script src="/static/js/modules/bills.js"></script>
@@ -33,6 +34,7 @@
             // Initialize all modules when the DOM is loaded
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize all modules
+                dragDropModule.init();
                 inboxModule.init();
                 billsModule.init();
                 receiptsModule.init();
