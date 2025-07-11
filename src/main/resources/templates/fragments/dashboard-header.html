@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Dashboard Header Fragment -->
+    <th:block th:fragment="dashboardHeader">
+        <header class="dashboard-header">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/dashboard" aria-label="Receipt Manager Dashboard">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNMTAgMTBIMjJWMjJIMTBWMTBaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K" alt="Receipt Manager Logo" class="d-inline-block align-text-top me-2" style="width: 32px; height: 32px;">
+                        Receipt Manager
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/dashboard" aria-current="page">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/profile">Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/settings">Settings</a>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#uploadModal" data-test-id="upload-button">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- User Dropdown Menu -->
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle d-flex align-items-center text-decoration-none" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu" style="color: hsl(var(--foreground));">
+                                <img th:if="${userAvatar != null and userAvatar != ''}"
+                                     th:src="${userAvatar}"
+                                     th:alt="${userName + ' avatar'}"
+                                     class="user-avatar">
+                                <div th:if="${userAvatar == null or userAvatar == ''}"
+                                     class="user-avatar-fallback"
+                                     th:text="${userName != null and userName.length() > 0 ? userName.substring(0, 1).toUpperCase() : 'U'}"
+                                     th:title="${userName}">
+                                    U
+                                </div>
+                                <span class="d-none d-md-inline ms-2" th:text="${userName ?: 'User'}">User</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user me-2"></i> Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="/settings">
+                                    <i class="fas fa-cog me-2"></i> Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="/logout" method="post" class="d-inline">
+                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    </th:block>
+</body>
+</html>

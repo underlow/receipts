@@ -1,0 +1,56 @@
+/* Navigation Panel Components */
+
+.navigation-panel {
+    background-color: hsl(var(--card));
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid hsl(var(--border));
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.navigation-panel .nav-link {
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0.25rem;
+    border-radius: var(--radius);
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navigation-panel .nav-link.active {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.navigation-panel .nav-link:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+}
+
+@media (max-width: 768px) {
+    .navigation-panel {
+        margin-bottom: 1rem;
+        height: auto;
+        align-self: stretch;
+    }
+
+    .navigation-panel .nav {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .navigation-panel .nav-link {
+        text-align: center;
+        margin-bottom: 0;
+        margin-right: 0;
+        flex: 1;
+    }
+}

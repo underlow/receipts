@@ -1,0 +1,39 @@
+/* Pagination Components - shadcn/ui style */
+
+.pagination {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination .page-link {
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem 0.75rem;
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.pagination .page-link:hover {
+    background-color: hsl(var(--muted));
+    border-color: hsl(var(--border));
+}
+
+.pagination .page-item.disabled .page-link {
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted));
+    border-color: hsl(var(--border));
+    cursor: not-allowed;
+    opacity: 0.5;
+}

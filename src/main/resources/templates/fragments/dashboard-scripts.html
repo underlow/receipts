@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Dashboard Scripts Fragment -->
+    <th:block th:fragment="dashboardScripts">
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- FontAwesome for icons -->
+        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+        <!-- FontAwesome CSS fallback -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+
+        <!-- Cropper.js JavaScript -->
+        <script src="/static/js/cropper.min.js"></script>
+
+        <!-- Upload JavaScript Module -->
+        <script src="/static/js/upload.js"></script>
+
+        <!-- JavaScript Modules -->
+        <script src="/static/js/modules/inbox.js"></script>
+        <script src="/static/js/modules/bills.js"></script>
+        <script src="/static/js/modules/receipts.js"></script>
+        <script src="/static/js/modules/services.js"></script>
+
+        <!-- Dashboard Main Script -->
+        <script>
+            // Initialize all modules when the DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize all modules
+                inboxModule.init();
+                billsModule.init();
+                receiptsModule.init();
+                servicesModule.init();
+            });
+        </script>
+    </th:block>
+</body>
+</html>
