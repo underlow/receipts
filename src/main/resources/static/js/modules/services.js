@@ -135,8 +135,8 @@ class ServicesModule {
                     <label class="form-label">Avatar</label>
                     <div class="avatar-upload-section">
                         ${this.selectedServiceProvider.avatar ? 
-                            `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview">` :
-                            `<div class="avatar-preview-fallback" id="avatarPreview">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
+                            `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
+                            `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
                         }
                         <div class="avatar-upload-controls">
                             <button type="button" class="btn-upload" data-test-id="avatar-upload-button-${this.selectedServiceProvider.id}" onclick="uploadAvatar()">
@@ -397,7 +397,7 @@ class ServicesModule {
         if (confirm('Are you sure you want to remove the avatar?')) {
             this.selectedServiceProvider.avatar = null;
             document.getElementById('avatarPreview').outerHTML = 
-                `<div class="avatar-preview-fallback" id="avatarPreview">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`;
+                `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`;
         }
     }
 
