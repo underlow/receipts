@@ -308,5 +308,29 @@ class ServiceProviderListPage {
             element.shouldNotHave(Condition.cssClass("selected"))
             return this
         }
+
+        /**
+         * Verifies provider has expected name
+         */
+        fun shouldHaveName(expectedName: String): ServiceProviderItem {
+            name.shouldHave(Condition.text(expectedName))
+            return this
+        }
+
+        /**
+         * Verifies provider is in active state
+         */
+        fun shouldBeActive(): ServiceProviderItem {
+            state.shouldHave(Condition.text("ACTIVE"))
+            return this
+        }
+
+        /**
+         * Verifies provider is in inactive state
+         */
+        fun shouldBeInactive(): ServiceProviderItem {
+            state.shouldHave(Condition.text("INACTIVE"))
+            return this
+        }
     }
 }
