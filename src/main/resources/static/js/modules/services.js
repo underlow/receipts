@@ -129,7 +129,7 @@ class ServicesModule {
         const isNewProvider = this.selectedServiceProvider.id === null;
 
         const formHtml = `
-            <form class="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
+            <form class="service-provider-form" data-test-id="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
                 <!-- Avatar and Name Section -->
                 <div class="form-group">
                     <div style="display: flex; gap: 20px;">
@@ -137,11 +137,13 @@ class ServicesModule {
                             <label class="form-label">Avatar</label>
                             <div class="avatar-upload-section">
                                 ${this.selectedServiceProvider.avatar ? 
-                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
-                                    `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
+                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
+                                    `<div data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
                                 }
                                 <div class="avatar-upload-controls">
-                                    <!-- Upload and remove buttons removed -->
+                                    <button type="button" class="btn-upload" data-test-id="upload-avatar-button" onclick="uploadAvatar()">
+                                        <i class="fas fa-upload me-1"></i> Upload Avatar
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -149,13 +151,13 @@ class ServicesModule {
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                 <label for="providerName" class="form-label" style="margin-bottom: 0;">Name *</label>
                                 <div class="toggle-switch">
-                                    <input type="checkbox" id="providerState" class="toggle-input" ${this.selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
+                                    <input type="checkbox" id="providerState" data-test-id="provider-state" class="toggle-input" ${this.selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
                                     <label for="providerState" class="toggle-label">Active</label>
                                 </div>
                             </div>
                             <div>
-                                <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
-                                <div class="invalid-feedback" id="nameError"></div>
+                                <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
+                                <div class="invalid-feedback" data-test-id="name-validation-error" id="nameError"></div>
                             </div>
                         </div>
                     </div>
@@ -164,19 +166,19 @@ class ServicesModule {
                 <!-- Comment Field -->
                 <div class="form-group">
                     <label for="providerComment" class="form-label">Comment</label>
-                    <textarea id="providerComment" class="form-control form-textarea" placeholder="Optional comment about this service provider">${this.selectedServiceProvider.comment || ''}</textarea>
+                    <textarea id="providerComment" data-test-id="provider-comment" class="form-control form-textarea" placeholder="Optional comment about this service provider">${this.selectedServiceProvider.comment || ''}</textarea>
                 </div>
 
                 <!-- OCR Comment Field -->
                 <div class="form-group">
                     <label for="providerOcrComment" class="form-label">OCR Comment</label>
-                    <textarea id="providerOcrComment" class="form-control form-textarea" placeholder="Comment to help OCR recognition">${this.selectedServiceProvider.commentForOcr || ''}</textarea>
+                    <textarea id="providerOcrComment" data-test-id="provider-ocr-comment" class="form-control form-textarea" placeholder="Comment to help OCR recognition">${this.selectedServiceProvider.commentForOcr || ''}</textarea>
                 </div>
 
                 <!-- Regular Frequency Field -->
                 <div class="form-group">
                     <label for="providerFrequency" class="form-label">Regular Frequency</label>
-                    <select id="providerFrequency" class="form-control form-select">
+                    <select id="providerFrequency" data-test-id="provider-frequency" class="form-control form-select">
                         <option value="NOT_REGULAR" ${this.selectedServiceProvider.regular === 'NOT_REGULAR' ? 'selected' : ''}>Not Regular</option>
                         <option value="YEARLY" ${this.selectedServiceProvider.regular === 'YEARLY' ? 'selected' : ''}>Yearly</option>
                         <option value="MONTHLY" ${this.selectedServiceProvider.regular === 'MONTHLY' ? 'selected' : ''}>Monthly</option>
@@ -188,20 +190,20 @@ class ServicesModule {
                 <!-- Custom Fields Section -->
                 <div class="form-group">
                     <label class="form-label">Custom Fields</label>
-                    <div id="customFieldsContainer">
+                    <div id="customFieldsContainer" data-test-id="custom-fields-container">
                         ${this.renderCustomFields(this.selectedServiceProvider.customFields)}
                     </div>
-                    <button type="button" class="btn-upload" onclick="addCustomField()">
+                    <button type="button" class="btn-upload" data-test-id="add-custom-field-button" onclick="addCustomField()">
                         <i class="fas fa-plus me-1"></i> Add Custom Field
                     </button>
                 </div>
 
                 <!-- Form Actions -->
                 <div class="form-actions" style="justify-content: flex-end;">
-                    <button type="button" class="btn-cancel" onclick="cancelEdit()">
+                    <button type="button" class="btn-cancel" data-test-id="cancel-button" onclick="cancelEdit()">
                         <i class="fas fa-times me-1"></i> Cancel
                     </button>
-                    <button type="submit" class="btn-save" id="saveButton">
+                    <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton">
                         <i class="fas fa-save me-1"></i> Save
                     </button>
                 </div>
@@ -222,16 +224,16 @@ class ServicesModule {
         }
 
         return Object.entries(customFields).map(([key, value], index) => `
-            <div class="custom-field-item mb-2">
+            <div class="custom-field-item mb-2" data-test-id="custom-field-item">
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="text" class="form-control" placeholder="Field name" value="${key}" onchange="updateCustomFieldKey(${index}, this.value)">
+                        <input type="text" class="form-control" data-test-id="custom-field-key" placeholder="Field name" value="${key}" onchange="updateCustomFieldKey(${index}, this.value)">
                     </div>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" placeholder="Field value" value="${value}" onchange="updateCustomFieldValue('${key}', this.value)">
+                        <input type="text" class="form-control" data-test-id="custom-field-value" placeholder="Field value" value="${value}" onchange="updateCustomFieldValue('${key}', this.value)">
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn-upload" onclick="removeCustomField('${key}')">
+                        <button type="button" class="btn-upload" data-test-id="remove-custom-field-button" onclick="removeCustomField('${key}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -387,7 +389,7 @@ class ServicesModule {
         if (confirm('Are you sure you want to remove the avatar?')) {
             this.selectedServiceProvider.avatar = null;
             document.getElementById('avatarPreview').outerHTML = 
-                `<div class="avatar-preview-fallback" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`;
+                `<div data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`;
         }
     }
 

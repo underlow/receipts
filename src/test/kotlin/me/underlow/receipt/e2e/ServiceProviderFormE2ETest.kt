@@ -28,7 +28,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         navigationHelper = TestNavigationHelper()
         serviceProviderFormPage = ServiceProviderFormPage()
         serviceProviderListPage = ServiceProviderListPage()
-        
+
         loginHelper.loginAsAllowedUser1()
         navigationHelper.navigateToServicesTab()
     }
@@ -41,7 +41,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         val providerComment = "Monthly electricity provider"
         val ocrComment = "Electric utility bills"
         val frequency = "MONTHLY"
-        
+
         // When: User creates service provider with valid data
         serviceProviderFormPage
             .clickCreateNewProvider()
@@ -54,7 +54,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
                 active = true
             )
             .save()
-        
+
         // Then: Service provider should be created successfully
         serviceProviderFormPage
             .shouldShowSuccessMessage()
@@ -74,10 +74,10 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         serviceProviderFormPage
             .clickCreateNewProvider()
             .shouldBeInCreateMode()
-        
+
         // When: User attempts to save without required fields
         serviceProviderFormPage.save()
-        
+
         // Then: Validation errors should be displayed
         serviceProviderFormPage
             .shouldShowNameValidationError()
@@ -91,7 +91,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         val originalName = "Original Provider"
         val updatedName = "Updated Provider Name"
         val updatedComment = "Updated provider comment"
-        
+
         // Create provider first
         serviceProviderFormPage
             .clickCreateNewProvider()
@@ -99,18 +99,18 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
             .save()
             .backToList()
             .waitForListToLoad()
-        
+
         // When: User edits the existing provider
         serviceProviderListPage
             .findProviderByName(originalName)
             ?.click()
-        
+
         serviceProviderFormPage
             .shouldBeInEditMode()
             .enterName(updatedName)
             .enterComment(updatedComment)
             .save()
-        
+
         // Then: Provider should be updated successfully
         serviceProviderFormPage
             .shouldShowSuccessMessage()
@@ -129,14 +129,14 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         val providerName = "Provider with Custom Fields"
         val customFieldKey = "Account Number"
         val customFieldValue = "123456789"
-        
+
         // When: User adds custom field to provider
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName)
             .addCustomField(customFieldKey, customFieldValue)
             .save()
-        
+
         // Then: Custom field should be saved and displayed
         serviceProviderFormPage
             .shouldShowSuccessMessage()
@@ -144,7 +144,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
             .waitForListToLoad()
             .findProviderByName(providerName)
             ?.click()
-        
+
         serviceProviderFormPage
             .shouldBeInEditMode()
             .shouldHaveCustomField(customFieldKey, customFieldValue)
@@ -155,13 +155,13 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldHandleAvatarUploadFunctionality() {
         // Given: User is creating a new service provider
         val providerName = "Provider with Avatar"
-        
+
         // When: User uploads avatar for provider
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName)
             .clickUploadAvatar()
-        
+
         // Then: Avatar upload modal should be triggered
         // Note: This test verifies the upload flow is initiated
         // Actual file upload would require additional setup
@@ -174,14 +174,14 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldToggleProviderStateBetweenActiveAndInactive() {
         // Given: User is creating a new service provider
         val providerName = "Test State Provider"
-        
+
         // When: User toggles provider state
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName, active = true)
             .setProviderState(false)
             .save()
-        
+
         // Then: Provider should be created as inactive
         serviceProviderFormPage
             .shouldShowSuccessMessage()
@@ -198,7 +198,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldHandleDifferentFrequencyOptionsCorrectly() {
         // Given: User is creating a new service provider
         val providerName = "Frequency Test Provider"
-        
+
         // When: User selects different frequencies
         serviceProviderFormPage
             .clickCreateNewProvider()
@@ -230,18 +230,18 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldCancelFormEditingWithoutSavingChanges() {
         // Given: User opens create form and makes changes
         val providerName = "Cancel Test Provider"
-        
+
         // When: User cancels form editing
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName, comment = "Test comment")
             .cancel()
-        
+
         // Then: Form should be cancelled and no provider should be created
         serviceProviderListPage
             .waitForListToLoad()
             .findProviderByName(providerName)
-            ?.let { 
+            ?.let {
                 throw AssertionError("Provider should not exist after cancelling form")
             }
     }
@@ -251,7 +251,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldDeleteExistingServiceProvider() {
         // Given: Service provider exists in the system
         val providerName = "Provider to Delete"
-        
+
         // Create provider first
         serviceProviderFormPage
             .clickCreateNewProvider()
@@ -259,23 +259,23 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
             .save()
             .backToList()
             .waitForListToLoad()
-        
+
         // When: User deletes the provider
         serviceProviderListPage
             .findProviderByName(providerName)
             ?.click()
-        
+
         serviceProviderFormPage
             .shouldBeInEditMode()
             .delete()
-        
+
         // Then: Provider should be deleted successfully
         serviceProviderFormPage
             .shouldShowSuccessMessage()
             .backToList()
             .waitForListToLoad()
             .findProviderByName(providerName)
-            ?.let { 
+            ?.let {
                 throw AssertionError("Provider should not exist after deletion")
             }
     }
@@ -285,13 +285,13 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     fun shouldHandleNetworkErrorsGracefullyWhenSavingProvider() {
         // Given: User creates a service provider with valid data
         val providerName = "Error Test Provider"
-        
+
         // When: User attempts to save during network issues
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName)
             .save()
-        
+
         // Then: Error should be handled gracefully
         // Note: This test would need backend setup to simulate network errors
         // For now, we verify the error handling UI elements exist
@@ -305,7 +305,7 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
         // Given: Multiple service providers exist
         val provider1Name = "Provider One"
         val provider2Name = "Provider Two"
-        
+
         // Create two providers
         serviceProviderFormPage
             .clickCreateNewProvider()
@@ -313,19 +313,19 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
             .save()
             .backToList()
             .waitForListToLoad()
-        
+
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = provider2Name, comment = "Second provider")
             .save()
             .backToList()
             .waitForListToLoad()
-        
+
         // When: User switches between providers
         serviceProviderListPage
             .findProviderByName(provider1Name)
             ?.click()
-        
+
         // Then: Form should show correct provider data
         serviceProviderFormPage
             .shouldBeInEditMode()
@@ -333,14 +333,14 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
                 expectedName = provider1Name,
                 expectedComment = "First provider"
             )
-        
+
         // When: User switches to second provider
         serviceProviderFormPage
             .backToList()
             .waitForListToLoad()
             .findProviderByName(provider2Name)
             ?.click()
-        
+
         // Then: Form should show correct provider data
         serviceProviderFormPage
             .shouldBeInEditMode()
