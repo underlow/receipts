@@ -122,10 +122,7 @@ class ServicesModule {
      */
     renderServiceProviderForm() {
         const formContainer = document.getElementById('serviceProviderForm');
-        const formTitle = document.getElementById('formTitle');
-        
         if (!this.selectedServiceProvider) {
-            formTitle.textContent = 'Select a Service Provider';
             formContainer.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-building empty-state-icon"></i>
@@ -137,7 +134,6 @@ class ServicesModule {
         }
 
         const isNewProvider = this.selectedServiceProvider.id === null;
-        formTitle.textContent = isNewProvider ? 'Create New Service Provider' : 'Edit Service Provider';
 
         const formHtml = `
             <form class="service-provider-form" onsubmit="servicesModule.saveServiceProvider(event)">
