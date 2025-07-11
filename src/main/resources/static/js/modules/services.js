@@ -129,7 +129,7 @@ class ServicesModule {
         const isNewProvider = this.selectedServiceProvider.id === null;
 
         const formHtml = `
-            <form class="service-provider-form" onsubmit="saveServiceProvider(event)">
+            <form class="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
                 <!-- Avatar and Name Section -->
                 <div class="form-group">
                     <div style="display: flex; align-items: flex-start; gap: 20px;">
@@ -146,7 +146,13 @@ class ServicesModule {
                             </div>
                         </div>
                         <div style="flex: 1;">
-                            <label for="providerName" class="form-label">Name *</label>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label for="providerName" class="form-label" style="margin-bottom: 0;">Name *</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="providerState" class="toggle-input" ${this.selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
+                                    <label for="providerState" class="toggle-label">Active</label>
+                                </div>
+                            </div>
                             <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
                             <div class="invalid-feedback" id="nameError"></div>
                         </div>
@@ -176,14 +182,6 @@ class ServicesModule {
                     </select>
                 </div>
 
-                <!-- State Toggle -->
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="providerState" class="toggle-input" ${this.selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
-                        <label for="providerState" class="toggle-label">Active</label>
-                    </div>
-                </div>
 
                 <!-- Custom Fields Section -->
                 <div class="form-group">

@@ -9,7 +9,7 @@
 }
 
 .split-panel-left {
-    flex: 1;
+    flex: 0 0 350px;
     min-width: 300px;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
