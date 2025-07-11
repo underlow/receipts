@@ -16,9 +16,7 @@ let avatarUploadState = {
     cropBackupData: null,
     rotateBackupData: null,
     serviceProviderId: null,
-    onUploadSuccess: null, // Callback function for successful upload
-    isUploading: false, // Flag to track if upload is in progress
-    uploadCompleted: false // Flag to track if upload was completed successfully
+    onUploadSuccess: null // Callback function for successful upload
 };
 
 /**
@@ -174,14 +172,8 @@ function initializeAvatarUpload() {
     // Handle modal close and hide events
     if (avatarUploadModal) {
         avatarUploadModal.addEventListener('show.bs.modal', function() {
-            console.log('Modal show event fired. Current state:', {
-                serviceProviderId: avatarUploadState.serviceProviderId,
-                selectedFile: !!avatarUploadState.selectedFile
-            });
-            
             // If service provider ID is not set when modal opens, prevent modal from opening
             if (!avatarUploadState.serviceProviderId) {
-                console.error('Modal opened without service provider ID. This should not happen.');
                 alert('Cannot open avatar upload: Service provider ID is missing. Please save the service provider first.');
                 // Close the modal immediately
                 const modal = bootstrap.Modal.getInstance(avatarUploadModal);
@@ -230,10 +222,7 @@ window.openAvatarUploadModal = openAvatarUploadModal;
  * @param {function} onSuccess - Callback function called on successful upload
  */
 function openAvatarUploadModal(serviceProviderId, onSuccess) {
-    console.log('openAvatarUploadModal called with serviceProviderId:', serviceProviderId);
-    
     if (!serviceProviderId || serviceProviderId === 'null' || serviceProviderId === 'undefined') {
-        console.error('Service provider ID is required, received:', serviceProviderId);
         alert('Cannot upload avatar: Service provider ID is missing. Please save the service provider first.');
         return;
     }
@@ -242,15 +231,12 @@ function openAvatarUploadModal(serviceProviderId, onSuccess) {
     const providerId = typeof serviceProviderId === 'string' ? parseInt(serviceProviderId, 10) : serviceProviderId;
     
     if (isNaN(providerId) || providerId <= 0) {
-        console.error('Invalid service provider ID:', serviceProviderId);
         alert('Cannot upload avatar: Invalid service provider ID. Please save the service provider first.');
         return;
     }
 
     avatarUploadState.serviceProviderId = providerId;
     avatarUploadState.onUploadSuccess = onSuccess;
-    
-    console.log('Set avatarUploadState.serviceProviderId to:', avatarUploadState.serviceProviderId);
 
     const avatarUploadModal = document.getElementById('avatarUploadModal');
     if (avatarUploadModal) {
@@ -437,27 +423,17 @@ function updateAvatarPreview() {
  * Process and upload the cropped avatar.
  */
 function processAndUploadAvatar() {
-    console.log('processAndUploadAvatar called with state:', {
-        cropper: !!avatarUploadState.cropper,
-        selectedFile: !!avatarUploadState.selectedFile,
-        serviceProviderId: avatarUploadState.serviceProviderId,
-        isUploading: avatarUploadState.isUploading
-    });
-    
     if (!avatarUploadState.cropper) {
-        console.error('Upload validation failed: No cropper available');
         showAvatarErrorMessage('No image cropper available. Please select an image first.');
         return;
     }
     
     if (!avatarUploadState.selectedFile) {
-        console.error('Upload validation failed: No file selected');
         showAvatarErrorMessage('No image selected for upload. Please select an image first.');
         return;
     }
     
     if (!avatarUploadState.serviceProviderId) {
-        console.error('Upload validation failed: No service provider ID');
         showAvatarErrorMessage('Missing service provider ID. Please close the dialog and try again.');
         return;
     }
@@ -500,10 +476,6 @@ function uploadAvatarFile(processedFile) {
         const paramName = csrfParamName.getAttribute('content');
         formData.append(paramName, tokenValue);
     }
-
-    // Mark upload as starting
-    avatarUploadState.isUploading = true;
-    avatarUploadState.uploadCompleted = false;
 
     // Show loading state
     updateAvatarUploadProgress(0);
@@ -549,8 +521,6 @@ function uploadAvatarFile(processedFile) {
 
     // Handle timeout
     xhr.addEventListener('timeout', function() {
-        avatarUploadState.isUploading = false;
-        avatarUploadState.uploadCompleted = false;
         handleAvatarUploadResponse({
             success: false,
             error: 'Avatar upload timeout. Please try again.'
@@ -599,10 +569,6 @@ function handleAvatarUploadResponse(response) {
     const avatarConfirmUpload = document.getElementById('avatarConfirmUpload');
     const avatarProgressContainer = document.getElementById('avatarProgressContainer');
 
-    // Mark upload as completed
-    avatarUploadState.isUploading = false;
-    avatarUploadState.uploadCompleted = response.success;
-
     if (avatarConfirmUpload) {
         avatarConfirmUpload.disabled = false;
         avatarConfirmUpload.innerHTML = '<i class="fas fa-upload me-2"></i>Upload Avatar';
@@ -613,9 +579,6 @@ function handleAvatarUploadResponse(response) {
     }
 
     if (response.success) {
-        // Handle successful upload
-        console.log('Avatar upload successful:', response);
-
         // Show success message inside modal first
         showAvatarSuccessMessageInModal(response.message || 'Avatar uploaded successfully!');
 
@@ -633,7 +596,6 @@ function handleAvatarUploadResponse(response) {
         showAvatarSuccessMessage(response.message || 'Avatar uploaded successfully!');
     } else {
         // Handle upload error
-        console.error('Avatar upload error:', response);
         const errorMessage = response.error || response.message || 'Avatar upload failed. Please try again.';
         showAvatarErrorMessage(errorMessage);
     }
@@ -964,12 +926,6 @@ function cleanupAvatarModal() {
  * Reset avatar modal state to initial configuration.
  */
 function resetAvatarModalState() {
-    console.log('resetAvatarModalState called with state:', {
-        serviceProviderId: avatarUploadState.serviceProviderId,
-        selectedFile: !!avatarUploadState.selectedFile,
-        isUploading: avatarUploadState.isUploading
-    });
-    
     // Clear any error messages
     clearAvatarModalErrors();
 
@@ -1035,29 +991,13 @@ function resetAvatarModalState() {
         avatarSuccessAlert.style.display = 'none';
     }
 
-    // Reset state - but be more careful about what we reset when
-    // Only clear upload-related state if we're not in the middle of an upload operation
-    // and the upload hasn't just completed successfully
-    if (!avatarUploadState.isUploading && !avatarUploadState.uploadCompleted) {
-        avatarUploadState.selectedFile = null;
-        avatarUploadState.serviceProviderId = null;
-        avatarUploadState.onUploadSuccess = null;
-    }
-    
-    // Always reset these UI-related states
+    // Reset state
+    avatarUploadState.selectedFile = null;
     avatarUploadState.originalImageData = null;
     avatarUploadState.currentMode = null;
     avatarUploadState.rotationAngle = 0;
-    
-    // Reset the upload completed flag after a short delay to allow for proper cleanup
-    if (avatarUploadState.uploadCompleted) {
-        setTimeout(() => {
-            avatarUploadState.uploadCompleted = false;
-            avatarUploadState.selectedFile = null;
-            avatarUploadState.serviceProviderId = null;
-            avatarUploadState.onUploadSuccess = null;
-        }, 100);
-    }
+    avatarUploadState.serviceProviderId = null;
+    avatarUploadState.onUploadSuccess = null;
 }
 
 /**
