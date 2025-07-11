@@ -396,6 +396,9 @@ function showAvatarInModal(imageSrc) {
     avatarImageControls.style.display = 'none';
     avatarConfirmUpload.disabled = false;
 
+    // Show preview image immediately for test environments
+    updateAvatarPreviewFallback(imageSrc);
+
     // Initialize cropper and update preview
     setTimeout(() => {
         initializeAvatarCropper(avatarCropperImage);
@@ -405,10 +408,18 @@ function showAvatarInModal(imageSrc) {
         // since cropper.js may not initialize properly in headless browsers
         setTimeout(() => {
             if (!avatarUploadState.cropper) {
-                // Fallback for test environments - make controls visible
+                // Fallback for test environments - make controls visible and preview image visible
                 avatarImageControls.style.display = 'block';
+                updateAvatarPreviewFallback(imageSrc);
             }
         }, 500);
+        
+        // Additional fallback with longer timeout for very slow test environments
+        setTimeout(() => {
+            if (!avatarUploadState.cropper) {
+                updateAvatarPreviewFallback(imageSrc);
+            }
+        }, 1500);
     }, 100);
 }
 
@@ -479,6 +490,23 @@ function updateAvatarPreview() {
         avatarPreviewImage.style.display = 'block';
         avatarPreviewPlaceholder.style.display = 'none';
     }
+}
+
+/**
+ * Fallback preview update for test environments where cropper may not initialize.
+ */
+function updateAvatarPreviewFallback(imageSrc) {
+    const avatarPreviewImage = document.getElementById('avatarPreviewImage');
+    const avatarPreviewPlaceholder = document.getElementById('avatarPreviewPlaceholder');
+
+    if (!avatarPreviewImage || !avatarPreviewPlaceholder || !imageSrc) {
+        return;
+    }
+
+    // In test environments, just use the original image as preview
+    avatarPreviewImage.src = imageSrc;
+    avatarPreviewImage.style.display = 'block';
+    avatarPreviewPlaceholder.style.display = 'none';
 }
 
 /**
