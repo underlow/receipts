@@ -132,8 +132,8 @@ class ServicesModule {
             <form class="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
                 <!-- Avatar and Name Section -->
                 <div class="form-group">
-                    <div style="display: flex; align-items: flex-end; gap: 20px;">
-                        <div>
+                    <div style="display: flex; gap: 20px;">
+                        <div style="display: flex; flex-direction: column;">
                             <label class="form-label">Avatar</label>
                             <div class="avatar-upload-section">
                                 ${this.selectedServiceProvider.avatar ? 
@@ -145,7 +145,7 @@ class ServicesModule {
                                 </div>
                             </div>
                         </div>
-                        <div style="flex: 1;">
+                        <div style="flex: 1; display: flex; flex-direction: column;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                 <label for="providerName" class="form-label" style="margin-bottom: 0;">Name *</label>
                                 <div class="toggle-switch">
@@ -153,8 +153,10 @@ class ServicesModule {
                                     <label for="providerState" class="toggle-label">Active</label>
                                 </div>
                             </div>
-                            <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
-                            <div class="invalid-feedback" id="nameError"></div>
+                            <div>
+                                <input type="text" id="providerName" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
+                                <div class="invalid-feedback" id="nameError"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
