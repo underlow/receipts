@@ -205,7 +205,7 @@ class ServiceProviderController(
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(AvatarUploadResponse.error(e.message ?: "Invalid request"))
         } catch (e: Exception) {
-            ResponseEntity.internalServerError().body(AvatarUploadResponse.error("Avatar upload failed"))
+            ResponseEntity.internalServerError().body(AvatarUploadResponse.error("Upload failed. Please try again."))
         }
     }
 

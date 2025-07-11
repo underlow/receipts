@@ -121,6 +121,9 @@ class AvatarService(
         try {
             // Read and resize the image
             val originalImage = ImageIO.read(file.inputStream)
+            if (originalImage == null) {
+                throw IllegalArgumentException("Upload failed. Please try again.")
+            }
             val resizedImage = resizeImage(originalImage, AVATAR_SIZE, AVATAR_SIZE)
             
             // Save the resized image

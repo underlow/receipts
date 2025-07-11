@@ -600,9 +600,22 @@ function uploadAvatarFile(processedFile) {
                 });
             }
         } else {
+            // Try to parse error response for 400 and 500 status codes
+            let errorMessage = `Avatar upload failed with status ${xhr.status}`;
+            if ((xhr.status === 400 || xhr.status === 500) && xhr.responseText) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        errorMessage = response.error;
+                    }
+                } catch (e) {
+                    // Use default error message if parsing fails
+                }
+            }
+            
             handleAvatarUploadResponse({
                 success: false,
-                error: `Avatar upload failed with status ${xhr.status}`
+                error: errorMessage
             });
         }
     });
@@ -698,6 +711,11 @@ function handleAvatarUploadResponse(response) {
     } else {
         // Handle upload error
         const errorMessage = response.error || response.message || 'Avatar upload failed. Please try again.';
+        
+        // Reset modal state so user can try again (but this will clear errors)
+        resetAvatarModalState();
+        
+        // Show error message after reset
         showAvatarErrorMessage(errorMessage);
     }
 }

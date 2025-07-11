@@ -278,8 +278,12 @@ class AvatarUploadE2ETest : BaseE2ETest() {
 
         // Create a file that appears to be an image but has invalid content
         val corruptedImageFile = uploadHelper.createTestJpegFile("test-corrupted-image.jpg")
-        // Corrupt the file by writing invalid content while keeping JPEG extension
-        corruptedImageFile.writeBytes(byteArrayOf(0x00, 0x01, 0x02, 0x03))
+        // Create corrupted JPEG file with valid header but invalid content that will fail ImageIO.read()
+        val corruptedContent = byteArrayOf(
+            0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), // Valid JPEG header
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05 // Invalid JPEG content
+        )
+        corruptedImageFile.writeBytes(corruptedContent)
         testFiles.add(corruptedImageFile)
 
         avatarUploadPage.selectFile(corruptedImageFile)
