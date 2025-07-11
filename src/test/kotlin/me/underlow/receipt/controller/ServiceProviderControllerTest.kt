@@ -410,7 +410,7 @@ class ServiceProviderControllerTest {
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.error").value("Upload failed. Please try again"))
+            .andExpect(jsonPath("$.error").value("Upload failed. Please try again."))
     }
 
     @Test
