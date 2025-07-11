@@ -132,7 +132,7 @@ class ServicesModule {
             <form class="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
                 <!-- Avatar and Name Section -->
                 <div class="form-group">
-                    <div style="display: flex; align-items: flex-start; gap: 20px;">
+                    <div style="display: flex; align-items: flex-end; gap: 20px;">
                         <div>
                             <label class="form-label">Avatar</label>
                             <div class="avatar-upload-section">
