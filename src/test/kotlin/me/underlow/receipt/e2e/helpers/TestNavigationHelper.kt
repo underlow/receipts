@@ -170,4 +170,51 @@ class TestNavigationHelper {
             element.scrollTo()
         }
     }
+
+    /**
+     * Selects a service provider from the list by ID
+     */
+    fun selectServiceProvider(providerId: String) {
+        // Wait for services data to load first
+        waitForDataLoad()
+        
+        // Click on the service provider item in the list
+        val providerItem = when {
+            `$`("[onclick='selectServiceProvider($providerId)']").exists() -> `$`("[onclick='selectServiceProvider($providerId)']")
+            `$`(".service-provider-item").exists() -> {
+                `$`(".service-provider-item").`$$`("li").find { 
+                    it.getAttribute("onclick")?.contains(providerId) == true
+                }
+            }
+            else -> {
+                // If not found, trigger JavaScript directly
+                Selenide.executeJavaScript<Unit>("selectServiceProvider($providerId);")
+                null
+            }
+        }
+        
+        providerItem?.shouldBe(Condition.visible)?.click()
+        
+        // Wait for the form to load
+        Thread.sleep(500)
+    }
+
+    /**
+     * Clicks on the avatar preview to open the upload modal
+     */
+    fun clickOnAvatarToOpenUpload() {
+        // Wait for the form to be ready
+        val avatarPreview = when {
+            `$`("#avatarPreview").exists() -> `$`("#avatarPreview")
+            `$`(".avatar-preview").exists() -> `$`(".avatar-preview")
+            `$`(".avatar-preview-fallback").exists() -> `$`(".avatar-preview-fallback")
+            `$`("[onclick*='uploadAvatar']").exists() -> `$`("[onclick*='uploadAvatar']")
+            else -> throw RuntimeException("Could not find avatar preview element to click")
+        }
+        
+        avatarPreview.shouldBe(Condition.visible).click()
+        
+        // Small wait for modal to open
+        Thread.sleep(200)
+    }
 }

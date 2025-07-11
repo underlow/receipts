@@ -52,9 +52,10 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @DisplayName("should open avatar upload modal when clicking upload button")
     fun shouldOpenAvatarUploadModalWhenClickingUploadButton() {
         // Given: Service provider with no avatar exists
+        navigationHelper.selectServiceProvider("1")
         
-        // When: User clicks the upload avatar button for service provider 1
-        avatarUploadPage.openAvatarUploadModal("1")
+        // When: User clicks on the avatar to open upload modal
+        navigationHelper.clickOnAvatarToOpenUpload()
 
         // Then: Avatar upload modal should be displayed with correct title
         avatarUploadPage
@@ -66,8 +67,13 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should close avatar upload modal when clicking cancel")
     fun shouldCloseAvatarUploadModalWhenClickingCancel() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: User needs to select a service provider first
+        navigationHelper.selectServiceProvider("1")
+        
+        // When: User clicks on the avatar to open upload modal
+        navigationHelper.clickOnAvatarToOpenUpload()
+        
+        // Then: Avatar upload modal should be visible
         avatarUploadPage.shouldBeVisible()
 
         // When: User clicks cancel button
@@ -80,8 +86,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should close avatar upload modal when clicking close button")
     fun shouldCloseAvatarUploadModalWhenClickingCloseButton() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
 
         // When: User clicks close button (X)
@@ -94,8 +101,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should enable upload button when valid image is selected")
     fun shouldEnableUploadButtonWhenValidImageIsSelected() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects a valid image file
@@ -114,8 +122,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show error message for invalid file format")
     fun shouldShowErrorMessageForInvalidFileFormat() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects an invalid file (text file)
@@ -132,8 +141,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show error message for oversized file")
     fun shouldShowErrorMessageForOversizedFile() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects an oversized file (larger than 10MB)
@@ -150,8 +160,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show crop controls when crop button is clicked")
     fun shouldShowCropControlsWhenCropButtonIsClicked() {
-        // Given: Avatar upload modal is open with image loaded
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image loaded
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-crop-image.jpg")
@@ -169,8 +180,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should accept crop changes when accept button is clicked")
     fun shouldAcceptCropChangesWhenAcceptButtonIsClicked() {
-        // Given: Avatar upload modal is open with image in crop mode
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image in crop mode
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-crop-accept.jpg")
@@ -192,8 +204,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should cancel crop changes when cancel button is clicked")
     fun shouldCancelCropChangesWhenCancelButtonIsClicked() {
-        // Given: Avatar upload modal is open with image in crop mode
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image in crop mode
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-crop-cancel.jpg")
@@ -215,8 +228,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show rotate controls when rotate button is clicked")
     fun shouldShowRotateControlsWhenRotateButtonIsClicked() {
-        // Given: Avatar upload modal is open with image loaded
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image loaded
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-rotate-image.jpg")
@@ -234,8 +248,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show progress indication during upload")
     fun shouldShowProgressIndicationDuringUpload() {
-        // Given: Avatar upload modal is open with image selected
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image selected
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-upload-progress.jpg")
@@ -255,8 +270,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should close modal and show success message on successful upload")
     fun shouldCloseModalAndShowSuccessMessageOnSuccessfulUpload() {
-        // Given: Avatar upload modal is open with image selected
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image selected
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-upload-success.jpg")
@@ -277,8 +293,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should show error message on upload failure")
     fun shouldShowErrorMessageOnUploadFailure() {
-        // Given: Avatar upload modal is open with corrupted image file
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with corrupted image file
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         // Create a file that appears to be an image but has invalid content
@@ -301,8 +318,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should update preview when image is cropped")
     fun shouldUpdatePreviewWhenImageIsCropped() {
-        // Given: Avatar upload modal is open with image loaded
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open with image loaded
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
         
         val testImageFile = uploadHelper.createTestJpegFile("test-preview-crop.jpg")
@@ -321,8 +339,9 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("should hide placeholder when image is loaded")
     fun shouldHidePlaceholderWhenImageIsLoaded() {
-        // Given: Avatar upload modal is open
-        avatarUploadPage.openAvatarUploadModal("1")
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects an image

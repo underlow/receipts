@@ -1,6 +1,9 @@
 -- Test data for service providers table
 -- Insert sample service providers for testing avatar upload functionality
 
+-- Clean up existing data first
+DELETE FROM service_providers WHERE id IN (1, 2, 3);
+
 INSERT INTO service_providers (id, name, avatar, comment, comment_for_ocr, regular, custom_fields, state, created_date, modified_date)
 VALUES 
     (1, 'Test Service Provider 1', null, 'Test provider for avatar upload', 'OCR comment 1', 'MONTHLY', null, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),

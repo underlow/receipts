@@ -49,7 +49,9 @@ class AvatarUploadPage {
     
     /**
      * Opens the avatar upload modal for a specific service provider
+     * @deprecated Use TestNavigationHelper.selectServiceProvider() and clickOnAvatarToOpenUpload() instead
      */
+    @Deprecated("Use TestNavigationHelper methods instead", level = DeprecationLevel.WARNING)
     fun openAvatarUploadModal(serviceProviderId: String): AvatarUploadPage {
         val uploadButton = `$`("[data-test-id='avatar-upload-button-${serviceProviderId}']")
         uploadButton.shouldBe(Condition.visible).click()
