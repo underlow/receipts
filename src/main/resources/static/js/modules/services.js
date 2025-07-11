@@ -195,18 +195,13 @@ class ServicesModule {
                 </div>
 
                 <!-- Form Actions -->
-                <div class="form-actions">
-                    <button type="submit" class="btn-save" id="saveButton">
-                        <i class="fas fa-save me-1"></i> Save
-                    </button>
+                <div class="form-actions" style="justify-content: flex-end;">
                     <button type="button" class="btn-cancel" onclick="cancelEdit()">
                         <i class="fas fa-times me-1"></i> Cancel
                     </button>
-                    ${!isNewProvider ? 
-                        `<button type="button" class="btn-cancel" onclick="deleteServiceProvider()" style="margin-left: auto;">
-                            <i class="fas fa-trash me-1"></i> Delete
-                        </button>` : ''
-                    }
+                    <button type="submit" class="btn-save" id="saveButton">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
                 </div>
             </form>
         `;
