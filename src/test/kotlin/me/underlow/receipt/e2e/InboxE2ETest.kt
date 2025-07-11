@@ -77,8 +77,8 @@ class InboxE2ETest : BaseE2ETest() {
         inboxPage.navigateToInbox()
         inboxPage.shouldContainAtLeastItems(2)
 
-        // When - user clicks sort by date
-        inboxPage.sortByDate()
+        // When - user clicks sort by date header
+        inboxPage.sortByDateHeader()
 
         // Then - receipts should be sorted chronologically
         inboxPage.shouldBeDisplayed()

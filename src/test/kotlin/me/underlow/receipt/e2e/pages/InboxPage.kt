@@ -181,12 +181,20 @@ class InboxPage {
     }
 
     /**
-     * Sorts inbox items by date
+     * Sorts inbox items by date by clicking the sortable date column header
      */
-    fun sortByDate(): InboxPage {
-        sortByDateButton.shouldBe(Condition.visible).click()
+    fun sortByDateHeader(): InboxPage {
+        val dateHeader = `$`("th[data-sort='uploadDate']")
+        dateHeader.shouldBe(Condition.visible).click()
         waitForSortToApply()
         return this
+    }
+
+    /**
+     * Sorts inbox items by date (deprecated - use sortByDateHeader instead)
+     */
+    fun sortByDate(): InboxPage {
+        return sortByDateHeader()
     }
 
     /**
