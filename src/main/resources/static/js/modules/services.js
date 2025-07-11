@@ -384,14 +384,18 @@ class ServicesModule {
     uploadAvatar() {
         if (!this.selectedServiceProvider) return;
 
-        // Use avatar upload modal functionality
-        const avatarUploadModal = document.getElementById('avatarUploadModal');
-        if (avatarUploadModal) {
-            const modal = new bootstrap.Modal(avatarUploadModal);
-            modal.show();
-            
-            // Set current service provider ID for avatar upload
-            window.currentServiceProviderId = this.selectedServiceProvider.id;
+        // Use the proper avatar upload modal function
+        if (typeof window.openAvatarUploadModal === 'function') {
+            window.openAvatarUploadModal(this.selectedServiceProvider.id, (response) => {
+                // Update the service provider avatar after successful upload
+                if (response.success && response.data) {
+                    this.selectedServiceProvider.avatar = response.avatarPath;
+                    this.renderServiceProviderForm();
+                    this.renderServiceProviderList();
+                }
+            });
+        } else {
+            console.error('openAvatarUploadModal function not available');
         }
     }
 
