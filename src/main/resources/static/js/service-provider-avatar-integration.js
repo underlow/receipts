@@ -64,7 +64,7 @@ function updateFormAvatarPreview(avatarPath) {
             const isNewProvider = selectedServiceProvider.id === null;
             avatarControls.innerHTML = `
                 <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar, ${selectedServiceProvider.avatar ? 'true' : 'false'})`}"
                         ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
                     <i class="fas fa-camera me-1"></i>Change Avatar
                 </button>
@@ -88,7 +88,7 @@ function updateFormAvatarPreview(avatarPath) {
             const isNewProvider = selectedServiceProvider.id === null;
             avatarControls.innerHTML = `
                 <button type="button" class="btn btn-outline-primary btn-sm" 
-                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar, ${selectedServiceProvider.avatar ? 'true' : 'false'})`}"
                         ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
                     <i class="fas fa-camera me-1"></i>Upload Avatar
                 </button>
@@ -270,7 +270,7 @@ function renderServiceProviderFormWithAvatar() {
 
     const avatarControls = selectedServiceProvider.avatar ? `
         <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar, ${selectedServiceProvider.avatar ? 'true' : 'false'})`}"
                 ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
             <i class="fas fa-camera me-1"></i>Change Avatar
         </button>
@@ -281,7 +281,7 @@ function renderServiceProviderFormWithAvatar() {
         </button>
     ` : `
         <button type="button" class="btn btn-outline-primary btn-sm" 
-                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar, ${selectedServiceProvider.avatar ? 'true' : 'false'})`}"
                 ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
             <i class="fas fa-camera me-1"></i>Upload Avatar
         </button>

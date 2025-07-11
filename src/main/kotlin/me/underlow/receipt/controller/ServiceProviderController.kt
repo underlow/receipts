@@ -210,6 +210,49 @@ class ServiceProviderController(
     }
 
     /**
+     * Removes avatar from a service provider.
+     * Deletes the avatar file and updates the service provider record.
+     *
+     * @param id Service provider ID
+     * @return Avatar removal response
+     */
+    @DeleteMapping("/{id}/avatar")
+    @PreAuthorize("isAuthenticated()")
+    fun removeAvatar(@PathVariable id: Long): ResponseEntity<AvatarUploadResponse> {
+        return try {
+            // Get existing provider
+            val existingProvider = serviceProviderService.findById(id)
+            if (existingProvider == null) {
+                return ResponseEntity.notFound().build()
+            }
+
+            if (existingProvider.avatar == null) {
+                return ResponseEntity.badRequest().body(
+                    AvatarUploadResponse.error("No avatar to remove")
+                )
+            }
+
+            // Clean up old avatar file
+            avatarService.cleanupOldAvatar(existingProvider.avatar)
+
+            // Update service provider to remove avatar
+            val updatedProvider = serviceProviderService.updateAvatar(id, null)
+
+            ResponseEntity.ok(
+                AvatarUploadResponse.success(
+                    updatedProvider,
+                    "",
+                    "Avatar removed successfully"
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(AvatarUploadResponse.error(e.message ?: "Invalid request"))
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().body(AvatarUploadResponse.error("Avatar removal failed"))
+        }
+    }
+
+    /**
      * Exception handler for validation errors.
      */
     @ExceptionHandler(IllegalArgumentException::class)

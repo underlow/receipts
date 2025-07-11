@@ -34,6 +34,7 @@ function initializeAvatarUpload() {
     const avatarCropperImage = document.getElementById('avatarCropperImage');
     const avatarConfirmUpload = document.getElementById('avatarConfirmUpload');
     const avatarCancelUpload = document.getElementById('avatarCancelUpload');
+    const avatarRemoveButton = document.getElementById('avatarRemoveButton');
     const avatarFileDropZone = document.getElementById('avatarFileDropZone');
     const avatarImagePreview = document.getElementById('avatarImagePreview');
     const avatarImageControls = document.getElementById('avatarImageControls');
@@ -160,6 +161,15 @@ function initializeAvatarUpload() {
         });
     }
 
+    // Handle remove avatar button
+    if (avatarRemoveButton) {
+        avatarRemoveButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            removeAvatarFromModal();
+        });
+    }
+
     // Handle modal close button (X)
     if (modalCloseBtn) {
         modalCloseBtn.addEventListener('click', function(event) {
@@ -220,8 +230,9 @@ window.openAvatarUploadModal = openAvatarUploadModal;
  * Open avatar upload modal for a specific service provider.
  * @param {number} serviceProviderId - The ID of the service provider
  * @param {function} onSuccess - Callback function called on successful upload
+ * @param {boolean} hasExistingAvatar - Whether the service provider already has an avatar
  */
-function openAvatarUploadModal(serviceProviderId, onSuccess) {
+function openAvatarUploadModal(serviceProviderId, onSuccess, hasExistingAvatar = false) {
     if (!serviceProviderId || serviceProviderId === 'null' || serviceProviderId === 'undefined') {
         alert('Cannot upload avatar: Service provider ID is missing. Please save the service provider first.');
         return;
@@ -238,11 +249,53 @@ function openAvatarUploadModal(serviceProviderId, onSuccess) {
     avatarUploadState.serviceProviderId = providerId;
     avatarUploadState.onUploadSuccess = onSuccess;
 
+    // Check if service provider has existing avatar by making API call
+    checkAndShowRemoveButton(providerId);
+
+    // Clear any existing error messages when opening modal
+    clearAvatarModalErrors();
+
     const avatarUploadModal = document.getElementById('avatarUploadModal');
     if (avatarUploadModal) {
         const modal = new bootstrap.Modal(avatarUploadModal);
         modal.show();
     }
+}
+
+/**
+ * Check if service provider has existing avatar and show/hide remove button accordingly.
+ * @param {number} serviceProviderId - The ID of the service provider
+ */
+function checkAndShowRemoveButton(serviceProviderId) {
+    // Make API call to get service provider details
+    fetch(`/api/service-providers/${serviceProviderId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Failed to get service provider details');
+    })
+    .then(serviceProvider => {
+        const avatarRemoveButton = document.getElementById('avatarRemoveButton');
+        if (avatarRemoveButton) {
+            // Show remove button if service provider has an avatar
+            const hasAvatar = serviceProvider && serviceProvider.avatar && serviceProvider.avatar.trim() !== '';
+            avatarRemoveButton.style.display = hasAvatar ? 'inline-block' : 'none';
+        }
+    })
+    .catch(error => {
+        console.warn('Could not check avatar status:', error);
+        // Hide remove button on error
+        const avatarRemoveButton = document.getElementById('avatarRemoveButton');
+        if (avatarRemoveButton) {
+            avatarRemoveButton.style.display = 'none';
+        }
+    });
 }
 
 /**
@@ -594,6 +647,11 @@ function handleAvatarUploadResponse(response) {
 
         // Also show global success message
         showAvatarSuccessMessage(response.message || 'Avatar uploaded successfully!');
+
+        // Update remove button visibility since avatar status changed
+        if (avatarUploadState.serviceProviderId) {
+            checkAndShowRemoveButton(avatarUploadState.serviceProviderId);
+        }
     } else {
         // Handle upload error
         const errorMessage = response.error || response.message || 'Avatar upload failed. Please try again.';
@@ -1078,6 +1136,98 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAvatarUpload();
 });
 
+/**
+ * Remove avatar from service provider via modal.
+ * Self-contained function that handles the removal and modal closure.
+ */
+function removeAvatarFromModal() {
+    if (!avatarUploadState.serviceProviderId) {
+        showAvatarErrorMessage('Missing service provider ID. Please close the dialog and try again.');
+        return;
+    }
+
+    // Show confirmation dialog
+    if (!confirm('Are you sure you want to remove the avatar? This action cannot be undone.')) {
+        return;
+    }
+
+    // Disable remove button and show loading state
+    const avatarRemoveButton = document.getElementById('avatarRemoveButton');
+    if (avatarRemoveButton) {
+        avatarRemoveButton.disabled = true;
+        avatarRemoveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Removing...';
+    }
+
+    // Use XMLHttpRequest like the upload function to ensure CSRF handling works
+    const xhr = new XMLHttpRequest();
+
+    // Handle response
+    xhr.addEventListener('load', function() {
+        // Re-enable remove button
+        if (avatarRemoveButton) {
+            avatarRemoveButton.disabled = false;
+            avatarRemoveButton.innerHTML = '<i class="fas fa-trash me-2"></i>Remove Avatar';
+        }
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    // Show success message inside modal first
+                    showAvatarSuccessMessageInModal(response.message || 'Avatar removed successfully!');
+
+                    // Close modal after showing success message
+                    setTimeout(() => {
+                        closeAvatarModal();
+                    }, 2000);
+
+                    // Call success callback if provided (for UI updates)
+                    if (avatarUploadState.onUploadSuccess && typeof avatarUploadState.onUploadSuccess === 'function') {
+                        avatarUploadState.onUploadSuccess(response);
+                    }
+
+                    // Also show global success message
+                    showAvatarSuccessMessage(response.message || 'Avatar removed successfully!');
+                } else {
+                    showAvatarErrorMessage(response.error || 'Failed to remove avatar');
+                }
+            } catch (e) {
+                showAvatarErrorMessage('Invalid response from server');
+            }
+        } else {
+            showAvatarErrorMessage(`Failed to remove avatar: ${xhr.status}`);
+        }
+    });
+
+    // Handle network errors
+    xhr.addEventListener('error', function() {
+        // Re-enable remove button
+        if (avatarRemoveButton) {
+            avatarRemoveButton.disabled = false;
+            avatarRemoveButton.innerHTML = '<i class="fas fa-trash me-2"></i>Remove Avatar';
+        }
+        showAvatarErrorMessage('Network error occurred during avatar removal');
+    });
+
+    // Create form data with CSRF token (same approach as upload)
+    const formData = new FormData();
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="_csrf"]');
+    const csrfParamName = document.querySelector('meta[name="_csrf_parameter_name"]');
+
+    if (csrfToken && csrfParamName) {
+        const tokenValue = csrfToken.getAttribute('content');
+        const paramName = csrfParamName.getAttribute('content');
+        formData.append(paramName, tokenValue);
+    }
+
+    // Configure and send request (no Content-Type header like upload)
+    xhr.open('DELETE', `/api/service-providers/${avatarUploadState.serviceProviderId}/avatar`);
+    xhr.send(formData);
+}
+
 // Expose functions globally for integration
 window.openAvatarUploadModal = openAvatarUploadModal;
+window.removeAvatarFromModal = removeAvatarFromModal;
 window.avatarUploadState = avatarUploadState;
