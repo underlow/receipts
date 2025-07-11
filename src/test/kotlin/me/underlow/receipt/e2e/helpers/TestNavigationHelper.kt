@@ -115,6 +115,16 @@ class TestNavigationHelper {
     }
 
     /**
+     * Triggers services data refresh and waits for completion
+     */
+    fun refreshServicesData() {
+        // Trigger data loading using the JavaScript function from dashboard.html
+        Selenide.executeJavaScript<Unit>("if (typeof loadServicesData === 'function') loadServicesData();")
+        
+        waitForDataLoad()
+    }
+
+    /**
      * Sets browser to mobile viewport
      */
     fun setMobileViewport() {

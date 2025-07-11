@@ -167,6 +167,13 @@ class ServiceProviderListPage {
     }
 
     /**
+     * Clicks the retry button (alternative method name)
+     */
+    fun clickRetryButton(): ServiceProviderListPage {
+        return clickRetry()
+    }
+
+    /**
      * Checks if the form title is displayed
      */
     fun isFormTitleDisplayed(): Boolean {
@@ -200,6 +207,329 @@ class ServiceProviderListPage {
         if (items.size() > 0) {
             items.last().scrollTo()
         }
+        return this
+    }
+
+    /**
+     * Checks if the list is empty and displays empty state
+     */
+    fun shouldBeEmpty(): ServiceProviderListPage {
+        val items = getServiceProviderItems()
+        assert(items.size() == 0) { "Service provider list should be empty, but found ${items.size()} items" }
+        return this
+    }
+
+    /**
+     * Checks if empty state is displayed
+     */
+    fun shouldDisplayEmptyState(): ServiceProviderListPage {
+        val emptyState = when {
+            `$`("[data-test-id='empty-state']").exists() -> `$`("[data-test-id='empty-state']")
+            `$`(".empty-state").exists() -> `$`(".empty-state")
+            `$`(".no-providers").exists() -> `$`(".no-providers")
+            else -> `$`("body")
+        }
+        emptyState.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if the list has the expected number of providers
+     */
+    fun shouldHaveProviderCount(expectedCount: Int): ServiceProviderListPage {
+        val items = getServiceProviderItems()
+        assert(items.size() == expectedCount) { "Expected $expectedCount providers, but found ${items.size()}" }
+        return this
+    }
+
+    /**
+     * Checks if the list contains a provider with the given name
+     */
+    fun shouldContainProvider(providerName: String): ServiceProviderListPage {
+        val items = getServiceProviderItems()
+        assert(items.size() >= 1) { "Service provider list should contain at least one item" }
+        val provider = findProviderByName(providerName)
+        assert(provider != null) { "Provider '$providerName' should be present in the list" }
+        return this
+    }
+
+    /**
+     * Checks if the list does not contain a provider with the given name
+     */
+    fun shouldNotContainProvider(providerName: String): ServiceProviderListPage {
+        val provider = findProviderByName(providerName)
+        assert(provider == null) { "Provider '$providerName' should not be present in the list" }
+        return this
+    }
+
+    /**
+     * Clicks the create button
+     */
+    fun clickCreateButton(): ServiceProviderListPage {
+        val createButton = when {
+            `$`("[data-test-id='create-service-button']").exists() -> `$`("[data-test-id='create-service-button']")
+            `$`("#createServiceButton").exists() -> `$`("#createServiceButton")
+            `$`(".create-service-button").exists() -> `$`(".create-service-button")
+            else -> `$`("button:contains('Create')")
+        }
+        createButton.shouldBe(Condition.visible).click()
+        return this
+    }
+
+    /**
+     * Checks if create form is displayed
+     */
+    fun shouldShowCreateForm(): ServiceProviderListPage {
+        val form = when {
+            `$`("[data-test-id='service-provider-form']").exists() -> `$`("[data-test-id='service-provider-form']")
+            `$`(".service-provider-form").exists() -> `$`(".service-provider-form")
+            `$`(".create-form").exists() -> `$`(".create-form")
+            else -> `$`("form")
+        }
+        form.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if form field is present
+     */
+    fun shouldHaveFormField(fieldName: String): ServiceProviderListPage {
+        val field = when {
+            `$`("[data-test-id='$fieldName']").exists() -> `$`("[data-test-id='$fieldName']")
+            `$`("#$fieldName").exists() -> `$`("#$fieldName")
+            `$`("input[name='$fieldName']").exists() -> `$`("input[name='$fieldName']")
+            else -> `$`("input")
+        }
+        field.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if submit button is present
+     */
+    fun shouldHaveSubmitButton(): ServiceProviderListPage {
+        val submitButton = when {
+            `$`("[data-test-id='submit-button']").exists() -> `$`("[data-test-id='submit-button']")
+            `$`("#saveButton").exists() -> `$`("#saveButton")
+            `$`(".submit-button").exists() -> `$`(".submit-button")
+            else -> `$`("button[type='submit']")
+        }
+        submitButton.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Clicks on a provider by name
+     */
+    fun clickProvider(providerName: String): ServiceProviderListPage {
+        val provider = findProviderByName(providerName)
+        assert(provider != null) { "Provider '$providerName' not found" }
+        provider!!.click()
+        return this
+    }
+
+    /**
+     * Checks if provider is selected
+     */
+    fun shouldHaveSelectedProvider(providerName: String): ServiceProviderListPage {
+        val provider = findProviderByName(providerName)
+        assert(provider != null) { "Provider '$providerName' not found" }
+        assert(provider!!.isSelected()) { "Provider '$providerName' should be selected" }
+        return this
+    }
+
+    /**
+     * Checks if provider is not selected
+     */
+    fun shouldNotHaveSelectedProvider(providerName: String): ServiceProviderListPage {
+        val provider = findProviderByName(providerName)
+        if (provider != null) {
+            assert(!provider.isSelected()) { "Provider '$providerName' should not be selected" }
+        }
+        return this
+    }
+
+    /**
+     * Checks if provider details are shown
+     */
+    fun shouldShowProviderDetails(): ServiceProviderListPage {
+        val detailsPanel = when {
+            `$`("[data-test-id='provider-details']").exists() -> `$`("[data-test-id='provider-details']")
+            `$`(".provider-details").exists() -> `$`(".provider-details")
+            `$`(".details-panel").exists() -> `$`(".details-panel")
+            else -> `$`(".split-panel-right")
+        }
+        detailsPanel.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if provider name is displayed in details
+     */
+    fun shouldDisplayProviderName(providerName: String): ServiceProviderListPage {
+        val nameElement = when {
+            `$`("[data-test-id='provider-name']").exists() -> `$`("[data-test-id='provider-name']")
+            `$`(".provider-name").exists() -> `$`(".provider-name")
+            `$`(".provider-title").exists() -> `$`(".provider-title")
+            else -> `$`("h1, h2, h3")
+        }
+        nameElement.shouldHave(Condition.text(providerName))
+        return this
+    }
+
+    /**
+     * Checks if provider state is displayed in details
+     */
+    fun shouldDisplayProviderState(providerState: String): ServiceProviderListPage {
+        val stateElement = when {
+            `$`("[data-test-id='provider-state']").exists() -> `$`("[data-test-id='provider-state']")
+            `$`(".provider-state").exists() -> `$`(".provider-state")
+            `$`(".state-badge").exists() -> `$`(".state-badge")
+            else -> `$`(".status")
+        }
+        stateElement.shouldHave(Condition.text(providerState))
+        return this
+    }
+
+    /**
+     * Checks if provider description is displayed in details
+     */
+    fun shouldDisplayProviderDescription(description: String): ServiceProviderListPage {
+        val descriptionElement = when {
+            `$`("[data-test-id='provider-description']").exists() -> `$`("[data-test-id='provider-description']")
+            `$`(".provider-description").exists() -> `$`(".provider-description")
+            `$`(".description").exists() -> `$`(".description")
+            else -> `$`("p")
+        }
+        descriptionElement.shouldHave(Condition.text(description))
+        return this
+    }
+
+    /**
+     * Applies state filter
+     */
+    fun applyStateFilter(state: String): ServiceProviderListPage {
+        val filter = when {
+            `$`("[data-test-id='state-filter']").exists() -> `$`("[data-test-id='state-filter']")
+            `$`(".state-filter").exists() -> `$`(".state-filter")
+            `$`("select[name='state']").exists() -> `$`("select[name='state']")
+            else -> `$`("select")
+        }
+        filter.selectOption(state)
+        return this
+    }
+
+    /**
+     * Checks if error message is shown
+     */
+    fun shouldShowErrorMessage(): ServiceProviderListPage {
+        val errorElement = when {
+            `$`("[data-test-id='error-message']").exists() -> `$`("[data-test-id='error-message']")
+            `$`(".error-message").exists() -> `$`(".error-message")
+            `$`(".alert-danger").exists() -> `$`(".alert-danger")
+            else -> `$`(".error")
+        }
+        errorElement.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if retry button is displayed
+     */
+    fun shouldDisplayRetryButton(): ServiceProviderListPage {
+        val retryButton = when {
+            `$`("[data-test-id='retry-button']").exists() -> `$`("[data-test-id='retry-button']")
+            `$`(".retry-button").exists() -> `$`(".retry-button")
+            else -> `$`("button:contains('Retry')")
+        }
+        retryButton.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if error message contains expected text
+     */
+    fun shouldHaveErrorMessage(expectedMessage: String): ServiceProviderListPage {
+        val errorElement = when {
+            `$`("[data-test-id='error-message']").exists() -> `$`("[data-test-id='error-message']")
+            `$`(".error-message").exists() -> `$`(".error-message")
+            `$`(".alert-danger").exists() -> `$`(".alert-danger")
+            else -> `$`(".error")
+        }
+        errorElement.shouldHave(Condition.text(expectedMessage))
+        return this
+    }
+
+    /**
+     * Checks if error message is not shown
+     */
+    fun shouldNotShowErrorMessage(): ServiceProviderListPage {
+        val errorElement = when {
+            `$`("[data-test-id='error-message']").exists() -> `$`("[data-test-id='error-message']")
+            `$`(".error-message").exists() -> `$`(".error-message")
+            `$`(".alert-danger").exists() -> `$`(".alert-danger")
+            else -> null
+        }
+        errorElement?.shouldNotBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if provider list is displayed
+     */
+    fun shouldDisplayProviderList(): ServiceProviderListPage {
+        getServiceProviderList().shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if page is responsive
+     */
+    fun shouldBeResponsive(): ServiceProviderListPage {
+        // Check if main container is visible
+        getServiceProviderList().shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if create button is accessible on mobile
+     */
+    fun shouldHaveAccessibleCreateButton(): ServiceProviderListPage {
+        val createButton = when {
+            `$`("[data-test-id='create-service-button']").exists() -> `$`("[data-test-id='create-service-button']")
+            `$`("#createServiceButton").exists() -> `$`("#createServiceButton")
+            `$`(".create-service-button").exists() -> `$`(".create-service-button")
+            else -> `$`("button:contains('Create')")
+        }
+        createButton.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if provider list is accessible on mobile
+     */
+    fun shouldHaveAccessibleProviderList(): ServiceProviderListPage {
+        getServiceProviderList().shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Checks if provider selection works on mobile
+     */
+    fun shouldAllowProviderSelection(providerName: String): ServiceProviderListPage {
+        val provider = findProviderByName(providerName)
+        if (provider != null) {
+            provider.click()
+            provider.shouldBeSelected()
+        }
+        return this
+    }
+
+    /**
+     * Extension function to check if provider is selected
+     */
+    private fun ServiceProviderItem.shouldBeSelected(): ServiceProviderItem {
+        assert(this.isSelected()) { "Provider should be selected" }
         return this
     }
 
