@@ -30,6 +30,18 @@ spring:
       max-request-size: 20MB
       enabled: true
 
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
+        cache: true
+      cache:
+        cachecontrol:
+          max-age: 365d
+
 # Logging configuration
 logging:
   level:
