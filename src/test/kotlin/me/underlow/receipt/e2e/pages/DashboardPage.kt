@@ -129,14 +129,16 @@ class DashboardPage {
     }
     
     /**
-     * Navigates to profile page
+     * Navigates to profile page via user dropdown menu
      */
     fun navigateToProfile(): DashboardPage {
-        val profileLink = when {
-            `$`("[data-test-id='profile-link']").exists() -> `$`("[data-test-id='profile-link']")
-            `$`("a[href='/profile']").exists() -> `$`("a[href='/profile']")
-            else -> `$`("a:contains('Profile')")
-        }
+        // First, open the user dropdown
+        val userDropdown = `$`("#userDropdown")
+        userDropdown.click()
+        Thread.sleep(500) // Wait for dropdown to open
+        
+        // Then click the profile link in the dropdown
+        val profileLink = `$`("a[href='/profile']")
         profileLink.click()
         return this
     }
