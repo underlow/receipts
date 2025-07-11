@@ -61,13 +61,16 @@ function updateFormAvatarPreview(avatarPath) {
         
         // Update controls to show remove option
         if (avatarControls) {
+            const isNewProvider = selectedServiceProvider.id === null;
             avatarControls.innerHTML = `
                 <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                        onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)">
+                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                        ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
                     <i class="fas fa-camera me-1"></i>Change Avatar
                 </button>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
-                        onclick="removeServiceProviderAvatar(${selectedServiceProvider.id})">
+                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before removing an avatar.\");' : `removeServiceProviderAvatar(${selectedServiceProvider.id})`}"
+                        ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
                     <i class="fas fa-trash me-1"></i>Remove
                 </button>
             `;
@@ -82,9 +85,11 @@ function updateFormAvatarPreview(avatarPath) {
         
         // Update controls to show only upload option
         if (avatarControls) {
+            const isNewProvider = selectedServiceProvider.id === null;
             avatarControls.innerHTML = `
                 <button type="button" class="btn btn-outline-primary btn-sm" 
-                        onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)">
+                        onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
+                        ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
                     <i class="fas fa-camera me-1"></i>Upload Avatar
                 </button>
             `;
@@ -265,18 +270,18 @@ function renderServiceProviderFormWithAvatar() {
 
     const avatarControls = selectedServiceProvider.avatar ? `
         <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)"
+                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
                 ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
             <i class="fas fa-camera me-1"></i>Change Avatar
         </button>
         <button type="button" class="btn btn-outline-danger btn-sm" 
-                onclick="removeServiceProviderAvatar(${selectedServiceProvider.id})"
+                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before removing an avatar.\");' : `removeServiceProviderAvatar(${selectedServiceProvider.id})`}"
                 ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
             <i class="fas fa-trash me-1"></i>Remove
         </button>
     ` : `
         <button type="button" class="btn btn-outline-primary btn-sm" 
-                onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)"
+                onclick="${isNewProvider ? 'alert(\"Please save the service provider first before uploading an avatar.\");' : `openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)`}"
                 ${isNewProvider ? 'disabled title="Save the service provider first"' : ''}>
             <i class="fas fa-camera me-1"></i>Upload Avatar
         </button>

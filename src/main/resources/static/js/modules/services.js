@@ -90,6 +90,13 @@ class ServicesModule {
                             <h4 class="service-provider-name">${provider.name}</h4>
                             <p class="service-provider-state">${provider.state === 'ACTIVE' ? 'Active' : 'Hidden'}</p>
                         </div>
+                        <div class="service-provider-actions">
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-test-id="avatar-upload-button-${provider.id}" 
+                                    onclick="event.stopPropagation(); openAvatarUploadModal('${provider.id}', updateServiceProviderAvatar)">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
                     </li>
                 `).join('')}
             </ul>
@@ -143,7 +150,7 @@ class ServicesModule {
                             `<div class="avatar-preview-fallback" id="avatarPreview">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div>`
                         }
                         <div class="avatar-upload-controls">
-                            <button type="button" class="btn-upload" onclick="servicesModule.uploadAvatar()">
+                            <button type="button" class="btn-upload" data-test-id="avatar-upload-button-${this.selectedServiceProvider.id}" onclick="servicesModule.uploadAvatar()">
                                 <i class="fas fa-upload me-1"></i> Upload Avatar
                             </button>
                             ${this.selectedServiceProvider.avatar ? 
@@ -377,14 +384,13 @@ class ServicesModule {
     uploadAvatar() {
         if (!this.selectedServiceProvider) return;
 
-        // Use existing upload modal functionality
-        const uploadModal = document.getElementById('uploadModal');
-        if (uploadModal) {
-            const modal = new bootstrap.Modal(uploadModal);
+        // Use avatar upload modal functionality
+        const avatarUploadModal = document.getElementById('avatarUploadModal');
+        if (avatarUploadModal) {
+            const modal = new bootstrap.Modal(avatarUploadModal);
             modal.show();
             
-            // Set a flag to indicate this is for avatar upload
-            window.isAvatarUpload = true;
+            // Set current service provider ID for avatar upload
             window.currentServiceProviderId = this.selectedServiceProvider.id;
         }
     }
@@ -522,3 +528,21 @@ window.addCustomField = () => servicesModule.addCustomField();
 window.updateCustomFieldKey = (index, newKey) => servicesModule.updateCustomFieldKey(index, newKey);
 window.updateCustomFieldValue = (key, newValue) => servicesModule.updateCustomFieldValue(key, newValue);
 window.removeCustomField = (key) => servicesModule.removeCustomField(key);
+
+// Note: openAvatarUploadModal is now defined in avatar-upload.js
+
+// Global function to update service provider avatar after upload
+window.updateServiceProviderAvatar = (serviceProviderId, avatarPath) => {
+    // Update the service provider in the services module
+    if (servicesModule.serviceProviders) {
+        const provider = servicesModule.serviceProviders.find(p => p.id == serviceProviderId);
+        if (provider) {
+            provider.avatar = avatarPath;
+            servicesModule.renderServiceProviderList();
+            if (servicesModule.selectedServiceProvider && servicesModule.selectedServiceProvider.id == serviceProviderId) {
+                servicesModule.selectedServiceProvider.avatar = avatarPath;
+                servicesModule.renderServiceProviderForm();
+            }
+        }
+    }
+};

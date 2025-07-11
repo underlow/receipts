@@ -267,10 +267,11 @@ class AvatarUploadE2ETest : BaseE2ETest() {
         // When: User uploads the image successfully
         avatarUploadPage.confirmUpload()
 
-        // Then: Upload should complete successfully
-        avatarUploadPage
-            .waitForUploadCompletion()
-            .shouldShowSuccessAlert("Avatar uploaded successfully!")
+        // Then: Upload should complete successfully and show success message
+        avatarUploadPage.shouldShowSuccessAlert("Avatar uploaded successfully!")
+        
+        // And: Modal should eventually close
+        avatarUploadPage.shouldBeClosed()
     }
 
     @Test

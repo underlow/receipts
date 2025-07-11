@@ -548,15 +548,20 @@ function handleAvatarUploadResponse(response) {
         // Handle successful upload
         console.log('Avatar upload successful:', response);
 
-        // Close modal
-        closeAvatarModal();
+        // Show success message inside modal first
+        showAvatarSuccessMessageInModal(response.message || 'Avatar uploaded successfully!');
+
+        // Close modal after showing success message
+        setTimeout(() => {
+            closeAvatarModal();
+        }, 2000);
 
         // Call success callback if provided
         if (avatarUploadState.onUploadSuccess && typeof avatarUploadState.onUploadSuccess === 'function') {
             avatarUploadState.onUploadSuccess(response);
         }
 
-        // Show success message
+        // Also show global success message
         showAvatarSuccessMessage(response.message || 'Avatar uploaded successfully!');
     } else {
         // Handle upload error
@@ -912,8 +917,6 @@ function resetAvatarModalState() {
     const avatarRotateControls = document.getElementById('avatarRotateControls');
     const avatarConfirmUpload = document.getElementById('avatarConfirmUpload');
     const avatarFileInput = document.getElementById('avatarFileInput');
-    const avatarPreviewImage = document.getElementById('avatarPreviewImage');
-    const avatarPreviewPlaceholder = document.getElementById('avatarPreviewPlaceholder');
     const avatarProgressContainer = document.getElementById('avatarProgressContainer');
 
     if (avatarCropperImage) {
@@ -947,17 +950,15 @@ function resetAvatarModalState() {
         avatarFileInput.value = '';
     }
 
-    if (avatarPreviewImage) {
-        avatarPreviewImage.style.display = 'none';
-        avatarPreviewImage.src = '';
-    }
-
-    if (avatarPreviewPlaceholder) {
-        avatarPreviewPlaceholder.style.display = 'block';
-    }
-
     if (avatarProgressContainer) {
         avatarProgressContainer.style.display = 'none';
+    }
+
+    // Reset success alert
+    const avatarSuccessAlert = document.getElementById('avatarSuccessAlert');
+    if (avatarSuccessAlert) {
+        avatarSuccessAlert.classList.add('d-none');
+        avatarSuccessAlert.style.display = 'none';
     }
 
     // Reset state
@@ -967,6 +968,20 @@ function resetAvatarModalState() {
     avatarUploadState.rotationAngle = 0;
     avatarUploadState.serviceProviderId = null;
     avatarUploadState.onUploadSuccess = null;
+}
+
+/**
+ * Show avatar success message inside the modal.
+ */
+function showAvatarSuccessMessageInModal(message) {
+    const avatarSuccessAlert = document.getElementById('avatarSuccessAlert');
+    const avatarSuccessMessage = document.getElementById('avatarSuccessMessage');
+    
+    if (avatarSuccessAlert && avatarSuccessMessage) {
+        avatarSuccessMessage.textContent = message;
+        avatarSuccessAlert.classList.remove('d-none');
+        avatarSuccessAlert.style.display = 'block';
+    }
 }
 
 /**

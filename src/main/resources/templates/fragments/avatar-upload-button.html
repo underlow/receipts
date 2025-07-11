@@ -20,6 +20,7 @@
                      ' avatar-upload-btn'"
             th:data-service-provider-id="${serviceProvider?.id}"
             th:data-service-provider-name="${serviceProvider?.name}"
+            th:data-test-id="'avatar-upload-button-' + ${serviceProvider?.id}"
             onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
             th:title="'Upload avatar for ' + ${serviceProvider?.name}">
         <i class="fas fa-camera me-2"></i>
@@ -39,6 +40,7 @@
                      ' avatar-upload-btn avatar-upload-btn-icon'"
             th:data-service-provider-id="${serviceProvider?.id}"
             th:data-service-provider-name="${serviceProvider?.name}"
+            th:data-test-id="'avatar-upload-button-' + ${serviceProvider?.id}"
             onclick="openAvatarUploadModal(this.dataset.serviceProviderId, updateServiceProviderAvatar)"
             th:title="'Upload avatar for ' + ${serviceProvider?.name}">
         <i class="fas fa-camera"></i>

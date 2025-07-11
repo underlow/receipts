@@ -5,57 +5,43 @@
 </head>
 <body>
     <!-- Avatar Upload Modal Fragment -->
-    <div th:fragment="avatarUploadModal" class="modal fade" id="avatarUploadModal" tabindex="-1" aria-labelledby="avatarUploadModalLabel" aria-hidden="true">
+    <div th:fragment="avatarUploadModal" class="modal fade" id="avatarUploadModal" data-test-id="avatar-upload-modal" tabindex="-1" aria-labelledby="avatarUploadModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" style="max-width: 600px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="avatarUploadModalLabel">Upload Service Provider Avatar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="avatarUploadModalLabel" data-test-id="avatar-modal-title">Upload Service Provider Avatar</h5>
+                    <button type="button" class="btn-close" data-test-id="avatar-close-button" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Avatar Preview Section -->
+                    <!-- Avatar Upload Section -->
                     <div class="row">
-                        <div class="col-md-8">
-                            <div id="avatarImagePreview" class="avatar-image-preview mb-3 position-relative" 
+                        <div class="col-12">
+                            <div id="avatarImagePreview" class="avatar-image-preview mb-3 position-relative" data-test-id="avatar-image-preview"
                                  style="height: 300px; border: 2px dashed #ddd; display: flex; justify-content: center; align-items: center; background-color: #f8f9fa;">
-                                <img id="avatarCropperImage" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;" alt="Avatar preview">
+                                <img id="avatarCropperImage" data-test-id="avatar-cropper-image" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;" alt="Avatar preview">
                                 <div id="avatarImageControls" class="position-absolute" style="bottom: 10px; right: 10px; display: none;">
-                                    <button type="button" class="btn btn-sm btn-outline-light me-2" id="avatarCropButton">
+                                    <button type="button" class="btn btn-sm btn-outline-light me-2" id="avatarCropButton" data-test-id="avatar-crop-button">
                                         <i class="fas fa-crop"></i> Crop
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-light" id="avatarRotateButton">
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="avatarRotateButton" data-test-id="avatar-rotate-button">
                                         <i class="fas fa-redo"></i> Rotate
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <!-- 200x200 Preview -->
-                            <div class="avatar-preview-container">
-                                <label class="form-label fw-bold">Preview (200x200)</label>
-                                <div id="avatarPreview" class="avatar-preview-box mb-3" 
-                                     style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                                    <i class="fas fa-user fa-3x text-muted" id="avatarPreviewPlaceholder"></i>
-                                    <img id="avatarPreviewImage" style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Avatar preview">
-                                </div>
-                                <div class="text-center">
-                                    <small class="text-muted">Final avatar size: 200x200 pixels</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Error Display -->
-                    <div id="avatarErrorContainer" class="avatar-error-container mb-3" style="display: none;">
+                    <div id="avatarErrorContainer" class="avatar-error-container mb-3" data-test-id="avatar-error-container" style="display: none;">
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            <span id="avatarErrorMessage"></span>
+                            <span id="avatarErrorMessage" data-test-id="avatar-error-message"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     </div>
 
                     <!-- Progress Bar -->
-                    <div id="avatarProgressContainer" class="mb-3" style="display: none;">
+                    <div id="avatarProgressContainer" class="mb-3" data-test-id="avatar-progress-container" style="display: none;">
                         <div class="progress">
                             <div id="avatarProgressBar" class="progress-bar" role="progressbar" 
                                  style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
@@ -65,38 +51,44 @@
                     </div>
 
                     <!-- Crop/Rotate Controls -->
-                    <div id="avatarCropControls" class="mb-3 text-center" style="display: none;">
-                        <button type="button" class="btn btn-success me-2" id="avatarAcceptCrop">
+                    <div id="avatarCropControls" class="mb-3 text-center" data-test-id="avatar-crop-controls" style="display: none;">
+                        <button type="button" class="btn btn-success me-2" id="avatarAcceptCrop" data-test-id="avatar-accept-crop">
                             <i class="fas fa-check"></i> Accept
                         </button>
-                        <button type="button" class="btn btn-secondary" id="avatarCancelCrop">
+                        <button type="button" class="btn btn-secondary" id="avatarCancelCrop" data-test-id="avatar-cancel-crop">
                             <i class="fas fa-times"></i> Cancel
                         </button>
                     </div>
-                    <div id="avatarRotateControls" class="mb-3 text-center" style="display: none;">
-                        <button type="button" class="btn btn-success me-2" id="avatarAcceptRotate">
+                    <div id="avatarRotateControls" class="mb-3 text-center" data-test-id="avatar-rotate-controls" style="display: none;">
+                        <button type="button" class="btn btn-success me-2" id="avatarAcceptRotate" data-test-id="avatar-accept-rotate">
                             <i class="fas fa-check"></i> Accept
                         </button>
-                        <button type="button" class="btn btn-secondary" id="avatarCancelRotate">
+                        <button type="button" class="btn btn-secondary" id="avatarCancelRotate" data-test-id="avatar-cancel-rotate">
                             <i class="fas fa-times"></i> Cancel
                         </button>
                     </div>
 
                     <!-- File Drop Zone -->
-                    <div id="avatarFileDropZone" class="border-dashed border-2 border-muted p-4 text-center" style="border-radius: 8px;">
+                    <div id="avatarFileDropZone" class="border-dashed border-2 border-muted p-4 text-center" data-test-id="avatar-file-drop-zone" style="border-radius: 8px;">
                         <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-2">Drag and drop an avatar image here or click to select</p>
                         <small class="text-muted">Supported formats: JPEG, PNG, GIF, WebP (max 10MB)</small>
-                        <input type="file" id="avatarFileInput" class="d-none" accept="image/*">
+                        <input type="file" id="avatarFileInput" class="d-none" data-test-id="avatar-file-input" accept="image/*">
                         <br><br>
                         <button type="button" class="btn btn-outline-primary" id="avatarSelectFileBtn">
                             <i class="fas fa-folder-open me-2"></i>Select Avatar Image
                         </button>
                     </div>
+                    
+                    <!-- Success Alert -->
+                    <div id="avatarSuccessAlert" class="alert alert-success d-none" data-test-id="avatar-success-alert" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="avatarSuccessMessage">Avatar uploaded successfully!</span>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="avatarCancelUpload" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="avatarConfirmUpload" disabled>
+                    <button type="button" class="btn btn-secondary" id="avatarCancelUpload" data-test-id="avatar-cancel-upload" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="avatarConfirmUpload" data-test-id="avatar-confirm-upload" disabled>
                         <i class="fas fa-upload me-2"></i>Upload Avatar
                     </button>
                 </div>
