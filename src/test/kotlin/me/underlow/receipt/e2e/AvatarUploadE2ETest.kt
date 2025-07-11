@@ -147,7 +147,8 @@ class AvatarUploadE2ETest : BaseE2ETest() {
         avatarUploadPage.shouldBeVisible()
 
         // When: User selects an oversized file (larger than 10MB)
-        val largeFile = uploadHelper.createLargeTestFile("large-test-image.jpg", 15 * 1024) // 15MB in KB
+        // Create a file that's guaranteed to be larger than 10MB (10 * 1024 * 1024 bytes)
+        val largeFile = createOversizedTestFile()
         testFiles.add(largeFile)
         avatarUploadPage.selectFile(largeFile)
 
@@ -343,6 +344,41 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     private fun createTestTextFile(): File {
         val tempFile = File.createTempFile("test-text", ".txt")
         tempFile.writeText("This is not an image file")
+        return tempFile
+    }
+
+    /**
+     * Creates a test file that's guaranteed to be larger than 10MB
+     */
+    private fun createOversizedTestFile(): File {
+        val tempFile = File.createTempFile("oversized-test", ".jpg")
+        
+        // Create a 12MB file (guaranteed to be larger than 10MB limit)
+        val targetSize = 12 * 1024 * 1024 // 12MB in bytes
+        val buffer = ByteArray(1024) // 1KB buffer
+        
+        tempFile.outputStream().use { output ->
+            // Write JPEG header first to make it look like a valid image file
+            val jpegHeader = byteArrayOf(
+                0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte(),
+                0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+                0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00
+            )
+            output.write(jpegHeader)
+            
+            // Fill the rest with dummy data to reach target size
+            var bytesWritten = jpegHeader.size
+            while (bytesWritten < targetSize) {
+                val remainingBytes = targetSize - bytesWritten
+                val bytesToWrite = if (remainingBytes < buffer.size) remainingBytes else buffer.size
+                output.write(buffer, 0, bytesToWrite)
+                bytesWritten += bytesToWrite
+            }
+            
+            // Write JPEG end marker
+            output.write(byteArrayOf(0xFF.toByte(), 0xD9.toByte()))
+        }
+        
         return tempFile
     }
 }

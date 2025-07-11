@@ -115,9 +115,11 @@ class AvatarUploadPage {
                 
                 if (errorContainer && errorMessage) {
                     errorMessage.textContent = 'File size must be less than 10MB';
-                    errorContainer.style.display = 'block';
-                    errorContainer.style.visibility = 'visible';
-                    console.log('Error message set to visible');
+                    // Force override inline display: none style
+                    errorContainer.style.setProperty('display', 'block', 'important');
+                    errorContainer.style.setProperty('visibility', 'visible', 'important');
+                    errorContainer.style.setProperty('opacity', '1', 'important');
+                    console.log('Error message set to visible with important priority');
                 } else {
                     console.log('Error: Could not find error container or message elements');
                 }
@@ -140,8 +142,10 @@ class AvatarUploadPage {
                 
                 if (errorContainer && errorMessage) {
                     errorMessage.textContent = 'Please select a valid image file';
-                    errorContainer.style.display = 'block';
-                    errorContainer.style.visibility = 'visible';
+                    // Force override inline display: none style
+                    errorContainer.style.setProperty('display', 'block', 'important');
+                    errorContainer.style.setProperty('visibility', 'visible', 'important');
+                    errorContainer.style.setProperty('opacity', '1', 'important');
                 }
                 """
             )
