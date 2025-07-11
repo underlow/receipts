@@ -90,13 +90,6 @@ class ServicesModule {
                             <h4 class="service-provider-name">${provider.name}</h4>
                             <p class="service-provider-state">${provider.state === 'ACTIVE' ? 'Active' : 'Hidden'}</p>
                         </div>
-                        <div class="service-provider-actions">
-                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                    data-test-id="avatar-upload-button-${provider.id}" 
-                                    onclick="event.stopPropagation(); openAvatarUploadModal('${provider.id}', updateServiceProviderAvatar)">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                        </div>
                     </li>
                 `).join('')}
             </ul>
