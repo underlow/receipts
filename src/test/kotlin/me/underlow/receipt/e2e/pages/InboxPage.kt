@@ -6,6 +6,7 @@ import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.SelenideElement
 import com.codeborne.selenide.CollectionCondition
+import com.codeborne.selenide.Selenide
 import java.time.Duration
 
 /**
@@ -13,7 +14,7 @@ import java.time.Duration
  * Encapsulates inbox elements and actions using data-test-id selectors.
  */
 class InboxPage {
-    
+
     // Inbox page elements using data-test-id selectors
     private val inboxTab get() = `$`("[data-test-id='inbox-tab']")
     private val inboxTable get() = `$`("[data-test-id='inbox-table']")
@@ -29,13 +30,13 @@ class InboxPage {
     private val sortByDateButton get() = `$`("[data-test-id='sort-by-date-button']")
     private val sortByNameButton get() = `$`("[data-test-id='sort-by-name-button']")
     private val errorMessage get() = `$`("[data-test-id='error-message']")
-    
+
     // Drag and drop elements
     private val dropZone get() = `$`("[data-test-id='inbox-drop-zone']")
     private val dropOverlay get() = `$`("[data-test-id='drop-overlay']")
     private val dropMessage get() = `$`("[data-test-id='drop-message']")
     private val uploadIcon get() = `$`("[data-test-id='upload-icon']")
-    
+
     /**
      * Navigates to the inbox tab
      */
@@ -44,7 +45,7 @@ class InboxPage {
         waitForInboxToLoad()
         return this
     }
-    
+
     /**
      * Verifies the inbox page is displayed
      */
@@ -52,7 +53,7 @@ class InboxPage {
         inboxTable.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies the inbox contains at least one uploaded item
      */
@@ -60,7 +61,7 @@ class InboxPage {
         inboxRows.shouldHave(CollectionCondition.size(1))
         return this
     }
-    
+
     /**
      * Verifies the inbox contains the expected number of items
      */
@@ -68,18 +69,18 @@ class InboxPage {
         inboxRows.shouldHave(CollectionCondition.size(expectedCount))
         return this
     }
-    
+
     /**
      * Verifies the inbox contains at least the minimum number of items
      */
     fun shouldContainAtLeastItems(minimumCount: Int): InboxPage {
         val actualCount = inboxRows.size()
-        assert(actualCount >= minimumCount) { 
-            "Expected at least $minimumCount items in inbox, but found $actualCount" 
+        assert(actualCount >= minimumCount) {
+            "Expected at least $minimumCount items in inbox, but found $actualCount"
         }
         return this
     }
-    
+
     /**
      * Verifies the inbox is empty
      */
@@ -88,7 +89,7 @@ class InboxPage {
         emptyInboxMessage.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies the first item in inbox contains image thumbnail
      */
@@ -98,7 +99,7 @@ class InboxPage {
         thumbnail.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies the first item in inbox contains specific filename
      */
@@ -109,7 +110,7 @@ class InboxPage {
         fileName.shouldHave(Condition.text(expectedFileName))
         return this
     }
-    
+
     /**
      * Verifies the first item in inbox contains upload timestamp
      */
@@ -119,7 +120,7 @@ class InboxPage {
         timestamp.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies the first item in inbox contains file size information
      */
@@ -129,7 +130,7 @@ class InboxPage {
         fileSize.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies the first item in inbox contains metadata
      */
@@ -139,7 +140,7 @@ class InboxPage {
         metadata.shouldHave(CollectionCondition.size(1))
         return this
     }
-    
+
     /**
      * Clicks on the first item in inbox to view details
      */
@@ -148,7 +149,7 @@ class InboxPage {
         firstRow.click()
         return this
     }
-    
+
     /**
      * Refreshes the inbox by clicking refresh button
      */
@@ -157,7 +158,7 @@ class InboxPage {
         waitForInboxToLoad()
         return this
     }
-    
+
     /**
      * Searches for items in inbox using search input
      */
@@ -167,7 +168,7 @@ class InboxPage {
         waitForSearchResults()
         return this
     }
-    
+
     /**
      * Clears search results
      */
@@ -176,7 +177,7 @@ class InboxPage {
         waitForInboxToLoad()
         return this
     }
-    
+
     /**
      * Sorts inbox items by date
      */
@@ -185,7 +186,7 @@ class InboxPage {
         waitForSortToApply()
         return this
     }
-    
+
     /**
      * Sorts inbox items by name
      */
@@ -194,7 +195,7 @@ class InboxPage {
         waitForSortToApply()
         return this
     }
-    
+
     /**
      * Verifies no error message is displayed
      */
@@ -202,7 +203,7 @@ class InboxPage {
         errorMessage.shouldNotBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies error message is displayed
      */
@@ -210,7 +211,7 @@ class InboxPage {
         errorMessage.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies error message contains specific text
      */
@@ -219,7 +220,7 @@ class InboxPage {
         errorMessage.shouldHave(Condition.text(expectedText))
         return this
     }
-    
+
     /**
      * Gets the first row from inbox table
      */
@@ -228,21 +229,21 @@ class InboxPage {
         assert(rows.size() > 0) { "No items found in inbox" }
         return rows.first()
     }
-    
+
     /**
      * Gets all rows from inbox table
      */
     fun getAllRows(): ElementsCollection {
         return inboxRows
     }
-    
+
     /**
      * Gets the current number of items in inbox
      */
     fun getItemCount(): Int {
         return inboxRows.size()
     }
-    
+
     /**
      * Waits for inbox to load completely
      */
@@ -251,36 +252,36 @@ class InboxPage {
         if (loadingIndicator.exists()) {
             loadingIndicator.shouldNotBe(Condition.visible, Duration.ofSeconds(10))
         }
-        
+
         // Wait for table to be visible
         inboxTable.shouldBe(Condition.visible, Duration.ofSeconds(10))
-        
+
         // Wait for table body to be present
         inboxTableBody.shouldBe(Condition.visible, Duration.ofSeconds(5))
     }
-    
+
     /**
      * Waits for search results to load
      */
     private fun waitForSearchResults() {
         // Wait for search to complete
         Thread.sleep(1000)
-        
+
         // Wait for results to update
         inboxTable.shouldBe(Condition.visible)
     }
-    
+
     /**
      * Waits for sort to apply
      */
     private fun waitForSortToApply() {
         // Wait for sort to complete
         Thread.sleep(1000)
-        
+
         // Wait for table to update
         inboxTable.shouldBe(Condition.visible)
     }
-    
+
     /**
      * Verifies drop zone is properly configured for drag and drop
      */
@@ -289,7 +290,7 @@ class InboxPage {
         dropZone.shouldHave(Condition.cssClass("drop-zone"))
         return this
     }
-    
+
     /**
      * Verifies drop overlay is initially hidden
      */
@@ -298,7 +299,7 @@ class InboxPage {
         dropOverlay.shouldNotBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Simulates dragging a file over the inbox drop zone
      */
@@ -331,7 +332,7 @@ class InboxPage {
         """, dropZone, fileName, mimeType)
         return this
     }
-    
+
     /**
      * Simulates dragging a file away from the inbox drop zone
      */
@@ -347,7 +348,7 @@ class InboxPage {
         """, dropZone)
         return this
     }
-    
+
     /**
      * Simulates dropping a file on the inbox drop zone
      */
@@ -374,7 +375,7 @@ class InboxPage {
         """, dropZone, fileName, mimeType)
         return this
     }
-    
+
     /**
      * Simulates dropping multiple files on the inbox drop zone
      */
@@ -407,7 +408,7 @@ class InboxPage {
         """, dropZone, fileNames.toTypedArray(), mimeTypes.toTypedArray(), defaultMimeType)
         return this
     }
-    
+
     /**
      * Verifies drop zone shows drag-over styling
      */
@@ -415,7 +416,7 @@ class InboxPage {
         dropZone.shouldHave(Condition.cssClass("drag-over"))
         return this
     }
-    
+
     /**
      * Verifies drop zone does not show drag-over styling
      */
@@ -423,7 +424,7 @@ class InboxPage {
         dropZone.shouldNotHave(Condition.cssClass("drag-over"))
         return this
     }
-    
+
     /**
      * Verifies drop overlay becomes visible
      */
@@ -431,7 +432,7 @@ class InboxPage {
         dropOverlay.shouldBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies drop overlay is hidden
      */
@@ -439,7 +440,7 @@ class InboxPage {
         dropOverlay.shouldNotBe(Condition.visible)
         return this
     }
-    
+
     /**
      * Verifies drop overlay shows upload icon and message
      */
