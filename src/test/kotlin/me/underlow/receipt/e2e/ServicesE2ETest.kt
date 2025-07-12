@@ -7,13 +7,20 @@ import me.underlow.receipt.e2e.pages.ServiceProviderFormPage
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.concurrent.thread
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 
 /**
  * E2E tests for Services Management functionality.
  * Tests service provider creation, editing, and management workflows.
  */
 class ServicesE2ETest : BaseE2ETest() {
+
+    private val logger = LoggerFactory.getLogger(ServicesE2ETest::class.java)
+
+    @Autowired
+    private lateinit var jdbcTemplate: JdbcTemplate
 
     private lateinit var loginHelper: LoginHelper
     private lateinit var serviceProviderListPage: ServiceProviderListPage
@@ -37,6 +44,14 @@ class ServicesE2ETest : BaseE2ETest() {
     @AfterEach
     fun cleanupServicesTest() {
         // Given: Test cleanup is performed
+        // Clean up all service providers created during the test to ensure test isolation
+        try {
+            // Delete all service providers to prevent test interference
+            jdbcTemplate.execute("DELETE FROM service_providers")
+        } catch (e: Exception) {
+            // Log but don't fail test on cleanup errors
+            logger.warn("Failed to cleanup service providers after test: ${e.message}")
+        }
         // Note: BaseE2ETest handles browser cleanup
     }
 
@@ -258,6 +273,7 @@ class ServicesE2ETest : BaseE2ETest() {
 
         // And: Service provider should show as inactive in the list
         serviceProviderListPage
+            .waitForProviderToAppear(providerName)
             .findProviderByName(providerName)
             ?.shouldBeInactive()
     }
