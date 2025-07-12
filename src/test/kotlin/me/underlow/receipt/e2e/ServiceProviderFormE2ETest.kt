@@ -170,27 +170,27 @@ class ServiceProviderFormE2ETest : BaseE2ETest() {
     }
 
     @Test
-    @DisplayName("Should toggle provider state between active and inactive")
-    fun shouldToggleProviderStateBetweenActiveAndInactive() {
+    @DisplayName("Should create provider as active (state toggle removed)")
+    fun shouldCreateProviderAsActive() {
         // Given: User is creating a new service provider
         val providerName = "Test State Provider"
 
-        // When: User toggles provider state
+        // When: User creates provider (always active since toggle removed)
         serviceProviderFormPage
             .clickCreateNewProvider()
             .fillForm(name = providerName, active = true)
-            .setProviderState(false)
+            // State toggle removed - providers are always active
             .save()
 
-        // Then: Provider should be created as inactive
+        // Then: Provider should be created as active
         serviceProviderFormPage
             .shouldShowSuccessMessage()
             .backToList()
             .waitForListToLoad()
             .findProviderByName(providerName)
             ?.let { provider ->
-                provider.shouldBeInactive()
-            } ?: throw AssertionError("Created inactive provider not found in list")
+                provider.shouldBeActive()
+            } ?: throw AssertionError("Created active provider not found in list")
     }
 
     @Test

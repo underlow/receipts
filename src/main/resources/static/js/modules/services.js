@@ -148,12 +148,8 @@ class ServicesModule {
                             </div>
                         </div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                <label for="providerName" class="form-label" style="margin-bottom: 0;">Name *</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="providerState" data-test-id="provider-state" class="toggle-input" ${this.selectedServiceProvider.state === 'ACTIVE' ? 'checked' : ''}>
-                                    <label for="providerState" class="toggle-label">Active</label>
-                                </div>
+                            <div style="margin-bottom: 8px;">
+                                <label for="providerName" class="form-label">Name *</label>
                             </div>
                             <div>
                                 <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required oninput="validateNameField()">
@@ -368,7 +364,6 @@ class ServicesModule {
         const commentElement = document.getElementById('providerComment');
         const ocrCommentElement = document.getElementById('providerOcrComment');
         const frequencyElement = document.getElementById('providerFrequency');
-        const stateElement = document.getElementById('providerState');
         
         if (!nameElement) {
             console.error('Provider name element not found');
@@ -394,8 +389,7 @@ class ServicesModule {
             customFields: customFields
         };
         
-        // Handle state separately - we'll use the state change endpoint if needed
-        const newState = stateElement ? (stateElement.checked ? 'ACTIVE' : 'HIDDEN') : 'ACTIVE';
+        // Service providers are always active when created/updated
 
         // Validate required fields - if name is empty, the save button should be disabled anyway
         if (!formData.name.trim()) {
@@ -470,19 +464,9 @@ class ServicesModule {
             const data = response.data ? response.data : response;
             this.selectedServiceProvider = data;
             
-            // Handle state change if needed (only for existing providers)
-            if (!isNewProvider && this.selectedServiceProvider && 
-                this.selectedServiceProvider.state !== newState) {
-                return this.changeServiceProviderState(this.selectedServiceProvider.id, newState)
-                    .then(() => {
-                        this.loadServicesData(); // Reload the list
-                        this.showSuccessMessage('Service provider updated successfully');
-                    });
-            } else {
-                this.loadServicesData(); // Reload the list
-                this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
-                return Promise.resolve();
-            }
+            this.loadServicesData(); // Reload the list
+            this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
+            return Promise.resolve();
         })
         .catch(error => {
             console.error('Error saving service provider:', error);

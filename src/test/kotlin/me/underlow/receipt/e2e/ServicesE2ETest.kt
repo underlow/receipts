@@ -248,7 +248,7 @@ class ServicesE2ETest : BaseE2ETest() {
     }
 
     @Test
-    fun shouldToggleServiceProviderStateActive() {
+    fun shouldCreateServiceProviderAsActive() {
         // Given: User creates active service provider
         val providerName = "Active Provider"
 
@@ -261,21 +261,21 @@ class ServicesE2ETest : BaseE2ETest() {
         // And: Wait for service provider to appear in the list after creation
         serviceProviderListPage.waitForProviderToAppear(providerName)
 
-        // When: User changes service provider state to inactive
+        // When: User edits service provider (state toggle removed)
         serviceProviderListPage.clickProvider(providerName)
         serviceProviderFormPage
             .waitForFormToLoad()
-            .setProviderState(false)
+            // State toggle removed - providers are always active
             .save()
 
-        // Then: Service provider state should be updated
+        // Then: Service provider should remain active
         serviceProviderFormPage.shouldShowSuccessMessage()
 
-        // And: Service provider should show as inactive in the list
+        // And: Service provider should show as active in the list
         serviceProviderListPage
             .waitForProviderToAppear(providerName)
             .findProviderByName(providerName)
-            ?.shouldBeInactive()
+            ?.shouldBeActive()
     }
 
     @Test

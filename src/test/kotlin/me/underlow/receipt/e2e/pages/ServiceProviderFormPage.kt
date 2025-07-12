@@ -20,7 +20,6 @@ class ServiceProviderFormPage {
     private val commentField = `$`("[data-test-id='provider-comment']")
     private val ocrCommentField = `$`("[data-test-id='provider-ocr-comment']")
     private val frequencyField = `$`("[data-test-id='provider-frequency']")
-    private val stateToggle = `$`("[data-test-id='provider-state']")
     private val avatarPreview = `$`("[data-test-id='avatar-preview']")
     private val uploadAvatarButton = `$`("[data-test-id='upload-avatar-button']")
     private val removeAvatarButton = `$`("[data-test-id='remove-avatar-button']")
@@ -97,12 +96,10 @@ class ServiceProviderFormPage {
 
     /**
      * Sets provider state (active/inactive)
+     * Note: State toggle has been removed from UI - providers are always active
      */
     fun setProviderState(active: Boolean): ServiceProviderFormPage {
-        val currentlyChecked = stateToggle.getAttribute("checked") != null
-        if (currentlyChecked != active) {
-            stateToggle.shouldBe(Condition.enabled).click()
-        }
+        // State toggle functionality removed - providers are always active
         return this
     }
 
@@ -190,7 +187,7 @@ class ServiceProviderFormPage {
         if (comment.isNotEmpty()) enterComment(comment)
         if (ocrComment.isNotEmpty()) enterOcrComment(ocrComment)
         selectFrequency(frequency)
-        setProviderState(active)
+        // Service providers are always active - state toggle removed
         return this
     }
 
@@ -245,8 +242,8 @@ class ServiceProviderFormPage {
         ocrCommentField.shouldHave(Condition.value(expectedOcrComment))
         frequencyField.shouldHave(Condition.value(expectedFrequency))
 
-        val isChecked = stateToggle.getAttribute("checked") != null
-        assert(isChecked == expectedActive) { "Expected active state: $expectedActive, but was: $isChecked" }
+        // State toggle removed - providers are always active
+        // Verification of state toggle is no longer applicable
 
         return this
     }
