@@ -49,6 +49,7 @@ after implementing add to ticket information what was implemented and how.
  - e2e test must test full code flow from frontend layer to db layes, do not implement shortcuts in the middle. bad: add js code raising error on frontend. good: initiate actions which lead to error
  - if you are changing data-test-id check if it uses in other tests
  - use Selenide's built-in async waiting instead of Thread.sleep.
+ - use mockmvc-test profile for mockmvc tests and e2e-test for e2e tests
 
 ### fixing failing test. 
 - first you have to check code to explore if the problem in test or in functionality. 
