@@ -474,4 +474,67 @@ class ServicesE2ETest : BaseE2ETest() {
             .shouldHaveCustomField("Field2", "Value2")
             .shouldHaveCustomField("Field4", "Value4")
     }
+
+    @Test
+    fun shouldPreserveCustomFieldsWhenNavigatingToInboxAndBack() {
+        // Given: User creates a new service provider
+        val providerName = "Provider with Navigation Test"
+        serviceProviderListPage.clickCreateButton()
+        serviceProviderFormPage
+            .waitForFormToLoad()
+            .fillForm(name = providerName)
+            .save()
+
+        // And: Wait for service provider to appear in the list
+        serviceProviderListPage.waitForProviderToAppear(providerName)
+
+        // When: User opens the created service provider for editing
+        serviceProviderListPage.clickProvider(providerName)
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // And: User adds first custom field
+        val customKey1 = "Account Number"
+        val customValue1 = "ACC-12345"
+        serviceProviderFormPage
+            .addCustomField(customKey1, customValue1)
+            .save()
+
+        serviceProviderFormPage.shouldShowSuccessMessage()
+
+        // And: User navigates to inbox
+        serviceProviderListPage.navigateToInbox()
+
+        // And: User navigates back to services
+        serviceProviderListPage.navigateToServicesTab()
+            .waitForListToLoad()
+
+        // And: User opens the service provider again
+        serviceProviderListPage.clickProvider(providerName)
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // And: User adds second custom field
+        val customKey2 = "Department"
+        val customValue2 = "Healthcare"
+        serviceProviderFormPage
+            .addCustomField(customKey2, customValue2)
+            .save()
+
+        serviceProviderFormPage.shouldShowSuccessMessage()
+
+        // And: User navigates to inbox again
+        serviceProviderListPage.navigateToInbox()
+
+        // And: User navigates back to services again
+        serviceProviderListPage.navigateToServicesTab()
+            .waitForListToLoad()
+
+        // When: User opens the service provider for final validation
+        serviceProviderListPage.clickProvider(providerName)
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // Then: Both custom fields should be preserved
+        serviceProviderFormPage
+            .shouldHaveCustomField(customKey1, customValue1)
+            .shouldHaveCustomField(customKey2, customValue2)
+    }
 }

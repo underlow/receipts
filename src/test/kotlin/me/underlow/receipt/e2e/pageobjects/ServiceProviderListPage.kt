@@ -67,6 +67,28 @@ class ServiceProviderListPage {
     }
 
     /**
+     * Navigates to the inbox tab and waits for content to load
+     */
+    fun navigateToInbox(): ServiceProviderListPage {
+        val inboxTab = when {
+            `$`("a[href='#inbox']").exists() -> `$`("a[href='#inbox']")
+            `$`("[data-test-id='inbox-tab']").exists() -> `$`("[data-test-id='inbox-tab']")
+            `$`("#inbox-tab").exists() -> `$`("#inbox-tab")
+            else -> `$`("nav a:contains('Inbox')").takeIf { it.exists() } ?: `$`("body")
+        }
+        inboxTab.shouldBe(Condition.visible).click()
+        
+        val inboxContent = when {
+            `$`("#inbox").exists() -> `$`("#inbox")
+            `$`("#inbox-content").exists() -> `$`("#inbox-content")
+            `$`(".inbox-content").exists() -> `$`(".inbox-content")
+            else -> `$`("body") // fallback to body if nothing else is found
+        }
+        inboxContent.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
      * Returns the service provider list container element
      */
     fun getServiceProviderListElement(): SelenideElement {
