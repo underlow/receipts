@@ -113,11 +113,28 @@ class ServicesE2ETest : BaseE2ETest() {
         serviceProviderListPage.clickCreateButton()
         serviceProviderFormPage.waitForFormToLoad()
 
-        // When: User tries to save form without filling required name field
-        serviceProviderFormPage.save()
+        // When: User doesn't fill the required name field
+        // Then: Save button should be disabled
+        serviceProviderFormPage.shouldHaveSaveButtonDisabled()
+    }
 
-        // Then: Validation error should be displayed for name field
-        serviceProviderFormPage.shouldShowNameValidationError()
+    @Test
+    fun shouldDisableSaveButtonWhenNameEnteredAndRemoved() {
+        // Given: User opens create service provider form
+        serviceProviderListPage.clickCreateButton()
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // When: User enters a name
+        serviceProviderFormPage.enterName("Test Provider")
+
+        // Then: Save button should be enabled
+        serviceProviderFormPage.shouldHaveSaveButtonEnabled()
+
+        // When: User removes the name
+        serviceProviderFormPage.enterName("")
+
+        // Then: Save button should be disabled again
+        serviceProviderFormPage.shouldHaveSaveButtonDisabled()
     }
 
     @Test
@@ -287,7 +304,7 @@ class ServicesE2ETest : BaseE2ETest() {
         serviceProviderListPage.clickCreateButton()
         serviceProviderFormPage.waitForFormToLoad()
 
-        // When: User fills partial form data and saves with validation error
+        // When: User fills partial form data without required name
         val testComment = "This comment should be preserved"
         val testOcrComment = "OCR comment should remain"
 
@@ -295,17 +312,17 @@ class ServicesE2ETest : BaseE2ETest() {
             .enterComment(testComment)
             .enterOcrComment(testOcrComment)
             .selectFrequency("MONTHLY")
-            .save() // This should fail due to missing required name
 
-        // Then: Form should show validation error but preserve filled data
-        serviceProviderFormPage
-            .shouldShowNameValidationError()
-            .shouldHaveFieldValues(
-                expectedName = "",
-                expectedComment = testComment,
-                expectedOcrComment = testOcrComment,
-                expectedFrequency = "MONTHLY"
-            )
+        // Then: Save button should be disabled due to missing required name
+        serviceProviderFormPage.shouldHaveSaveButtonDisabled()
+
+        // And: Form should preserve filled data
+        serviceProviderFormPage.shouldHaveFieldValues(
+            expectedName = "",
+            expectedComment = testComment,
+            expectedOcrComment = testOcrComment,
+            expectedFrequency = "MONTHLY"
+        )
     }
 
     @Test
@@ -319,7 +336,7 @@ class ServicesE2ETest : BaseE2ETest() {
         // Then: All required form elements should be visible and functional
         serviceProviderFormPage
             .shouldBeInCreateMode()
-            .shouldHaveSaveButtonEnabled()
+            .shouldHaveSaveButtonDisabled() // Save button should be disabled when name is empty
 
         // And: Form should have all expected input fields
         // Note: Specific field validation would be handled by the page object

@@ -131,6 +131,7 @@ class ServicesModule {
         }
 
         const isNewProvider = this.selectedServiceProvider.id === null;
+        const isNameEmpty = !this.selectedServiceProvider.name || this.selectedServiceProvider.name.trim() === '';
 
         const formHtml = `
             <form class="service-provider-form" data-test-id="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
@@ -161,7 +162,7 @@ class ServicesModule {
                                 </div>
                             </div>
                             <div>
-                                <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
+                                <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required oninput="validateNameField()">
                                 <div class="invalid-feedback" data-test-id="name-validation-error" id="nameError" style="display: none;"></div>
                             </div>
                         </div>
@@ -214,7 +215,7 @@ class ServicesModule {
                         <button type="button" class="btn-cancel" data-test-id="cancel-button" onclick="cancelEdit()">
                             <i class="fas fa-times me-1"></i> Cancel
                         </button>
-                        <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton">
+                        <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton" ${isNameEmpty ? 'disabled' : ''}>
                             <i class="fas fa-save me-1"></i> Save
                         </button>
                     </div>
@@ -309,6 +310,24 @@ class ServicesModule {
     }
 
     /**
+     * Validate name field and toggle save button state
+     */
+    validateNameField() {
+        const nameElement = document.getElementById('providerName');
+        const saveButton = document.getElementById('saveButton');
+        
+        if (!nameElement || !saveButton) return;
+        
+        const isNameEmpty = !nameElement.value.trim();
+        saveButton.disabled = isNameEmpty;
+        
+        // Update the selected service provider name to trigger re-render logic
+        if (this.selectedServiceProvider) {
+            this.selectedServiceProvider.name = nameElement.value;
+        }
+    }
+
+    /**
      * Save service provider
      * @param {Event} event - The form submit event
      */
@@ -321,7 +340,6 @@ class ServicesModule {
         const ocrCommentElement = document.getElementById('providerOcrComment');
         const frequencyElement = document.getElementById('providerFrequency');
         const stateElement = document.getElementById('providerState');
-        const nameErrorElement = document.getElementById('nameError');
         
         if (!nameElement) {
             console.error('Provider name element not found');
@@ -339,21 +357,8 @@ class ServicesModule {
         // Handle state separately - we'll use the state change endpoint if needed
         const newState = stateElement ? (stateElement.checked ? 'ACTIVE' : 'HIDDEN') : 'ACTIVE';
 
-
-        // Clear previous validation errors
-        if (nameErrorElement) {
-            nameErrorElement.textContent = '';
-            nameErrorElement.style.display = 'none';
-        }
-        nameElement.classList.remove('is-invalid');
-
-        // Validate required fields
+        // Validate required fields - if name is empty, the save button should be disabled anyway
         if (!formData.name.trim()) {
-            if (nameErrorElement) {
-                nameErrorElement.textContent = 'Name cannot be empty';
-                nameErrorElement.style.display = 'block';
-            }
-            nameElement.classList.add('is-invalid');
             return;
         }
 
@@ -706,6 +711,7 @@ window.addCustomField = () => servicesModule.addCustomField();
 window.updateCustomFieldKey = (index, newKey) => servicesModule.updateCustomFieldKey(index, newKey);
 window.updateCustomFieldValue = (key, newValue) => servicesModule.updateCustomFieldValue(key, newValue);
 window.removeCustomField = (key) => servicesModule.removeCustomField(key);
+window.validateNameField = () => servicesModule.validateNameField();
 
 // Note: openAvatarUploadModal is now defined in avatar-upload.js
 
