@@ -333,9 +333,11 @@ class ServicesModule {
             comment: commentElement ? commentElement.value : '',
             commentForOcr: ocrCommentElement ? ocrCommentElement.value : '',
             regular: frequencyElement ? frequencyElement.value : 'NOT_REGULAR',
-            state: stateElement ? (stateElement.checked ? 'ACTIVE' : 'HIDDEN') : 'ACTIVE',
             customFields: this.selectedServiceProvider ? this.selectedServiceProvider.customFields : {}
         };
+        
+        // Handle state separately - we'll use the state change endpoint if needed
+        const newState = stateElement ? (stateElement.checked ? 'ACTIVE' : 'HIDDEN') : 'ACTIVE';
 
 
         // Clear previous validation errors
@@ -355,7 +357,7 @@ class ServicesModule {
             return;
         }
 
-        // Filter out custom fields with empty keys and validate remaining ones
+        // Filter out custom fields with empty keys and convert to JSON string
         if (formData.customFields) {
             // Remove empty keys
             const filteredCustomFields = {};
@@ -364,7 +366,10 @@ class ServicesModule {
                     filteredCustomFields[key.trim()] = value;
                 }
             }
-            formData.customFields = filteredCustomFields;
+            // Convert to JSON string for backend
+            formData.customFields = Object.keys(filteredCustomFields).length > 0 
+                ? JSON.stringify(filteredCustomFields) 
+                : null;
         }
 
         const isNewProvider = this.selectedServiceProvider ? this.selectedServiceProvider.id === null : true;
@@ -415,10 +420,24 @@ class ServicesModule {
             }
             return response.json();
         })
-        .then(data => {
+        .then(response => {
+            // Handle both direct ServiceProvider and ServiceProviderResponse formats
+            const data = response.data ? response.data : response;
             this.selectedServiceProvider = data;
-            this.loadServicesData(); // Reload the list
-            this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
+            
+            // Handle state change if needed (only for existing providers)
+            if (!isNewProvider && this.selectedServiceProvider && 
+                this.selectedServiceProvider.state !== newState) {
+                return this.changeServiceProviderState(this.selectedServiceProvider.id, newState)
+                    .then(() => {
+                        this.loadServicesData(); // Reload the list
+                        this.showSuccessMessage('Service provider updated successfully');
+                    });
+            } else {
+                this.loadServicesData(); // Reload the list
+                this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
+                return Promise.resolve();
+            }
         })
         .catch(error => {
             console.error('Error saving service provider:', error);
@@ -429,6 +448,43 @@ class ServicesModule {
             if (saveButton) {
                 saveButton.disabled = false;
             }
+        });
+    }
+
+    /**
+     * Change service provider state
+     * @param {number} id - Service provider ID
+     * @param {string} state - New state (ACTIVE or HIDDEN)
+     * @returns {Promise} Promise that resolves when state is changed
+     */
+    changeServiceProviderState(id, state) {
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        if (!csrfMeta) {
+            return Promise.reject(new Error('CSRF token not found'));
+        }
+
+        return fetch(`/api/service-providers/${id}/state`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfMeta.getAttribute('content')
+            },
+            body: JSON.stringify({ state: state })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Failed to change service provider state');
+                });
+            }
+            return response.json();
+        })
+        .then(response => {
+            const data = response.data ? response.data : response;
+            if (this.selectedServiceProvider) {
+                this.selectedServiceProvider.state = state;
+            }
+            return data;
         });
     }
 

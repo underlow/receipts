@@ -315,7 +315,11 @@ class ServiceProviderController(
      */
     @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException::class)
     fun handleValidationErrors(e: org.springframework.web.bind.MethodArgumentNotValidException): ResponseEntity<ServiceProviderResponse> {
-        return ResponseEntity.badRequest().body(ServiceProviderResponse.error("Validation error"))
+        val errorMessage = e.bindingResult.fieldErrors
+            .firstOrNull()?.defaultMessage 
+            ?: "Validation error"
+        logger.warn("Validation error: $errorMessage")
+        return ResponseEntity.badRequest().body(ServiceProviderResponse.error(errorMessage))
     }
 
     /**
