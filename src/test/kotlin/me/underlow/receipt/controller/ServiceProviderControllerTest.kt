@@ -61,7 +61,7 @@ class ServiceProviderControllerTest {
     fun `given authenticated user when GET service providers then returns all providers`() {
         // given - service returns list of providers
         val providers = listOf(sampleServiceProvider)
-        `when`(serviceProviderService.findAll()).thenReturn(providers)
+        `when`(serviceProviderService.findByState(any())).thenReturn(providers)
 
         // when - GET request to list all service providers
         mockMvc.perform(get("/api/service-providers"))
@@ -88,7 +88,7 @@ class ServiceProviderControllerTest {
     @WithMockUser
     fun `given service throws exception when GET service providers then returns internal server error`() {
         // given - service throws exception
-        `when`(serviceProviderService.findAll()).thenThrow(RuntimeException("Database error"))
+        `when`(serviceProviderService.findByState(any())).thenThrow(RuntimeException("Database error"))
 
         // when - GET request to list service providers
         mockMvc.perform(get("/api/service-providers"))
