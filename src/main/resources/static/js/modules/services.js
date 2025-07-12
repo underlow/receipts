@@ -458,7 +458,7 @@ class ServicesModule {
      */
     showSuccessMessage(message) {
         const alertHtml = `
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show" role="alert" data-test-id="success-message">
                 <i class="fas fa-check-circle me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
