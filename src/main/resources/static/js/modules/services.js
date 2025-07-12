@@ -17,7 +17,6 @@ class ServicesModule {
      */
     init() {
         this.setupTabEventListener();
-        this.setupCustomFieldEventListeners();
     }
 
     /**
@@ -219,6 +218,7 @@ class ServicesModule {
         `;
 
         formContainer.innerHTML = formHtml;
+        this.setupCustomFieldEventListeners();
     }
 
     /**
@@ -227,6 +227,10 @@ class ServicesModule {
     setupCustomFieldEventListeners() {
         const formContainer = document.getElementById('serviceProviderForm');
         if (!formContainer) return;
+
+        // Remove existing listeners to avoid duplicates
+        const existingHandlers = formContainer.getAttribute('data-handlers-setup');
+        if (existingHandlers === 'true') return;
 
         // Use event delegation for better reliability with dynamic content
         ['input', 'change', 'blur'].forEach(eventType => {
@@ -244,6 +248,20 @@ class ServicesModule {
                 }
             });
         });
+
+        // Add click event listener for remove buttons
+        formContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-custom-field-btn')) {
+                const button = e.target.closest('.remove-custom-field-btn');
+                const fieldKey = button.getAttribute('data-field-key');
+                if (fieldKey !== null) {
+                    this.removeCustomField(fieldKey);
+                }
+            }
+        });
+
+        // Mark that handlers are setup
+        formContainer.setAttribute('data-handlers-setup', 'true');
     }
 
     /**
@@ -266,7 +284,7 @@ class ServicesModule {
                         <input type="text" class="form-control custom-field-value-input" data-test-id="custom-field-value" placeholder="Field value" value="${this.escapeHtml(value)}" data-field-index="${index}">
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn-upload" data-test-id="remove-custom-field-button" onclick="removeCustomField('${this.escapeHtml(key)}')">
+                        <button type="button" class="btn-upload remove-custom-field-btn" data-test-id="remove-custom-field-button" data-field-key="${this.escapeHtml(key)}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -647,14 +665,48 @@ class ServicesModule {
     }
 
     /**
+     * Collect current custom field values from the form
+     * @returns {Object} Current custom fields from form inputs
+     */
+    collectCurrentCustomFields() {
+        const currentFields = {};
+        const customFieldsContainer = document.getElementById('customFieldsContainer');
+        if (!customFieldsContainer) return currentFields;
+
+        const fieldItems = customFieldsContainer.querySelectorAll('.custom-field-item');
+        fieldItems.forEach(item => {
+            const keyInput = item.querySelector('.custom-field-key-input');
+            const valueInput = item.querySelector('.custom-field-value-input');
+            
+            if (keyInput && valueInput) {
+                const key = keyInput.value.trim();
+                const value = valueInput.value.trim();
+                if (key) {
+                    currentFields[key] = value;
+                }
+            }
+        });
+        
+        return currentFields;
+    }
+
+    /**
      * Remove custom field
      * @param {string} key - The field key to remove
      */
     removeCustomField(key) {
         if (!this.selectedServiceProvider.customFields) return;
-        delete this.selectedServiceProvider.customFields[key];
         
-        // Re-render only the custom fields section to avoid losing form data
+        // Collect current form values before deletion
+        const currentFields = this.collectCurrentCustomFields();
+        
+        // Remove the specified field
+        delete currentFields[key];
+        
+        // Update the model with current values
+        this.selectedServiceProvider.customFields = currentFields;
+        
+        // Re-render only the custom fields section
         const customFieldsContainer = document.getElementById('customFieldsContainer');
         if (customFieldsContainer) {
             customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
@@ -732,7 +784,6 @@ window.removeAvatar = () => servicesModule.removeAvatar();
 window.addCustomField = () => servicesModule.addCustomField();
 window.updateCustomFieldKey = (index, newKey) => servicesModule.updateCustomFieldKey(index, newKey);
 window.updateCustomFieldValue = (key, newValue) => servicesModule.updateCustomFieldValue(key, newValue);
-window.removeCustomField = (key) => servicesModule.removeCustomField(key);
 window.validateNameField = () => servicesModule.validateNameField();
 
 // Note: openAvatarUploadModal is now defined in avatar-upload.js
