@@ -17,6 +17,7 @@ class ServicesModule {
      */
     init() {
         this.setupTabEventListener();
+        this.setupCustomFieldEventListeners();
     }
 
     /**
@@ -225,6 +226,31 @@ class ServicesModule {
     }
 
     /**
+     * Setup event listeners for custom field inputs using event delegation
+     */
+    setupCustomFieldEventListeners() {
+        const formContainer = document.getElementById('serviceProviderForm');
+        if (!formContainer) return;
+
+        // Use event delegation for better reliability with dynamic content
+        ['input', 'change', 'blur'].forEach(eventType => {
+            formContainer.addEventListener(eventType, (e) => {
+                if (e.target.classList.contains('custom-field-key-input')) {
+                    const index = parseInt(e.target.getAttribute('data-field-index'));
+                    this.updateCustomFieldKey(index, e.target.value);
+                } else if (e.target.classList.contains('custom-field-value-input')) {
+                    const index = parseInt(e.target.getAttribute('data-field-index'));
+                    const entries = Object.entries(this.selectedServiceProvider.customFields || {});
+                    if (entries[index]) {
+                        const [key] = entries[index];
+                        this.updateCustomFieldValue(key, e.target.value);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
      * Render custom fields
      * @param {Object} customFields - The custom fields object
      * @returns {string} HTML string for custom fields
@@ -235,22 +261,34 @@ class ServicesModule {
         }
 
         return Object.entries(customFields).map(([key, value], index) => `
-            <div class="custom-field-item mb-2" data-test-id="custom-field-item">
+            <div class="custom-field-item mb-2" data-test-id="custom-field-item" data-field-index="${index}">
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="text" class="form-control" data-test-id="custom-field-key" placeholder="Field name" value="${key}" onchange="updateCustomFieldKey(${index}, this.value)">
+                        <input type="text" class="form-control custom-field-key-input" data-test-id="custom-field-key" placeholder="Field name" value="${this.escapeHtml(key)}" data-field-index="${index}">
                     </div>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" data-test-id="custom-field-value" placeholder="Field value" value="${value}" onchange="updateCustomFieldValue('${key}', this.value)">
+                        <input type="text" class="form-control custom-field-value-input" data-test-id="custom-field-value" placeholder="Field value" value="${this.escapeHtml(value)}" data-field-index="${index}">
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn-upload" data-test-id="remove-custom-field-button" onclick="removeCustomField('${key}')">
+                        <button type="button" class="btn-upload" data-test-id="remove-custom-field-button" onclick="removeCustomField('${this.escapeHtml(key)}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
             </div>
         `).join('');
+    }
+
+    /**
+     * Escape HTML characters to prevent XSS
+     * @param {string} text - The text to escape
+     * @returns {string} Escaped HTML
+     */
+    escapeHtml(text) {
+        if (typeof text !== 'string') return text;
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     /**
@@ -291,6 +329,18 @@ class ServicesModule {
             document.getElementById('nameError').textContent = 'Name is required';
             document.getElementById('providerName').classList.add('is-invalid');
             return;
+        }
+
+        // Filter out custom fields with empty keys and validate remaining ones
+        if (formData.customFields) {
+            // Remove empty keys
+            const filteredCustomFields = {};
+            for (const [key, value] of Object.entries(formData.customFields)) {
+                if (key.trim()) {
+                    filteredCustomFields[key.trim()] = value;
+                }
+            }
+            formData.customFields = filteredCustomFields;
         }
 
         const isNewProvider = this.selectedServiceProvider.id === null;
@@ -412,10 +462,23 @@ class ServicesModule {
             this.selectedServiceProvider.customFields = {};
         }
         
-        const fieldName = prompt('Enter field name:');
-        if (fieldName && fieldName.trim()) {
-            this.selectedServiceProvider.customFields[fieldName.trim()] = '';
-            this.renderServiceProviderForm();
+        // Add empty field that user can fill in
+        const fieldKey = '';
+        this.selectedServiceProvider.customFields[fieldKey] = '';
+        
+        // Re-render only the custom fields section to avoid losing form data
+        const customFieldsContainer = document.getElementById('customFieldsContainer');
+        if (customFieldsContainer) {
+            customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
+            
+            // Focus on the newly added field key input
+            setTimeout(() => {
+                const customFields = document.querySelectorAll('[data-test-id="custom-field-key"]');
+                if (customFields.length > 0) {
+                    const lastField = customFields[customFields.length - 1];
+                    lastField.focus();
+                }
+            }, 100);
         }
     }
 
@@ -452,7 +515,12 @@ class ServicesModule {
     removeCustomField(key) {
         if (!this.selectedServiceProvider.customFields) return;
         delete this.selectedServiceProvider.customFields[key];
-        this.renderServiceProviderForm();
+        
+        // Re-render only the custom fields section to avoid losing form data
+        const customFieldsContainer = document.getElementById('customFieldsContainer');
+        if (customFieldsContainer) {
+            customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
+        }
     }
 
     /**
