@@ -26,21 +26,21 @@ class ServiceProviderController(
     private val logger = LoggerFactory.getLogger(ServiceProviderController::class.java)
 
     /**
-     * Retrieves all service providers.
-     * Returns list of all service providers regardless of state.
+     * Retrieves all active service providers.
+     * Returns list of active service providers only (excludes hidden/deleted providers).
      *
-     * @return List of service providers
+     * @return List of active service providers
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     fun getAllServiceProviders(): ResponseEntity<List<ServiceProvider>> {
-        logger.info("GET /api/service-providers - Retrieving all service providers")
+        logger.info("GET /api/service-providers - Retrieving all active service providers")
         return try {
-            val serviceProviders = serviceProviderService.findAll()
-            logger.info("Successfully retrieved ${serviceProviders.size} service providers")
+            val serviceProviders = serviceProviderService.findByState(ServiceProviderState.ACTIVE)
+            logger.info("Successfully retrieved ${serviceProviders.size} active service providers")
             ResponseEntity.ok(serviceProviders)
         } catch (e: Exception) {
-            logger.error("Error retrieving all service providers", e)
+            logger.error("Error retrieving active service providers", e)
             ResponseEntity.internalServerError().build()
         }
     }
