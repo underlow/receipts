@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.test.context.jdbc.Sql
 import java.io.File
 
@@ -295,6 +296,13 @@ class AvatarUploadE2ETest : BaseE2ETest() {
 
         // Then: Preview image should be visible and updated
         avatarUploadPage.shouldShowPreviewImage()
+    }
+
+    @Test
+    @DisplayName("when two files with same name uploaded it should be handled correctly")
+    fun whenTwoFilesWithSameNameUploadedItShouldBeHandledCorrectly() {
+        // implement
+        assert(false)
     }
 
     @Test
