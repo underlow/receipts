@@ -1,7 +1,6 @@
 package me.underlow.receipt.controller
 
-import me.underlow.receipt.config.SecurityConfiguration
-import me.underlow.receipt.config.TestSecurityConfiguration
+import me.underlow.receipt.config.MockMvcTestSecurityConfiguration
 import me.underlow.receipt.service.CustomAuthenticationFailureHandler
 import me.underlow.receipt.service.CustomAuthenticationSuccessHandler
 import me.underlow.receipt.service.CustomOAuth2UserService
@@ -22,8 +21,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
@@ -35,8 +34,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
  */
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(FileUploadController::class)
-@Import(SecurityConfiguration::class, TestSecurityConfiguration::class)
+@Import(MockMvcTestSecurityConfiguration::class)
 @ActiveProfiles("mockmvc-test")
+@TestPropertySource(
+    properties = [
+        "ALLOWED_EMAILS=allowed1@example.com,allowed2@example.com"
+    ]
+)
 class FileUploadControllerTest {
 
     @Autowired

@@ -1,28 +1,28 @@
 package me.underlow.receipt.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import me.underlow.receipt.config.MockMvcTestSecurityConfiguration
+import me.underlow.receipt.model.RegularFrequency
 import me.underlow.receipt.model.ServiceProvider
 import me.underlow.receipt.model.ServiceProviderState
-import me.underlow.receipt.model.RegularFrequency
-import me.underlow.receipt.service.ServiceProviderService
 import me.underlow.receipt.service.AvatarService
+import me.underlow.receipt.service.ServiceProviderService
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
-import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
@@ -30,7 +30,13 @@ import java.time.LocalDateTime
  * Tests all REST endpoints with proper authentication, validation, and error handling.
  */
 @WebMvcTest(ServiceProviderController::class)
+@Import(MockMvcTestSecurityConfiguration::class)
 @ActiveProfiles("mockmvc-test")
+@TestPropertySource(
+    properties = [
+        "ALLOWED_EMAILS=allowed1@example.com,allowed2@example.com"
+    ]
+)
 class ServiceProviderControllerTest {
 
     @Autowired
@@ -39,10 +45,10 @@ class ServiceProviderControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    @MockBean
+    @MockitoBean
     private lateinit var serviceProviderService: ServiceProviderService
 
-    @MockBean
+    @MockitoBean
     private lateinit var avatarService: AvatarService
 
     private val sampleServiceProvider = ServiceProvider(
@@ -81,9 +87,9 @@ class ServiceProviderControllerTest {
 
         // when - GET request to list service providers
         mockMvc.perform(get("/api/service-providers"))
-            // then - redirects to OAuth2 login
+            // then - redirects to form login
             .andExpect(status().is3xxRedirection)
-            .andExpect(redirectedUrl("http://localhost/oauth2/authorization/google"))
+            .andExpect(redirectedUrl("http://localhost/login"))
     }
 
     @Test
@@ -130,19 +136,22 @@ class ServiceProviderControllerTest {
     fun `given valid request when POST service provider then creates and returns provider`() {
         // given - valid creation request and service creates provider
         val request = CreateServiceProviderRequest("New Provider")
-        `when`(serviceProviderService.createServiceProvider(
-            name = "New Provider",
-            comment = null,
-            commentForOcr = null,
-            regular = RegularFrequency.NOT_REGULAR,
-            customFields = null
-        )).thenReturn(sampleServiceProvider)
+        `when`(
+            serviceProviderService.createServiceProvider(
+                name = "New Provider",
+                comment = null,
+                commentForOcr = null,
+                regular = RegularFrequency.NOT_REGULAR,
+                customFields = null
+            )
+        ).thenReturn(sampleServiceProvider)
 
         // when - POST request to create service provider
-        mockMvc.perform(post("/api/service-providers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            post("/api/service-providers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns success response with created provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -157,10 +166,11 @@ class ServiceProviderControllerTest {
         val request = CreateServiceProviderRequest("")
 
         // when - POST request with invalid data
-        mockMvc.perform(post("/api/service-providers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            post("/api/service-providers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns bad request status
             .andExpect(status().isBadRequest)
     }
@@ -170,19 +180,22 @@ class ServiceProviderControllerTest {
     fun `given duplicate name when POST service provider then returns error response`() {
         // given - service throws exception for duplicate name
         val request = CreateServiceProviderRequest("Duplicate Name")
-        `when`(serviceProviderService.createServiceProvider(
-            name = "Duplicate Name",
-            comment = null,
-            commentForOcr = null,
-            regular = RegularFrequency.NOT_REGULAR,
-            customFields = null
-        )).thenThrow(IllegalArgumentException("Service provider with name 'Duplicate Name' already exists"))
+        `when`(
+            serviceProviderService.createServiceProvider(
+                name = "Duplicate Name",
+                comment = null,
+                commentForOcr = null,
+                regular = RegularFrequency.NOT_REGULAR,
+                customFields = null
+            )
+        ).thenThrow(IllegalArgumentException("Service provider with name 'Duplicate Name' already exists"))
 
         // when - POST request with duplicate name
-        mockMvc.perform(post("/api/service-providers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            post("/api/service-providers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -200,20 +213,23 @@ class ServiceProviderControllerTest {
             regular = RegularFrequency.WEEKLY,
             customFields = """{"updated": true}"""
         )
-        `when`(serviceProviderService.updateServiceProvider(
-            id = 1L,
-            name = "Updated Provider",
-            comment = "Updated comment",
-            commentForOcr = "Updated OCR comment",
-            regular = RegularFrequency.WEEKLY,
-            customFields = """{"updated": true}"""
-        )).thenReturn(sampleServiceProvider)
+        `when`(
+            serviceProviderService.updateServiceProvider(
+                id = 1L,
+                name = "Updated Provider",
+                comment = "Updated comment",
+                commentForOcr = "Updated OCR comment",
+                regular = RegularFrequency.WEEKLY,
+                customFields = """{"updated": true}"""
+            )
+        ).thenReturn(sampleServiceProvider)
 
         // when - PUT request to update service provider
-        mockMvc.perform(put("/api/service-providers/1")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            put("/api/service-providers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns success response with updated provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -225,20 +241,23 @@ class ServiceProviderControllerTest {
     fun `given non-existing provider when PUT service provider then returns error`() {
         // given - service throws exception for non-existing provider
         val request = UpdateServiceProviderRequest("Updated Provider")
-        `when`(serviceProviderService.updateServiceProvider(
-            id = 999L,
-            name = "Updated Provider",
-            comment = null,
-            commentForOcr = null,
-            regular = RegularFrequency.NOT_REGULAR,
-            customFields = null
-        )).thenThrow(IllegalArgumentException("Service provider with ID 999 not found"))
+        `when`(
+            serviceProviderService.updateServiceProvider(
+                id = 999L,
+                name = "Updated Provider",
+                comment = null,
+                commentForOcr = null,
+                regular = RegularFrequency.NOT_REGULAR,
+                customFields = null
+            )
+        ).thenThrow(IllegalArgumentException("Service provider with ID 999 not found"))
 
         // when - PUT request for non-existing provider
-        mockMvc.perform(put("/api/service-providers/999")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            put("/api/service-providers/999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -254,10 +273,11 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.hideServiceProvider(1L)).thenReturn(hiddenProvider)
 
         // when - PATCH request to change state
-        mockMvc.perform(patch("/api/service-providers/1/state")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            patch("/api/service-providers/1/state")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns success response with updated provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -273,10 +293,11 @@ class ServiceProviderControllerTest {
             .thenThrow(IllegalStateException("Cannot hide service provider from state HIDDEN"))
 
         // when - PATCH request to hide already hidden provider
-        mockMvc.perform(patch("/api/service-providers/1/state")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            patch("/api/service-providers/1/state")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -291,8 +312,9 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.hideServiceProvider(1L)).thenReturn(hiddenProvider)
 
         // when - DELETE request to soft delete provider
-        mockMvc.perform(delete("/api/service-providers/1")
-            .with(csrf()))
+        mockMvc.perform(
+            delete("/api/service-providers/1")
+        )
             // then - returns success response with hidden provider
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -307,8 +329,9 @@ class ServiceProviderControllerTest {
             .thenThrow(IllegalArgumentException("Service provider with ID 999 not found"))
 
         // when - DELETE request for non-existing provider
-        mockMvc.perform(delete("/api/service-providers/999")
-            .with(csrf()))
+        mockMvc.perform(
+            delete("/api/service-providers/999")
+        )
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -334,9 +357,10 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.updateAvatar(1L, avatarFilename)).thenReturn(updatedProvider)
 
         // when - POST request to upload avatar
-        mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile)
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/1/avatar")
+                .file(avatarFile)
+        )
             // then - returns success response with avatar path
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -350,8 +374,9 @@ class ServiceProviderControllerTest {
         // given - no file provided
 
         // when - POST request without file
-        mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/1/avatar")
+        )
             // then - returns bad request with error message
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -371,9 +396,10 @@ class ServiceProviderControllerTest {
         `when`(avatarService.validateAvatarFile(invalidFile)).thenReturn(false)
 
         // when - POST request with invalid file
-        mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(invalidFile)
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/1/avatar")
+                .file(invalidFile)
+        )
             // then - returns bad request with validation error
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.success").value(false))
@@ -394,9 +420,10 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.findById(999L)).thenReturn(null)
 
         // when - POST request to upload avatar for non-existing provider
-        mockMvc.perform(multipart("/api/service-providers/999/avatar")
-            .file(avatarFile)
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/999/avatar")
+                .file(avatarFile)
+        )
             // then - returns not found status
             .andExpect(status().isNotFound)
     }
@@ -417,9 +444,10 @@ class ServiceProviderControllerTest {
             .thenThrow(RuntimeException("Upload failed"))
 
         // when - POST request with upload failure
-        mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile)
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/1/avatar")
+                .file(avatarFile)
+        )
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
@@ -447,9 +475,10 @@ class ServiceProviderControllerTest {
         `when`(serviceProviderService.updateAvatar(1L, newAvatarFilename)).thenReturn(updatedProvider)
 
         // when - POST request to upload new avatar
-        mockMvc.perform(multipart("/api/service-providers/1/avatar")
-            .file(avatarFile)
-            .with(csrf()))
+        mockMvc.perform(
+            multipart("/api/service-providers/1/avatar")
+                .file(avatarFile)
+        )
             // then - returns success and cleanup is called
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -465,10 +494,11 @@ class ServiceProviderControllerTest {
         val request = CreateServiceProviderRequest("   ") // blank name after trim
 
         // when - POST request with validation failure
-        mockMvc.perform(post("/api/service-providers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            post("/api/service-providers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns bad request with validation error
             .andExpect(status().isBadRequest)
     }
@@ -482,10 +512,11 @@ class ServiceProviderControllerTest {
             .thenThrow(RuntimeException("Unexpected error"))
 
         // when - POST request with service exception
-        mockMvc.perform(post("/api/service-providers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .with(csrf()))
+        mockMvc.perform(
+            post("/api/service-providers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
             // then - returns internal server error
             .andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.success").value(false))
