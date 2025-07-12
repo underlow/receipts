@@ -13,6 +13,7 @@ class ServicesModule {
         this.alertManager = new AlertManager();
         this.serviceProviderAPI = new ServiceProviderAPI(this.alertManager);
         this.customFieldsManager = new CustomFieldsManager();
+        this.serviceProviderForm = new ServiceProviderForm(this.customFieldsManager);
     }
 
     /**
@@ -115,149 +116,9 @@ class ServicesModule {
      * Render service provider form
      */
     renderServiceProviderForm() {
-        const formContainer = document.getElementById('serviceProviderForm');
-        if (!this.selectedServiceProvider) {
-            formContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-building empty-state-icon"></i>
-                    <div class="empty-state-title">No Service Provider Selected</div>
-                    <p class="empty-state-text">Select a service provider from the list to view and edit details, or create a new one.</p>
-                </div>
-            `;
-            return;
-        }
-
-        const isNewProvider = this.selectedServiceProvider.id === null;
-        const isNameEmpty = !this.selectedServiceProvider.name || this.selectedServiceProvider.name.trim() === '';
-
-        const formHtml = `
-            <form class="service-provider-form" data-test-id="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
-                <h2 class="form-title" data-test-id="form-title">${isNewProvider ? 'Create Service Provider' : 'Edit Service Provider'}</h2>
-                <!-- Avatar and Name Section -->
-                <div class="form-group">
-                    <div style="display: flex; gap: 20px;">
-                        <div style="display: flex; flex-direction: column;">
-                            <label class="form-label">Avatar</label>
-                            <div class="avatar-upload-section">
-                                ${this.selectedServiceProvider.avatar ? 
-                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview">` :
-                                    `<div data-test-id="avatar-preview" id="avatarPreview"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
-                                }
-                            </div>
-                        </div>
-                        <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div style="margin-bottom: 8px;">
-                                <label for="providerName" class="form-label">Name *</label>
-                            </div>
-                            <div>
-                                <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required oninput="validateNameField()">
-                                <div class="invalid-feedback" data-test-id="name-validation-error" id="nameError" style="display: none;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Comment Field -->
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="providerComment" class="form-label">Comment</label>
-                    <textarea id="providerComment" data-test-id="provider-comment" class="form-control form-textarea" placeholder="Optional comment about this service provider">${this.selectedServiceProvider.comment || ''}</textarea>
-                </div>
-
-                <!-- OCR Comment Field -->
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="providerOcrComment" class="form-label">OCR Comment</label>
-                    <textarea id="providerOcrComment" data-test-id="provider-ocr-comment" class="form-control form-textarea" placeholder="Comment to help OCR recognition">${this.selectedServiceProvider.commentForOcr || ''}</textarea>
-                </div>
-
-                <!-- Regular Frequency Field -->
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="providerFrequency" class="form-label">Regular Frequency</label>
-                    <select id="providerFrequency" data-test-id="provider-frequency" class="form-control form-select">
-                        <option value="NOT_REGULAR" ${this.selectedServiceProvider.regular === 'NOT_REGULAR' ? 'selected' : ''}>Not Regular</option>
-                        <option value="YEARLY" ${this.selectedServiceProvider.regular === 'YEARLY' ? 'selected' : ''}>Yearly</option>
-                        <option value="MONTHLY" ${this.selectedServiceProvider.regular === 'MONTHLY' ? 'selected' : ''}>Monthly</option>
-                        <option value="WEEKLY" ${this.selectedServiceProvider.regular === 'WEEKLY' ? 'selected' : ''}>Weekly</option>
-                    </select>
-                </div>
-
-                <!-- Custom Fields Section -->
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Custom Fields</label>
-                    <div id="customFieldsContainer" data-test-id="custom-fields-container">
-                        ${this.customFieldsManager.renderCustomFields(this.customFieldsManager.parseCustomFields(this.selectedServiceProvider.customFields))}
-                    </div>
-                    <button type="button" class="btn-upload" data-test-id="add-custom-field-button" onclick="addCustomField()">
-                        <i class="fas fa-plus me-1"></i> Add Custom Field
-                    </button>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="form-actions" style="justify-content: ${isNewProvider ? 'flex-end' : 'space-between'};">
-                    ${!isNewProvider ? `
-                        <button type="button" class="btn-delete" data-test-id="delete-button" onclick="deleteServiceProvider()">
-                            <i class="fas fa-trash me-1"></i> Delete
-                        </button>
-                    ` : ''}
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn-cancel" data-test-id="cancel-button" onclick="cancelEdit()">
-                            <i class="fas fa-times me-1"></i> Cancel
-                        </button>
-                        <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton" ${isNameEmpty ? 'disabled' : ''}>
-                            <i class="fas fa-save me-1"></i> Save
-                        </button>
-                    </div>
-                </div>
-            </form>
-        `;
-
-        formContainer.innerHTML = formHtml;
-        this.setupCustomFieldEventListeners();
+        this.serviceProviderForm.renderServiceProviderForm(this.selectedServiceProvider);
     }
 
-    /**
-     * Setup event listeners for custom field inputs using event delegation
-     */
-    setupCustomFieldEventListeners() {
-        const formContainer = document.getElementById('serviceProviderForm');
-        if (!formContainer) return;
-
-        // Remove existing listeners to avoid duplicates
-        const existingHandlers = formContainer.getAttribute('data-handlers-setup');
-        if (existingHandlers === 'true') return;
-
-        // Use event delegation for better reliability with dynamic content
-        ['input', 'change', 'blur'].forEach(eventType => {
-            formContainer.addEventListener(eventType, (e) => {
-                if (e.target.classList.contains('custom-field-key-input')) {
-                    const index = parseInt(e.target.getAttribute('data-field-index'));
-                    this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldKey(
-                        this.selectedServiceProvider.customFields, index, e.target.value);
-                } else if (e.target.classList.contains('custom-field-value-input')) {
-                    const index = parseInt(e.target.getAttribute('data-field-index'));
-                    const entries = Object.entries(this.selectedServiceProvider.customFields || {});
-                    if (entries[index]) {
-                        const [key] = entries[index];
-                        this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldValue(
-                            this.selectedServiceProvider.customFields, key, e.target.value);
-                    }
-                }
-            });
-        });
-
-        // Add click event listener for remove buttons
-        formContainer.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-custom-field-btn')) {
-                const button = e.target.closest('.remove-custom-field-btn');
-                const fieldKey = button.getAttribute('data-field-key');
-                if (fieldKey !== null) {
-                    this.removeCustomField(fieldKey);
-                }
-            }
-        });
-
-        // Mark that handlers are setup
-        formContainer.setAttribute('data-handlers-setup', 'true');
-    }
 
 
     /**
@@ -281,18 +142,17 @@ class ServicesModule {
      * Validate name field and toggle save button state
      */
     validateNameField() {
-        const nameElement = document.getElementById('providerName');
-        const saveButton = document.getElementById('saveButton');
-
-        if (!nameElement || !saveButton) return;
-
-        const isNameEmpty = !nameElement.value.trim();
-        saveButton.disabled = isNameEmpty;
-
+        const isValid = this.serviceProviderForm.validateNameField();
+        
         // Update the selected service provider name to trigger re-render logic
         if (this.selectedServiceProvider) {
-            this.selectedServiceProvider.name = nameElement.value;
+            const nameElement = document.getElementById('providerName');
+            if (nameElement) {
+                this.selectedServiceProvider.name = nameElement.value;
+            }
         }
+        
+        return isValid;
     }
 
     /**
@@ -302,80 +162,33 @@ class ServicesModule {
     saveServiceProvider(event) {
         event.preventDefault();
 
-        // Check if required elements exist
-        const nameElement = document.getElementById('providerName');
-        const commentElement = document.getElementById('providerComment');
-        const ocrCommentElement = document.getElementById('providerOcrComment');
-        const frequencyElement = document.getElementById('providerFrequency');
+        try {
+            const formData = this.serviceProviderForm.collectFormData();
+            const isNewProvider = this.selectedServiceProvider ? this.selectedServiceProvider.id === null : true;
 
-        if (!nameElement) {
-            console.error('Provider name element not found');
-            return;
-        }
-
-        // Collect custom fields from DOM
-        const customFields = {};
-        const customFieldItems = document.querySelectorAll('[data-test-id="custom-field-item"]');
-        customFieldItems.forEach(item => {
-            const keyInput = item.querySelector('[data-test-id="custom-field-key"]');
-            const valueInput = item.querySelector('[data-test-id="custom-field-value"]');
-            if (keyInput && valueInput && keyInput.value.trim()) {
-                customFields[keyInput.value.trim()] = valueInput.value;
+            const saveButton = document.getElementById('saveButton');
+            if (saveButton) {
+                saveButton.disabled = true;
             }
-        });
 
-        const formData = {
-            name: nameElement.value,
-            comment: commentElement ? commentElement.value : '',
-            commentForOcr: ocrCommentElement ? ocrCommentElement.value : '',
-            regular: frequencyElement ? frequencyElement.value : 'NOT_REGULAR',
-            customFields: customFields
-        };
-
-        // Service providers are always active when created/updated
-
-        // Validate required fields - if name is empty, the save button should be disabled anyway
-        if (!formData.name.trim()) {
-            return;
+            this.serviceProviderAPI.saveServiceProvider(formData, isNewProvider, this.selectedServiceProvider.id)
+                .then(data => {
+                    this.selectedServiceProvider = data;
+                    this.loadServicesData(); // Reload the list
+                    return Promise.resolve();
+                })
+                .catch(error => {
+                    console.error('Error saving service provider:', error);
+                })
+                .finally(() => {
+                    const saveButton = document.getElementById('saveButton');
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                    }
+                });
+        } catch (error) {
+            console.error('Error collecting form data:', error);
         }
-
-        // Filter out custom fields with empty keys and convert to JSON string
-        if (formData.customFields) {
-            // Remove empty keys
-            const filteredCustomFields = {};
-            for (const [key, value] of Object.entries(formData.customFields)) {
-                if (key.trim()) {
-                    filteredCustomFields[key.trim()] = value;
-                }
-            }
-            // Convert to JSON string for backend
-            formData.customFields = Object.keys(filteredCustomFields).length > 0
-                ? JSON.stringify(filteredCustomFields)
-                : null;
-        }
-
-        const isNewProvider = this.selectedServiceProvider ? this.selectedServiceProvider.id === null : true;
-
-        const saveButton = document.getElementById('saveButton');
-        if (saveButton) {
-            saveButton.disabled = true;
-        }
-
-        this.serviceProviderAPI.saveServiceProvider(formData, isNewProvider, this.selectedServiceProvider.id)
-            .then(data => {
-                this.selectedServiceProvider = data;
-                this.loadServicesData(); // Reload the list
-                return Promise.resolve();
-            })
-            .catch(error => {
-                console.error('Error saving service provider:', error);
-            })
-            .finally(() => {
-                const saveButton = document.getElementById('saveButton');
-                if (saveButton) {
-                    saveButton.disabled = false;
-                }
-            });
     }
 
     /**
@@ -465,25 +278,8 @@ class ServicesModule {
      * Add custom field
      */
     addCustomField() {
-        if (!this.selectedServiceProvider.customFields) {
-            this.selectedServiceProvider.customFields = {};
-        }
-
-        this.selectedServiceProvider.customFields = this.customFieldsManager.addCustomField(this.selectedServiceProvider.customFields);
-
-        // Re-render only the custom fields section to avoid losing form data
-        const customFieldsContainer = document.getElementById('customFieldsContainer');
-        if (customFieldsContainer) {
-            customFieldsContainer.innerHTML = this.customFieldsManager.renderCustomFields(this.selectedServiceProvider.customFields);
-
-            // Focus on the newly added field key input
-            setTimeout(() => {
-                const customFields = document.querySelectorAll('[data-test-id="custom-field-key"]');
-                if (customFields.length > 0) {
-                    const lastField = customFields[customFields.length - 1];
-                    lastField.focus();
-                }
-            }, 100);
+        if (this.selectedServiceProvider) {
+            this.serviceProviderForm.addCustomField(this.selectedServiceProvider);
         }
     }
 
@@ -533,6 +329,7 @@ class ServicesModule {
 
 // Create global services module instance
 const servicesModule = new ServicesModule();
+window.servicesModule = servicesModule;
 
 // Initialize the module
 servicesModule.init();
