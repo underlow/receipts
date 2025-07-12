@@ -14,6 +14,7 @@ class ServicesModule {
         this.serviceProviderAPI = new ServiceProviderAPI(this.alertManager);
         this.customFieldsManager = new CustomFieldsManager();
         this.serviceProviderForm = new ServiceProviderForm(this.customFieldsManager);
+        this.serviceProviderList = new ServiceProviderList();
     }
 
     /**
@@ -47,15 +48,7 @@ class ServicesModule {
             })
             .catch(error => {
                 console.error('Error loading service providers:', error);
-                document.getElementById('serviceProviderList').innerHTML = `
-                    <div class="alert alert-danger m-3" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Failed to load service providers. Please try again.
-                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadServicesData()">
-                            <i class="fas fa-redo me-1"></i> Retry
-                        </button>
-                    </div>
-                `;
+                this.serviceProviderList.renderErrorState();
             });
     }
 
@@ -63,41 +56,7 @@ class ServicesModule {
      * Render service provider list
      */
     renderServiceProviderList() {
-        const listContainer = document.getElementById('serviceProviderList');
-
-        // Filter out HIDDEN providers - they should not appear in the list at all
-        const activeProviders = this.serviceProviders.filter(provider => provider.state === 'ACTIVE');
-
-        if (activeProviders.length === 0) {
-            listContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-building empty-state-icon"></i>
-                    <div class="empty-state-title">No Service Providers</div>
-                    <p class="empty-state-text">Create your first service provider to get started.</p>
-                </div>
-            `;
-            return;
-        }
-
-        const listHtml = `
-            <ul class="service-provider-list">
-                ${activeProviders.map(provider => `
-                    <li class="service-provider-item ${this.selectedServiceProvider && this.selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
-                        onclick="selectServiceProvider(${provider.id})">
-                        ${provider.avatar ? 
-                            `<img src="/attachments/avatars/${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
-                            `<div class="service-provider-avatar-fallback">${provider.name.substring(0, 1).toUpperCase()}</div>`
-                        }
-                        <div class="service-provider-info">
-                            <h4 class="service-provider-name">${provider.name}</h4>
-                            <p class="service-provider-state">Active</p>
-                        </div>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-
-        listContainer.innerHTML = listHtml;
+        this.serviceProviderList.renderServiceProviderList(this.serviceProviders, this.selectedServiceProvider);
     }
 
     /**
@@ -105,7 +64,7 @@ class ServicesModule {
      * @param {number} providerId - The provider ID to select
      */
     selectServiceProvider(providerId) {
-        this.selectedServiceProvider = this.serviceProviders.find(p => p.id === providerId);
+        this.selectedServiceProvider = this.serviceProviderList.selectServiceProvider(this.serviceProviders, providerId);
         if (this.selectedServiceProvider) {
             this.renderServiceProviderList(); // Re-render to show selection
             this.renderServiceProviderForm();
