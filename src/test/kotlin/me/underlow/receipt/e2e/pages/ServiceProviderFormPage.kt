@@ -40,6 +40,9 @@ class ServiceProviderFormPage {
      */
     fun waitForFormToLoad(): ServiceProviderFormPage {
         formContainer.shouldBe(Condition.visible)
+        // Wait for form fields to be ready
+        nameField.shouldBe(Condition.visible)
+        saveButton.shouldBe(Condition.visible)
         return this
     }
 
@@ -56,8 +59,12 @@ class ServiceProviderFormPage {
      * Enters provider name
      */
     fun enterName(name: String): ServiceProviderFormPage {
-        nameField.shouldBe(Condition.visible).clear()
+        nameField.shouldBe(Condition.visible)
+        nameField.shouldBe(Condition.enabled)
+        nameField.clear()
         nameField.setValue(name)
+        // Verify the value was actually set
+        nameField.shouldHave(Condition.value(name))
         return this
     }
 
@@ -119,13 +126,13 @@ class ServiceProviderFormPage {
      */
     fun addCustomField(key: String, value: String): ServiceProviderFormPage {
         addCustomFieldButton.shouldBe(Condition.visible).click()
-        
+
         val customFields = customFieldsContainer.`$$`("[data-test-id='custom-field-item']")
         val lastField = customFields.last()
-        
+
         lastField.`$`("[data-test-id='custom-field-key']").setValue(key)
         lastField.`$`("[data-test-id='custom-field-value']").setValue(value)
-        
+
         return this
     }
 
@@ -183,7 +190,7 @@ class ServiceProviderFormPage {
     }
 
     // Verification methods
-    
+
     /**
      * Verifies the form is in create mode
      */
@@ -232,10 +239,10 @@ class ServiceProviderFormPage {
         commentField.shouldHave(Condition.value(expectedComment))
         ocrCommentField.shouldHave(Condition.value(expectedOcrComment))
         frequencyField.shouldHave(Condition.value(expectedFrequency))
-        
+
         val isChecked = stateToggle.getAttribute("checked") != null
         assert(isChecked == expectedActive) { "Expected active state: $expectedActive, but was: $isChecked" }
-        
+
         return this
     }
 

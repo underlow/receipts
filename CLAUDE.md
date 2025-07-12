@@ -48,6 +48,7 @@ after implementing add to ticket information what was implemented and how.
  - pages objects are here package me.underlow.receipt.e2e.pages
  - e2e test must test full code flow from frontend layer to db layes, do not implement shortcuts in the middle. bad: add js code raising error on frontend. good: initiate actions which lead to error
  - if you are changing data-test-id check if it uses in other tests
+ - use Selenide's built-in async waiting instead of Thread.sleep.
 
 ### fixing failing test. 
 - first you have to check code to explore if the problem in test or in functionality. 
