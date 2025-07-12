@@ -9,9 +9,10 @@ class ServicesModule {
         this.serviceProviders = [];
         this.selectedServiceProvider = null;
         this.isEditingServiceProvider = false;
-        // Initialize AlertManager and API
+        // Initialize components
         this.alertManager = new AlertManager();
         this.serviceProviderAPI = new ServiceProviderAPI(this.alertManager);
+        this.customFieldsManager = new CustomFieldsManager();
     }
 
     /**
@@ -183,7 +184,7 @@ class ServicesModule {
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Custom Fields</label>
                     <div id="customFieldsContainer" data-test-id="custom-fields-container">
-                        ${this.renderCustomFields(this.parseCustomFields(this.selectedServiceProvider.customFields))}
+                        ${this.customFieldsManager.renderCustomFields(this.customFieldsManager.parseCustomFields(this.selectedServiceProvider.customFields))}
                     </div>
                     <button type="button" class="btn-upload" data-test-id="add-custom-field-button" onclick="addCustomField()">
                         <i class="fas fa-plus me-1"></i> Add Custom Field
@@ -229,13 +230,15 @@ class ServicesModule {
             formContainer.addEventListener(eventType, (e) => {
                 if (e.target.classList.contains('custom-field-key-input')) {
                     const index = parseInt(e.target.getAttribute('data-field-index'));
-                    this.updateCustomFieldKey(index, e.target.value);
+                    this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldKey(
+                        this.selectedServiceProvider.customFields, index, e.target.value);
                 } else if (e.target.classList.contains('custom-field-value-input')) {
                     const index = parseInt(e.target.getAttribute('data-field-index'));
                     const entries = Object.entries(this.selectedServiceProvider.customFields || {});
                     if (entries[index]) {
                         const [key] = entries[index];
-                        this.updateCustomFieldValue(key, e.target.value);
+                        this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldValue(
+                            this.selectedServiceProvider.customFields, key, e.target.value);
                     }
                 }
             });
@@ -256,62 +259,6 @@ class ServicesModule {
         formContainer.setAttribute('data-handlers-setup', 'true');
     }
 
-    /**
-     * Render custom fields
-     * @param {Object} customFields - The custom fields object
-     * @returns {string} HTML string for custom fields
-     */
-    renderCustomFields(customFields) {
-        if (!customFields || Object.keys(customFields).length === 0) {
-            return '<p class="text-muted">No custom fields defined.</p>';
-        }
-
-        return Object.entries(customFields).map(([key, value], index) => `
-            <div class="custom-field-item mb-2" data-test-id="custom-field-item" data-field-index="${index}">
-                <div class="row">
-                    <div class="col-md-5">
-                        <input type="text" class="form-control custom-field-key-input" data-test-id="custom-field-key" placeholder="Field name" value="${this.escapeHtml(key)}" data-field-index="${index}">
-                    </div>
-                    <div class="col-md-6">
-                        <input type="text" class="form-control custom-field-value-input" data-test-id="custom-field-value" placeholder="Field value" value="${this.escapeHtml(value)}" data-field-index="${index}">
-                    </div>
-                    <div class="col-md-1">
-                        <button type="button" class="btn-upload remove-custom-field-btn" data-test-id="remove-custom-field-button" data-field-key="${this.escapeHtml(key)}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    /**
-     * Parse custom fields from JSON string to object
-     * @param {string|Object} customFields - The custom fields (JSON string or object)
-     * @returns {Object} Parsed custom fields object
-     */
-    parseCustomFields(customFields) {
-        if (!customFields) return {};
-        if (typeof customFields === 'object') return customFields;
-        try {
-            return JSON.parse(customFields);
-        } catch (e) {
-            console.warn('Failed to parse custom fields JSON:', customFields, e);
-            return {};
-        }
-    }
-
-    /**
-     * Escape HTML characters to prevent XSS
-     * @param {string} text - The text to escape
-     * @returns {string} Escaped HTML
-     */
-    escapeHtml(text) {
-        if (typeof text !== 'string') return text;
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
 
     /**
      * Create new service provider
@@ -522,14 +469,12 @@ class ServicesModule {
             this.selectedServiceProvider.customFields = {};
         }
 
-        // Add empty field that user can fill in
-        const fieldKey = '';
-        this.selectedServiceProvider.customFields[fieldKey] = '';
+        this.selectedServiceProvider.customFields = this.customFieldsManager.addCustomField(this.selectedServiceProvider.customFields);
 
         // Re-render only the custom fields section to avoid losing form data
         const customFieldsContainer = document.getElementById('customFieldsContainer');
         if (customFieldsContainer) {
-            customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
+            customFieldsContainer.innerHTML = this.customFieldsManager.renderCustomFields(this.selectedServiceProvider.customFields);
 
             // Focus on the newly added field key input
             setTimeout(() => {
@@ -549,13 +494,8 @@ class ServicesModule {
      */
     updateCustomFieldKey(index, newKey) {
         if (!this.selectedServiceProvider.customFields) return;
-
-        const entries = Object.entries(this.selectedServiceProvider.customFields);
-        if (entries[index]) {
-            const [oldKey, value] = entries[index];
-            delete this.selectedServiceProvider.customFields[oldKey];
-            this.selectedServiceProvider.customFields[newKey] = value;
-        }
+        this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldKey(
+            this.selectedServiceProvider.customFields, index, newKey);
     }
 
     /**
@@ -565,33 +505,8 @@ class ServicesModule {
      */
     updateCustomFieldValue(key, newValue) {
         if (!this.selectedServiceProvider.customFields) return;
-        this.selectedServiceProvider.customFields[key] = newValue;
-    }
-
-    /**
-     * Collect current custom field values from the form
-     * @returns {Object} Current custom fields from form inputs
-     */
-    collectCurrentCustomFields() {
-        const currentFields = {};
-        const customFieldsContainer = document.getElementById('customFieldsContainer');
-        if (!customFieldsContainer) return currentFields;
-
-        const fieldItems = customFieldsContainer.querySelectorAll('.custom-field-item');
-        fieldItems.forEach(item => {
-            const keyInput = item.querySelector('.custom-field-key-input');
-            const valueInput = item.querySelector('.custom-field-value-input');
-
-            if (keyInput && valueInput) {
-                const key = keyInput.value.trim();
-                const value = valueInput.value.trim();
-                if (key) {
-                    currentFields[key] = value;
-                }
-            }
-        });
-
-        return currentFields;
+        this.selectedServiceProvider.customFields = this.customFieldsManager.updateCustomFieldValue(
+            this.selectedServiceProvider.customFields, key, newValue);
     }
 
     /**
@@ -602,18 +517,15 @@ class ServicesModule {
         if (!this.selectedServiceProvider.customFields) return;
 
         // Collect current form values before deletion
-        const currentFields = this.collectCurrentCustomFields();
+        const currentFields = this.customFieldsManager.collectCurrentCustomFields();
 
         // Remove the specified field
-        delete currentFields[key];
-
-        // Update the model with current values
-        this.selectedServiceProvider.customFields = currentFields;
+        this.selectedServiceProvider.customFields = this.customFieldsManager.removeCustomField(currentFields, key);
 
         // Re-render only the custom fields section
         const customFieldsContainer = document.getElementById('customFieldsContainer');
         if (customFieldsContainer) {
-            customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
+            customFieldsContainer.innerHTML = this.customFieldsManager.renderCustomFields(this.selectedServiceProvider.customFields);
         }
     }
 
