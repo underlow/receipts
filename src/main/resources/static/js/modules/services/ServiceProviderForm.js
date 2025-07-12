@@ -41,8 +41,8 @@ class ServiceProviderForm {
                             <label class="form-label">Avatar</label>
                             <div class="avatar-upload-section">
                                 ${selectedServiceProvider.avatar ? 
-                                    `<img src="/attachments/avatars/${selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview">` :
-                                    `<div data-test-id="avatar-preview" id="avatarPreview"><div class="avatar-preview-fallback avatar-fallback">${selectedServiceProvider.name ? selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
+                                    `<img src="/attachments/avatars/${selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview" onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)" style="cursor: pointer;">` :
+                                    `<div data-test-id="avatar-preview" id="avatarPreview" onclick="openAvatarUploadModal(${selectedServiceProvider.id}, updateServiceProviderAvatar)" style="cursor: pointer;"><div class="avatar-preview-fallback avatar-fallback">${selectedServiceProvider.name ? selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
                                 }
                             </div>
                         </div>
