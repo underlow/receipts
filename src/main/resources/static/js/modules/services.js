@@ -65,10 +65,10 @@ class ServicesModule {
      */
     renderServiceProviderList() {
         const listContainer = document.getElementById('serviceProviderList');
-        
+
         // Filter out HIDDEN providers - they should not appear in the list at all
         const activeProviders = this.serviceProviders.filter(provider => provider.state === 'ACTIVE');
-        
+
         if (activeProviders.length === 0) {
             listContainer.innerHTML = `
                 <div class="empty-state">
@@ -79,7 +79,7 @@ class ServicesModule {
             `;
             return;
         }
-        
+
         const listHtml = `
             <ul class="service-provider-list">
                 ${activeProviders.map(provider => `
@@ -97,7 +97,7 @@ class ServicesModule {
                 `).join('')}
             </ul>
         `;
-        
+
         listContainer.innerHTML = listHtml;
     }
 
@@ -160,19 +160,19 @@ class ServicesModule {
                 </div>
 
                 <!-- Comment Field -->
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label for="providerComment" class="form-label">Comment</label>
                     <textarea id="providerComment" data-test-id="provider-comment" class="form-control form-textarea" placeholder="Optional comment about this service provider">${this.selectedServiceProvider.comment || ''}</textarea>
                 </div>
 
                 <!-- OCR Comment Field -->
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label for="providerOcrComment" class="form-label">OCR Comment</label>
                     <textarea id="providerOcrComment" data-test-id="provider-ocr-comment" class="form-control form-textarea" placeholder="Comment to help OCR recognition">${this.selectedServiceProvider.commentForOcr || ''}</textarea>
                 </div>
 
                 <!-- Regular Frequency Field -->
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label for="providerFrequency" class="form-label">Regular Frequency</label>
                     <select id="providerFrequency" data-test-id="provider-frequency" class="form-control form-select">
                         <option value="NOT_REGULAR" ${this.selectedServiceProvider.regular === 'NOT_REGULAR' ? 'selected' : ''}>Not Regular</option>
@@ -182,9 +182,8 @@ class ServicesModule {
                     </select>
                 </div>
 
-
                 <!-- Custom Fields Section -->
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Custom Fields</label>
                     <div id="customFieldsContainer" data-test-id="custom-fields-container">
                         ${this.renderCustomFields(this.parseCustomFields(this.selectedServiceProvider.customFields))}
@@ -340,12 +339,12 @@ class ServicesModule {
     validateNameField() {
         const nameElement = document.getElementById('providerName');
         const saveButton = document.getElementById('saveButton');
-        
+
         if (!nameElement || !saveButton) return;
-        
+
         const isNameEmpty = !nameElement.value.trim();
         saveButton.disabled = isNameEmpty;
-        
+
         // Update the selected service provider name to trigger re-render logic
         if (this.selectedServiceProvider) {
             this.selectedServiceProvider.name = nameElement.value;
@@ -358,18 +357,18 @@ class ServicesModule {
      */
     saveServiceProvider(event) {
         event.preventDefault();
-        
+
         // Check if required elements exist
         const nameElement = document.getElementById('providerName');
         const commentElement = document.getElementById('providerComment');
         const ocrCommentElement = document.getElementById('providerOcrComment');
         const frequencyElement = document.getElementById('providerFrequency');
-        
+
         if (!nameElement) {
             console.error('Provider name element not found');
             return;
         }
-        
+
         // Collect custom fields from DOM
         const customFields = {};
         const customFieldItems = document.querySelectorAll('[data-test-id="custom-field-item"]');
@@ -388,7 +387,7 @@ class ServicesModule {
             regular: frequencyElement ? frequencyElement.value : 'NOT_REGULAR',
             customFields: customFields
         };
-        
+
         // Service providers are always active when created/updated
 
         // Validate required fields - if name is empty, the save button should be disabled anyway
@@ -406,8 +405,8 @@ class ServicesModule {
                 }
             }
             // Convert to JSON string for backend
-            formData.customFields = Object.keys(filteredCustomFields).length > 0 
-                ? JSON.stringify(filteredCustomFields) 
+            formData.customFields = Object.keys(filteredCustomFields).length > 0
+                ? JSON.stringify(filteredCustomFields)
                 : null;
         }
 
@@ -463,7 +462,7 @@ class ServicesModule {
             // Handle both direct ServiceProvider and ServiceProviderResponse formats
             const data = response.data ? response.data : response;
             this.selectedServiceProvider = data;
-            
+
             this.loadServicesData(); // Reload the list
             this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
             return Promise.resolve();
@@ -589,7 +588,7 @@ class ServicesModule {
 
         if (confirm('Are you sure you want to remove the avatar?')) {
             this.selectedServiceProvider.avatar = null;
-            document.getElementById('avatarPreview').outerHTML = 
+            document.getElementById('avatarPreview').outerHTML =
                 `<div data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`;
         }
     }
@@ -601,16 +600,16 @@ class ServicesModule {
         if (!this.selectedServiceProvider.customFields) {
             this.selectedServiceProvider.customFields = {};
         }
-        
+
         // Add empty field that user can fill in
         const fieldKey = '';
         this.selectedServiceProvider.customFields[fieldKey] = '';
-        
+
         // Re-render only the custom fields section to avoid losing form data
         const customFieldsContainer = document.getElementById('customFieldsContainer');
         if (customFieldsContainer) {
             customFieldsContainer.innerHTML = this.renderCustomFields(this.selectedServiceProvider.customFields);
-            
+
             // Focus on the newly added field key input
             setTimeout(() => {
                 const customFields = document.querySelectorAll('[data-test-id="custom-field-key"]');
@@ -629,7 +628,7 @@ class ServicesModule {
      */
     updateCustomFieldKey(index, newKey) {
         if (!this.selectedServiceProvider.customFields) return;
-        
+
         const entries = Object.entries(this.selectedServiceProvider.customFields);
         if (entries[index]) {
             const [oldKey, value] = entries[index];
@@ -661,7 +660,7 @@ class ServicesModule {
         fieldItems.forEach(item => {
             const keyInput = item.querySelector('.custom-field-key-input');
             const valueInput = item.querySelector('.custom-field-value-input');
-            
+
             if (keyInput && valueInput) {
                 const key = keyInput.value.trim();
                 const value = valueInput.value.trim();
@@ -670,7 +669,7 @@ class ServicesModule {
                 }
             }
         });
-        
+
         return currentFields;
     }
 
@@ -680,16 +679,16 @@ class ServicesModule {
      */
     removeCustomField(key) {
         if (!this.selectedServiceProvider.customFields) return;
-        
+
         // Collect current form values before deletion
         const currentFields = this.collectCurrentCustomFields();
-        
+
         // Remove the specified field
         delete currentFields[key];
-        
+
         // Update the model with current values
         this.selectedServiceProvider.customFields = currentFields;
-        
+
         // Re-render only the custom fields section
         const customFieldsContainer = document.getElementById('customFieldsContainer');
         if (customFieldsContainer) {
@@ -734,12 +733,12 @@ class ServicesModule {
     showAlert(alertHtml) {
         const alertContainer = document.createElement('div');
         alertContainer.innerHTML = alertHtml;
-        
+
         const dashboardLayout = document.querySelector('.dashboard-layout');
         if (dashboardLayout) {
             dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
         }
-        
+
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
             const alert = document.querySelector('.alert');
