@@ -7,6 +7,7 @@ import me.underlow.receipt.e2e.pages.ServiceProviderFormPage
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.concurrent.thread
 
 /**
  * E2E tests for Services Management functionality.

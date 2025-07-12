@@ -6,6 +6,7 @@ import com.codeborne.selenide.ElementsCollection
 import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.SelenideElement
+import java.time.Duration
 
 /**
  * Page Object Model for Service Provider List functionality.
@@ -22,7 +23,7 @@ class ServiceProviderListPage {
             else -> `$`("body") // fallback to body if nothing else is found
         }
     }
-    
+
     private fun getServicesTab(): SelenideElement {
         return when {
             `$`("a[href='#services']").exists() -> `$`("a[href='#services']")
@@ -31,7 +32,7 @@ class ServiceProviderListPage {
             else -> `$`("nav a:contains('Services')").takeIf { it.exists() } ?: `$`("body")
         }
     }
-    
+
     private fun getServicesContent(): SelenideElement {
         return when {
             `$`("#services").exists() -> `$`("#services")
@@ -258,24 +259,17 @@ class ServiceProviderListPage {
      * Waits asynchronously for a provider with the given name to appear in the list
      */
     fun waitForProviderToAppear(providerName: String): ServiceProviderListPage {
-        // Wait for a provider with the specific name to appear in the list
-        // Try multiple selectors to find the provider element
-        try {
-            `$`(".service-provider-item:contains('$providerName')").shouldBe(Condition.visible)
-        } catch (e: Exception) {
-            try {
-                `$`(".provider-item:contains('$providerName')").shouldBe(Condition.visible)
-            } catch (e: Exception) {
-                try {
-                    `$`("[data-test-id='service-provider-item']:contains('$providerName')").shouldBe(Condition.visible)
-                } catch (e: Exception) {
-                    // Fallback: wait for any provider item to appear, then check if our provider is there
-                    getServiceProviderItems().shouldHave(CollectionCondition.sizeGreaterThan(0))
-                    val provider = findProviderByName(providerName)
-                    assert(provider != null) { "Provider '$providerName' did not appear in the list within the expected time" }
-                }
-            }
-        }
+        // Wait for the list to reload after provider creation
+        // First, wait for the service provider list container to be visible
+        getServiceProviderList().shouldBe(Condition.visible, Duration.ofSeconds(2))
+
+        // Wait for a provider with the specific name to appear
+        // Use Selenide's built-in waiting mechanism with a more specific selector
+        getServiceProviderItems().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(2))
+
+        // Wait for the specific provider to appear by name using Selenide's text matching
+        `$`(".service-provider-name").shouldHave(Condition.text(providerName),Duration.ofSeconds(2))
+
         return this
     }
 

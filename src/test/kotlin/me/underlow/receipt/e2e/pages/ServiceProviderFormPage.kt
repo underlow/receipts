@@ -5,6 +5,7 @@ import com.codeborne.selenide.Selenide.`$`
 import com.codeborne.selenide.Selenide.`$$`
 import com.codeborne.selenide.SelenideElement
 import me.underlow.receipt.e2e.pageobjects.ServiceProviderListPage
+import java.time.Duration
 
 /**
  * Page Object Model for Service Provider Form functionality.
@@ -258,7 +259,7 @@ class ServiceProviderFormPage {
      * Verifies success message is shown
      */
     fun shouldShowSuccessMessage(): ServiceProviderFormPage {
-        successMessage.shouldBe(Condition.visible)
+        successMessage.shouldBe(Condition.visible, Duration.ofSeconds(2))
         return this
     }
 
