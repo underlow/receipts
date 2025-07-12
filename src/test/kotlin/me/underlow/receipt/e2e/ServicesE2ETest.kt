@@ -351,4 +351,111 @@ class ServicesE2ETest : BaseE2ETest() {
         // Either success message or error message should be displayed
         // This test verifies error handling without specific error injection
     }
+
+    @Test
+    fun shouldPreserveUnsavedFormValuesWhenDeletingCustomField() {
+        // Given: User opens create service provider form
+        serviceProviderListPage.clickCreateButton()
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // When: User fills form with main data and multiple custom fields
+        val providerName = "Provider with Multiple Fields"
+        val comment = "Important provider comment"
+        val ocrComment = "OCR processing notes"
+        
+        serviceProviderFormPage
+            .fillForm(
+                name = providerName,
+                comment = comment,
+                ocrComment = ocrComment,
+                frequency = "MONTHLY",
+                active = true
+            )
+            .addCustomField("Account Number", "ACC-12345")
+            .addCustomField("Department", "Healthcare")
+            .addCustomField("Contact Person", "John Doe")
+
+        // And: User deletes the middle custom field (Department)
+        serviceProviderFormPage.removeCustomField(1)
+
+        // Then: Main form values should be preserved
+        serviceProviderFormPage.shouldHaveFieldValues(
+            expectedName = providerName,
+            expectedComment = comment,
+            expectedOcrComment = ocrComment,
+            expectedFrequency = "MONTHLY"
+        )
+
+        // And: Remaining custom fields should be preserved
+        serviceProviderFormPage
+            .shouldHaveCustomField("Account Number", "ACC-12345")
+            .shouldHaveCustomField("Contact Person", "John Doe")
+
+        // When: User saves the service provider
+        serviceProviderFormPage.save()
+
+        // Then: Service provider should be created with remaining data
+        serviceProviderFormPage.shouldShowSuccessMessage()
+
+        // And: Verify data persistence by editing the created provider
+        serviceProviderListPage.waitForProviderToAppear(providerName)
+        serviceProviderListPage.clickProvider(providerName)
+        
+        serviceProviderFormPage
+            .waitForFormToLoad()
+            .shouldHaveFieldValues(
+                expectedName = providerName,
+                expectedComment = comment,
+                expectedOcrComment = ocrComment,
+                expectedFrequency = "MONTHLY"
+            )
+            .shouldHaveCustomField("Account Number", "ACC-12345")
+            .shouldHaveCustomField("Contact Person", "John Doe")
+    }
+
+    @Test
+    fun shouldDeleteMultipleCustomFieldsWithoutAffectingFormData() {
+        // Given: User opens create service provider form
+        serviceProviderListPage.clickCreateButton()
+        serviceProviderFormPage.waitForFormToLoad()
+
+        // When: User fills form and adds multiple custom fields
+        val providerName = "Multi-Field Provider"
+        
+        serviceProviderFormPage
+            .fillForm(name = providerName, active = true)
+            .addCustomField("Field1", "Value1")
+            .addCustomField("Field2", "Value2")
+            .addCustomField("Field3", "Value3")
+            .addCustomField("Field4", "Value4")
+
+        // And: User deletes first and third fields
+        serviceProviderFormPage
+            .removeCustomField(0) // Remove Field1
+            .removeCustomField(1) // Remove Field3 (which is now at index 1)
+
+        // Then: Form data should be preserved
+        serviceProviderFormPage.shouldHaveFieldValues(expectedName = providerName)
+
+        // And: Only remaining custom fields should exist
+        serviceProviderFormPage
+            .shouldHaveCustomField("Field2", "Value2")
+            .shouldHaveCustomField("Field4", "Value4")
+
+        // When: User saves the provider
+        serviceProviderFormPage.save()
+
+        // Then: Provider should be created successfully
+        serviceProviderFormPage.shouldShowSuccessMessage()
+
+        // And: Verify data persistence by reloading and checking saved data
+        serviceProviderListPage.waitForProviderToAppear(providerName)
+        serviceProviderListPage.clickProvider(providerName)
+        
+        serviceProviderFormPage
+            .waitForFormToLoad()
+            .shouldHaveFieldValues(expectedName = providerName)
+            .shouldHaveCustomField("Field2", "Value2")
+            .shouldHaveCustomField("Field4", "Value4")
+    }
 }
