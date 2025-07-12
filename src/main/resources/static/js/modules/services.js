@@ -162,7 +162,7 @@ class ServicesModule {
                             </div>
                             <div>
                                 <input type="text" id="providerName" data-test-id="provider-name" class="form-control" value="${this.selectedServiceProvider.name || ''}" required>
-                                <div class="invalid-feedback" data-test-id="name-validation-error" id="nameError"></div>
+                                <div class="invalid-feedback" data-test-id="name-validation-error" id="nameError" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -315,19 +315,43 @@ class ServicesModule {
     saveServiceProvider(event) {
         event.preventDefault();
         
+        // Check if required elements exist
+        const nameElement = document.getElementById('providerName');
+        const commentElement = document.getElementById('providerComment');
+        const ocrCommentElement = document.getElementById('providerOcrComment');
+        const frequencyElement = document.getElementById('providerFrequency');
+        const stateElement = document.getElementById('providerState');
+        const nameErrorElement = document.getElementById('nameError');
+        
+        if (!nameElement) {
+            console.error('Provider name element not found');
+            return;
+        }
+        
         const formData = {
-            name: document.getElementById('providerName').value,
-            comment: document.getElementById('providerComment').value,
-            commentForOcr: document.getElementById('providerOcrComment').value,
-            regular: document.getElementById('providerFrequency').value,
-            state: document.getElementById('providerState').checked ? 'ACTIVE' : 'HIDDEN',
-            customFields: this.selectedServiceProvider.customFields
+            name: nameElement.value,
+            comment: commentElement ? commentElement.value : '',
+            commentForOcr: ocrCommentElement ? ocrCommentElement.value : '',
+            regular: frequencyElement ? frequencyElement.value : 'NOT_REGULAR',
+            state: stateElement ? (stateElement.checked ? 'ACTIVE' : 'HIDDEN') : 'ACTIVE',
+            customFields: this.selectedServiceProvider ? this.selectedServiceProvider.customFields : {}
         };
 
-        // Validate
+
+        // Clear previous validation errors
+        if (nameErrorElement) {
+            nameErrorElement.textContent = '';
+            nameErrorElement.style.display = 'none';
+        }
+        nameElement.classList.remove('is-invalid');
+
+        // Validate required fields
         if (!formData.name.trim()) {
-            document.getElementById('nameError').textContent = 'Name is required';
-            document.getElementById('providerName').classList.add('is-invalid');
+            if (nameErrorElement) {
+                nameErrorElement.textContent = 'Name cannot be empty';
+                nameErrorElement.style.display = 'block';
+            }
+            nameElement.classList.add('is-invalid');
             return;
         }
 
@@ -343,23 +367,51 @@ class ServicesModule {
             formData.customFields = filteredCustomFields;
         }
 
-        const isNewProvider = this.selectedServiceProvider.id === null;
+        const isNewProvider = this.selectedServiceProvider ? this.selectedServiceProvider.id === null : true;
         const url = isNewProvider ? '/api/service-providers' : `/api/service-providers/${this.selectedServiceProvider.id}`;
         const method = isNewProvider ? 'POST' : 'PUT';
 
-        document.getElementById('saveButton').disabled = true;
+
+        const saveButton = document.getElementById('saveButton');
+        if (saveButton) {
+            saveButton.disabled = true;
+        }
+
+        // Check for CSRF token
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        if (!csrfMeta) {
+            console.error('CSRF token meta tag not found');
+            this.showErrorMessage('Security token not found. Please refresh the page.');
+            if (saveButton) saveButton.disabled = false;
+            return;
+        }
 
         fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                'X-CSRF-TOKEN': csrfMeta.getAttribute('content')
             },
             body: JSON.stringify(formData)
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to save service provider');
+                return response.text().then(text => {
+                    console.error('Server error response:', text);
+                    let errorMessage = 'Failed to save service provider';
+                    try {
+                        const errorData = JSON.parse(text);
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (e) {
+                        // If not JSON, use the text as error message if it's reasonable length
+                        if (text && text.length < 200) {
+                            errorMessage = text;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                });
             }
             return response.json();
         })
@@ -370,10 +422,13 @@ class ServicesModule {
         })
         .catch(error => {
             console.error('Error saving service provider:', error);
-            this.showErrorMessage('Failed to save service provider. Please try again.');
+            this.showErrorMessage(error.message || 'Failed to save service provider. Please try again.');
         })
         .finally(() => {
-            document.getElementById('saveButton').disabled = false;
+            const saveButton = document.getElementById('saveButton');
+            if (saveButton) {
+                saveButton.disabled = false;
+            }
         });
     }
 
@@ -578,6 +633,9 @@ class ServicesModule {
 
 // Create global services module instance
 const servicesModule = new ServicesModule();
+
+// Initialize the module
+servicesModule.init();
 
 // Make functions globally available for backwards compatibility
 window.loadServicesData = () => servicesModule.loadServicesData();
