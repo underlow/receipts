@@ -50,8 +50,8 @@ logging:
     me.underlow.receipt.service: INFO
     me.underlow.receipt.config: INFO
     # OAuth2 debugging for development
-    org.springframework.security.oauth2: DEBUG
-    org.springframework.security.web: DEBUG
+    org.springframework.security.oauth2: INFO
+    org.springframework.security.web: INFO
     # Application logging
     root: INFO
 

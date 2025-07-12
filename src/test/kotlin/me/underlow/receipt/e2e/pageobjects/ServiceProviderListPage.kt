@@ -1,5 +1,6 @@
 package me.underlow.receipt.e2e.pageobjects
 
+import com.codeborne.selenide.CollectionCondition
 import com.codeborne.selenide.Condition
 import com.codeborne.selenide.ElementsCollection
 import com.codeborne.selenide.Selenide.`$`
@@ -250,6 +251,31 @@ class ServiceProviderListPage {
         assert(items.size() >= 1) { "Service provider list should contain at least one item" }
         val provider = findProviderByName(providerName)
         assert(provider != null) { "Provider '$providerName' should be present in the list" }
+        return this
+    }
+
+    /**
+     * Waits asynchronously for a provider with the given name to appear in the list
+     */
+    fun waitForProviderToAppear(providerName: String): ServiceProviderListPage {
+        // Wait for a provider with the specific name to appear in the list
+        // Try multiple selectors to find the provider element
+        try {
+            `$`(".service-provider-item:contains('$providerName')").shouldBe(Condition.visible)
+        } catch (e: Exception) {
+            try {
+                `$`(".provider-item:contains('$providerName')").shouldBe(Condition.visible)
+            } catch (e: Exception) {
+                try {
+                    `$`("[data-test-id='service-provider-item']:contains('$providerName')").shouldBe(Condition.visible)
+                } catch (e: Exception) {
+                    // Fallback: wait for any provider item to appear, then check if our provider is there
+                    getServiceProviderItems().shouldHave(CollectionCondition.sizeGreaterThan(0))
+                    val provider = findProviderByName(providerName)
+                    assert(provider != null) { "Provider '$providerName' did not appear in the list within the expected time" }
+                }
+            }
+        }
         return this
     }
 
