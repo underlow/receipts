@@ -128,7 +128,13 @@ class ServiceProviderControllerTest {
     fun `given valid request when POST service provider then creates and returns provider`() {
         // given - valid creation request and service creates provider
         val request = CreateServiceProviderRequest("New Provider")
-        `when`(serviceProviderService.createServiceProvider("New Provider")).thenReturn(sampleServiceProvider)
+        `when`(serviceProviderService.createServiceProvider(
+            name = "New Provider",
+            comment = null,
+            commentForOcr = null,
+            regular = RegularFrequency.NOT_REGULAR,
+            customFields = null
+        )).thenReturn(sampleServiceProvider)
 
         // when - POST request to create service provider
         mockMvc.perform(post("/api/service-providers")
@@ -162,8 +168,13 @@ class ServiceProviderControllerTest {
     fun `given duplicate name when POST service provider then returns error response`() {
         // given - service throws exception for duplicate name
         val request = CreateServiceProviderRequest("Duplicate Name")
-        `when`(serviceProviderService.createServiceProvider("Duplicate Name"))
-            .thenThrow(IllegalArgumentException("Service provider with name 'Duplicate Name' already exists"))
+        `when`(serviceProviderService.createServiceProvider(
+            name = "Duplicate Name",
+            comment = null,
+            commentForOcr = null,
+            regular = RegularFrequency.NOT_REGULAR,
+            customFields = null
+        )).thenThrow(IllegalArgumentException("Service provider with name 'Duplicate Name' already exists"))
 
         // when - POST request with duplicate name
         mockMvc.perform(post("/api/service-providers")

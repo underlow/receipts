@@ -30,6 +30,28 @@ class ServiceProviderService(
      * @throws IllegalArgumentException if name is blank or already exists
      */
     fun createServiceProvider(name: String): ServiceProvider {
+        return createServiceProvider(name, null, null, RegularFrequency.NOT_REGULAR, null)
+    }
+    
+    /**
+     * Creates a new service provider with all fields and validation.
+     * Validates that the name is not blank and does not already exist.
+     * 
+     * @param name Service provider name
+     * @param comment Service provider comment (optional)
+     * @param commentForOcr OCR comment (optional)
+     * @param regular Regular frequency
+     * @param customFields Custom fields JSON (optional)
+     * @return Created service provider
+     * @throws IllegalArgumentException if name is blank or already exists, or custom fields are invalid
+     */
+    fun createServiceProvider(
+        name: String,
+        comment: String?,
+        commentForOcr: String?,
+        regular: RegularFrequency,
+        customFields: String?
+    ): ServiceProvider {
         logger.info("Creating service provider with name: $name")
         
         if (name.isBlank()) {
@@ -42,7 +64,18 @@ class ServiceProviderService(
             throw IllegalArgumentException("Service provider with name '$name' already exists")
         }
         
+        // Validate custom fields if provided
+        if (customFields != null && !validateCustomFields(customFields)) {
+            logger.warn("Invalid custom fields JSON provided for new service provider with name: $name")
+            throw IllegalArgumentException("Invalid custom fields JSON format")
+        }
+        
         val serviceProvider = ServiceProvider.createNew(name)
+            .updateComment(comment)
+            .updateCommentForOcr(commentForOcr)
+            .updateRegular(regular)
+            .updateCustomFields(customFields)
+            
         val savedProvider = serviceProviderDao.save(serviceProvider)
         logger.info("Successfully created service provider with ID: ${savedProvider.id} and name: $name")
         return savedProvider

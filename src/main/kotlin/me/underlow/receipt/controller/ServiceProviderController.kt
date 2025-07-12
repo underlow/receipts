@@ -81,7 +81,13 @@ class ServiceProviderController(
     fun createServiceProvider(@Valid @RequestBody request: CreateServiceProviderRequest): ResponseEntity<ServiceProviderResponse> {
         logger.info("POST /api/service-providers - Creating service provider with name: ${request.name}")
         return try {
-            val serviceProvider = serviceProviderService.createServiceProvider(request.name)
+            val serviceProvider = serviceProviderService.createServiceProvider(
+                name = request.name,
+                comment = request.comment,
+                commentForOcr = request.commentForOcr,
+                regular = request.regular,
+                customFields = request.customFields
+            )
             logger.info("Successfully created service provider with ID: ${serviceProvider.id}")
             ResponseEntity.ok(ServiceProviderResponse.success(serviceProvider))
         } catch (e: IllegalArgumentException) {
@@ -336,7 +342,11 @@ class ServiceProviderController(
  */
 data class CreateServiceProviderRequest(
     @field:jakarta.validation.constraints.NotBlank(message = "Name is required")
-    val name: String
+    val name: String,
+    val comment: String? = null,
+    val commentForOcr: String? = null,
+    val regular: RegularFrequency = RegularFrequency.NOT_REGULAR,
+    val customFields: String? = null
 )
 
 /**

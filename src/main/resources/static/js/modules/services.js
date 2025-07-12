@@ -192,7 +192,7 @@ class ServicesModule {
                 <div class="form-group">
                     <label class="form-label">Custom Fields</label>
                     <div id="customFieldsContainer" data-test-id="custom-fields-container">
-                        ${this.renderCustomFields(this.selectedServiceProvider.customFields)}
+                        ${this.renderCustomFields(this.parseCustomFields(this.selectedServiceProvider.customFields))}
                     </div>
                     <button type="button" class="btn-upload" data-test-id="add-custom-field-button" onclick="addCustomField()">
                         <i class="fas fa-plus me-1"></i> Add Custom Field
@@ -276,6 +276,22 @@ class ServicesModule {
     }
 
     /**
+     * Parse custom fields from JSON string to object
+     * @param {string|Object} customFields - The custom fields (JSON string or object)
+     * @returns {Object} Parsed custom fields object
+     */
+    parseCustomFields(customFields) {
+        if (!customFields) return {};
+        if (typeof customFields === 'object') return customFields;
+        try {
+            return JSON.parse(customFields);
+        } catch (e) {
+            console.warn('Failed to parse custom fields JSON:', customFields, e);
+            return {};
+        }
+    }
+
+    /**
      * Escape HTML characters to prevent XSS
      * @param {string} text - The text to escape
      * @returns {string} Escaped HTML
@@ -341,12 +357,23 @@ class ServicesModule {
             return;
         }
         
+        // Collect custom fields from DOM
+        const customFields = {};
+        const customFieldItems = document.querySelectorAll('[data-test-id="custom-field-item"]');
+        customFieldItems.forEach(item => {
+            const keyInput = item.querySelector('[data-test-id="custom-field-key"]');
+            const valueInput = item.querySelector('[data-test-id="custom-field-value"]');
+            if (keyInput && valueInput && keyInput.value.trim()) {
+                customFields[keyInput.value.trim()] = valueInput.value;
+            }
+        });
+
         const formData = {
             name: nameElement.value,
             comment: commentElement ? commentElement.value : '',
             commentForOcr: ocrCommentElement ? ocrCommentElement.value : '',
             regular: frequencyElement ? frequencyElement.value : 'NOT_REGULAR',
-            customFields: this.selectedServiceProvider ? this.selectedServiceProvider.customFields : {}
+            customFields: customFields
         };
         
         // Handle state separately - we'll use the state change endpoint if needed
