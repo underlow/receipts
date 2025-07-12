@@ -301,8 +301,34 @@ class AvatarUploadE2ETest : BaseE2ETest() {
     @Test
     @DisplayName("when two files with same name uploaded it should be handled correctly")
     fun whenTwoFilesWithSameNameUploadedItShouldBeHandledCorrectly() {
-        // implement
-        assert(false)
+        // Given: Service provider is selected and avatar upload modal is open
+        navigationHelper.selectServiceProvider("1")
+        navigationHelper.clickOnAvatarToOpenUpload()
+        avatarUploadPage.shouldBeVisible()
+
+        // When: User uploads first file with specific name
+        val firstImageFile = uploadHelper.createTestJpegFile("duplicate-name.jpg")
+        testFiles.add(firstImageFile)
+        avatarUploadPage.selectFile(firstImageFile)
+        avatarUploadPage.shouldShowCropperImage()
+        avatarUploadPage.confirmUpload()
+
+        // Then: First upload should succeed and modal should close
+        avatarUploadPage.shouldBeClosed()
+
+        // Given: User opens upload modal again for the same service provider
+        navigationHelper.clickOnAvatarToOpenUpload()
+        avatarUploadPage.shouldBeVisible()
+
+        // When: User uploads second file with exactly the same name
+        val secondImageFile = uploadHelper.createTestJpegFile("duplicate-name.jpg")
+        testFiles.add(secondImageFile)
+        avatarUploadPage.selectFile(secondImageFile)
+        avatarUploadPage.shouldShowCropperImage()
+        avatarUploadPage.confirmUpload()
+
+        // Then: Second upload should also succeed, handling duplicate names gracefully
+        avatarUploadPage.shouldBeClosed()
     }
 
     @Test
