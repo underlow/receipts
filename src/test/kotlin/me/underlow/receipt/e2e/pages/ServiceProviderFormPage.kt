@@ -126,7 +126,11 @@ class ServiceProviderFormPage {
      * Adds a custom field with key and value
      */
     fun addCustomField(key: String, value: String): ServiceProviderFormPage {
-        addCustomFieldButton.shouldBe(Condition.visible).click()
+        // Scroll to the button to ensure it's in view and clickable
+        addCustomFieldButton.scrollTo()
+        addCustomFieldButton.shouldBe(Condition.visible)
+        addCustomFieldButton.shouldBe(Condition.enabled)
+        addCustomFieldButton.click()
 
         val customFields = customFieldsContainer.`$$`("[data-test-id='custom-field-item']")
         val lastField = customFields.last()
