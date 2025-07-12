@@ -7,6 +7,7 @@ import me.underlow.receipt.model.RegularFrequency
 import org.springframework.stereotype.Service
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
+import org.slf4j.LoggerFactory
 
 /**
  * Service for managing service provider operations including business logic and validation.
@@ -17,6 +18,7 @@ class ServiceProviderService(
     private val serviceProviderDao: ServiceProviderDao
 ) {
     
+    private val logger = LoggerFactory.getLogger(ServiceProviderService::class.java)
     private val objectMapper = ObjectMapper()
     
     /**
@@ -28,16 +30,22 @@ class ServiceProviderService(
      * @throws IllegalArgumentException if name is blank or already exists
      */
     fun createServiceProvider(name: String): ServiceProvider {
+        logger.info("Creating service provider with name: $name")
+        
         if (name.isBlank()) {
+            logger.warn("Attempted to create service provider with blank name")
             throw IllegalArgumentException("Service provider name cannot be blank")
         }
         
         if (serviceProviderDao.existsByName(name)) {
+            logger.warn("Attempted to create service provider with existing name: $name")
             throw IllegalArgumentException("Service provider with name '$name' already exists")
         }
         
         val serviceProvider = ServiceProvider.createNew(name)
-        return serviceProviderDao.save(serviceProvider)
+        val savedProvider = serviceProviderDao.save(serviceProvider)
+        logger.info("Successfully created service provider with ID: ${savedProvider.id} and name: $name")
+        return savedProvider
     }
     
     /**
@@ -62,20 +70,27 @@ class ServiceProviderService(
         regular: RegularFrequency,
         customFields: String?
     ): ServiceProvider {
+        logger.info("Updating service provider with ID: $id, new name: $name")
+        
         val existingProvider = serviceProviderDao.findById(id)
-            ?: throw IllegalArgumentException("Service provider with ID $id not found")
+            ?: throw IllegalArgumentException("Service provider with ID $id not found").also {
+                logger.warn("Attempted to update non-existent service provider with ID: $id")
+            }
         
         if (name.isBlank()) {
+            logger.warn("Attempted to update service provider ID: $id with blank name")
             throw IllegalArgumentException("Service provider name cannot be blank")
         }
         
         // Check for duplicate name only if the name is being changed
         if (name != existingProvider.name && serviceProviderDao.existsByName(name)) {
+            logger.warn("Attempted to update service provider ID: $id with existing name: $name")
             throw IllegalArgumentException("Service provider with name '$name' already exists")
         }
         
         // Validate custom fields if provided
         if (customFields != null && !validateCustomFields(customFields)) {
+            logger.warn("Invalid custom fields JSON provided for service provider ID: $id")
             throw IllegalArgumentException("Invalid custom fields JSON format")
         }
         
@@ -86,7 +101,9 @@ class ServiceProviderService(
             .updateRegular(regular)
             .updateCustomFields(customFields)
         
-        return serviceProviderDao.save(updatedProvider)
+        val savedProvider = serviceProviderDao.save(updatedProvider)
+        logger.info("Successfully updated service provider with ID: $id")
+        return savedProvider
     }
     
     /**
@@ -99,11 +116,17 @@ class ServiceProviderService(
      * @throws IllegalStateException if service provider is not in ACTIVE state
      */
     fun hideServiceProvider(id: Long): ServiceProvider {
+        logger.info("Hiding service provider with ID: $id")
+        
         val existingProvider = serviceProviderDao.findById(id)
-            ?: throw IllegalArgumentException("Service provider with ID $id not found")
+            ?: throw IllegalArgumentException("Service provider with ID $id not found").also {
+                logger.warn("Attempted to hide non-existent service provider with ID: $id")
+            }
         
         val hiddenProvider = existingProvider.hide()
-        return serviceProviderDao.save(hiddenProvider)
+        val savedProvider = serviceProviderDao.save(hiddenProvider)
+        logger.info("Successfully hidden service provider with ID: $id")
+        return savedProvider
     }
     
     /**
@@ -116,11 +139,17 @@ class ServiceProviderService(
      * @throws IllegalStateException if service provider is not in HIDDEN state
      */
     fun showServiceProvider(id: Long): ServiceProvider {
+        logger.info("Showing service provider with ID: $id")
+        
         val existingProvider = serviceProviderDao.findById(id)
-            ?: throw IllegalArgumentException("Service provider with ID $id not found")
+            ?: throw IllegalArgumentException("Service provider with ID $id not found").also {
+                logger.warn("Attempted to show non-existent service provider with ID: $id")
+            }
         
         val activeProvider = existingProvider.show()
-        return serviceProviderDao.save(activeProvider)
+        val savedProvider = serviceProviderDao.save(activeProvider)
+        logger.info("Successfully shown service provider with ID: $id")
+        return savedProvider
     }
     
     /**
@@ -130,7 +159,14 @@ class ServiceProviderService(
      * @return Service provider if found, null otherwise
      */
     fun findById(id: Long): ServiceProvider? {
-        return serviceProviderDao.findById(id)
+        logger.debug("Finding service provider by ID: $id")
+        val provider = serviceProviderDao.findById(id)
+        if (provider != null) {
+            logger.debug("Found service provider with ID: $id")
+        } else {
+            logger.debug("Service provider with ID: $id not found")
+        }
+        return provider
     }
     
     /**
@@ -139,7 +175,10 @@ class ServiceProviderService(
      * @return List of all service providers
      */
     fun findAll(): List<ServiceProvider> {
-        return serviceProviderDao.findAll()
+        logger.debug("Finding all service providers")
+        val providers = serviceProviderDao.findAll()
+        logger.debug("Found ${providers.size} service providers")
+        return providers
     }
     
     /**
@@ -170,11 +209,17 @@ class ServiceProviderService(
      * @throws IllegalArgumentException if service provider not found
      */
     fun updateAvatar(id: Long, avatar: String?): ServiceProvider {
+        logger.info("Updating avatar for service provider with ID: $id, avatar: $avatar")
+        
         val existingProvider = serviceProviderDao.findById(id)
-            ?: throw IllegalArgumentException("Service provider with ID $id not found")
+            ?: throw IllegalArgumentException("Service provider with ID $id not found").also {
+                logger.warn("Attempted to update avatar for non-existent service provider with ID: $id")
+            }
         
         val updatedProvider = existingProvider.updateAvatar(avatar)
-        return serviceProviderDao.save(updatedProvider)
+        val savedProvider = serviceProviderDao.save(updatedProvider)
+        logger.info("Successfully updated avatar for service provider with ID: $id")
+        return savedProvider
     }
     
     /**
@@ -190,8 +235,10 @@ class ServiceProviderService(
         
         return try {
             objectMapper.readTree(customFields)
+            logger.debug("Custom fields JSON validation successful")
             true
         } catch (e: IOException) {
+            logger.warn("Custom fields JSON validation failed: ${e.message}")
             false
         }
     }
