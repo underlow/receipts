@@ -15,7 +15,7 @@ import java.time.Duration
  * Configures timeouts, base URL, and browser options for E2E tests.
  */
 @TestConfiguration
-@Profile("test")
+@Profile("e2e-test")
 class SelenideConfiguration {
 
     companion object {

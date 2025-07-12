@@ -24,7 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
+@ActiveProfiles("e2e-test")
 @Testcontainers
 @TestPropertySource(
     properties = [

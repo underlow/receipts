@@ -23,16 +23,16 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
 
 /**
- * E2E test security configuration that bypasses OAuth2 for E2E testing.
- * Uses form-based authentication with in-memory test users and CSRF enabled.
- * Active only for e2e-test profile to avoid interfering with production security.
+ * MockMVC test security configuration that bypasses OAuth2 for unit testing.
+ * Uses form-based authentication with in-memory test users and CSRF disabled.
+ * Active only for mockmvc-test profile to avoid interfering with production security.
  */
 @Configuration
-@Profile("e2e-test")
-class TestSecurityConfiguration {
+@Profile("mockmvc-test")
+class MockMvcTestSecurityConfiguration {
 
     companion object {
-        // Test users with different email addresses for E2E testing
+        // Test users with different email addresses for unit testing
         const val ALLOWED_EMAIL_1 = "allowed1@example.com"
         const val ALLOWED_EMAIL_2 = "allowed2@example.com"
         const val NOT_ALLOWED_EMAIL = "notallowed@example.com"
@@ -47,18 +47,18 @@ class TestSecurityConfiguration {
     }
 
     /**
-     * Configures the security filter chain for E2E testing.
-     * Replaces OAuth2 login with form-based authentication and keeps CSRF enabled.
+     * Configures the security filter chain for MockMVC testing.
+     * Replaces OAuth2 login with form-based authentication and disables CSRF.
      *
      * @param http HttpSecurity to configure
-     * @param e2eTestAuthenticationProvider Custom authentication provider for email allowlist validation
+     * @param testAuthenticationProvider Custom authentication provider for email allowlist validation
      * @return SecurityFilterChain bean for testing
      */
     @Bean
     @Primary
-    fun e2eTestSecurityFilterChain(
+    fun mockMvcTestSecurityFilterChain(
         http: HttpSecurity,
-        e2eTestAuthenticationProvider: E2ETestAuthenticationProvider
+        mockMvcTestAuthenticationProvider: MockMvcTestAuthenticationProvider
     ): SecurityFilterChain {
         http
             .authorizeHttpRequests { auth ->
@@ -66,7 +66,7 @@ class TestSecurityConfiguration {
                     .requestMatchers("/login", "/error", "/css/**", "/js/**", "/images/**").permitAll()
                     .anyRequest().authenticated()
             }
-            .authenticationProvider(e2eTestAuthenticationProvider)
+            .authenticationProvider(mockMvcTestAuthenticationProvider)
             .formLogin { form ->
                 form
                     .loginPage("/login")
@@ -85,25 +85,26 @@ class TestSecurityConfiguration {
                     .deleteCookies("JSESSIONID")
                     .permitAll()
             }
-            // Keep CSRF enabled with default configuration for E2E testing (same as production)
+            // Disable CSRF for MockMVC testing to simplify form submissions
+            .csrf { csrf -> csrf.disable() }
 
         return http.build()
     }
 
     /**
-     * Creates password encoder for E2E test users.
+     * Creates password encoder for test users.
      * Uses BCrypt for secure password hashing in tests.
      *
      * @return PasswordEncoder bean for testing
      */
     @Bean
     @Primary
-    fun e2eTestPasswordEncoder(): PasswordEncoder {
+    fun mockMvcTestPasswordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
 
     /**
-     * Creates E2E test user details service with predefined test users.
+     * Creates test user details service with predefined test users.
      * Provides users with allowed and non-allowed email addresses for testing.
      *
      * @param passwordEncoder Password encoder for test users
@@ -111,7 +112,7 @@ class TestSecurityConfiguration {
      */
     @Bean
     @Primary
-    fun e2eTestUserDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
+    fun mockMvcTestUserDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
         val users = mutableListOf<UserDetails>()
 
         // Test user with allowed email 1
@@ -151,20 +152,20 @@ class TestSecurityConfiguration {
      */
     @Bean
     @Primary
-    fun e2eTestAuthenticationProvider(
+    fun mockMvcTestAuthenticationProvider(
         userDetailsService: UserDetailsService,
         passwordEncoder: PasswordEncoder,
         userService: UserService
-    ): E2ETestAuthenticationProvider {
-        return E2ETestAuthenticationProvider(userDetailsService, passwordEncoder, userService)
+    ): MockMvcTestAuthenticationProvider {
+        return MockMvcTestAuthenticationProvider(userDetailsService, passwordEncoder, userService)
     }
 }
 
 /**
- * Custom authentication provider for E2E test environment.
+ * Custom authentication provider for MockMVC test environment.
  * Validates both username/password and email allowlist.
  */
-class E2ETestAuthenticationProvider(
+class MockMvcTestAuthenticationProvider(
     private val userDetailsService: UserDetailsService,
     private val passwordEncoder: PasswordEncoder,
     private val userService: UserService

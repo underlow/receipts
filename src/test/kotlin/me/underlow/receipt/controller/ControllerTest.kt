@@ -34,7 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension::class)
-@ActiveProfiles("test")
+@ActiveProfiles("mockmvc-test")
 @Testcontainers
 @TestPropertySource(
     properties = [

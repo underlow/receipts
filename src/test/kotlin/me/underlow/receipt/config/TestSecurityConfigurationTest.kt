@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
+import org.springframework.test.context.TestPropertySource
 import org.springframework.context.annotation.Import
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
@@ -28,13 +29,18 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 
 /**
- * Tests for TestSecurityConfiguration.
+ * Tests for MockMvcTestSecurityConfiguration.
  * Verifies that the test security configuration properly bypasses OAuth2
- * and provides form-based authentication for E2E testing.
+ * and provides form-based authentication for unit testing with CSRF disabled.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+@ActiveProfiles("mockmvc-test")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
+@TestPropertySource(
+    properties = [
+        "ALLOWED_EMAILS=allowed1@example.com,allowed2@example.com"
+    ]
+)
 @Testcontainers
 class TestSecurityConfigurationTest (
     private val restTemplate: TestRestTemplate,
@@ -72,16 +78,16 @@ class TestSecurityConfigurationTest (
     }
 
     @Test
-    @DisplayName("Given test profile is active, when application context loads, then TestSecurityConfiguration is loaded")
+    @DisplayName("Given mockmvc-test profile is active, when application context loads, then MockMvcTestSecurityConfiguration is loaded")
     fun testSecurityConfigurationIsLoaded() {
-        // Given: Test profile is active
+        // Given: MockMVC test profile is active
         val activeProfiles = applicationContext.environment.activeProfiles
 
         // When: Application context is loaded
-        val hasTestProfile = activeProfiles.contains("test")
+        val hasMockMvcTestProfile = activeProfiles.contains("mockmvc-test")
 
-        // Then: TestSecurityConfiguration should be loaded
-        assertThat(hasTestProfile).isTrue()
+        // Then: MockMvcTestSecurityConfiguration should be loaded
+        assertThat(hasMockMvcTestProfile).isTrue()
         assertThat(userDetailsService).isNotNull()
         assertThat(passwordEncoder).isNotNull()
     }
@@ -89,8 +95,8 @@ class TestSecurityConfigurationTest (
     @Test
     @DisplayName("Given test user details service, when loading allowed user, then user is found")
     fun testUserDetailsServiceLoadsAllowedUser() {
-        // Given: Test user details service is configured
-        val expectedUsername = TestSecurityConfiguration.ALLOWED_EMAIL_1
+        // Given: MockMVC test user details service is configured
+        val expectedUsername = MockMvcTestSecurityConfiguration.ALLOWED_EMAIL_1
 
         // When: Loading allowed user
         val userDetails = userDetailsService.loadUserByUsername(expectedUsername)
@@ -105,8 +111,8 @@ class TestSecurityConfigurationTest (
     @Test
     @DisplayName("Given test user details service, when loading not allowed user, then user is found")
     fun testUserDetailsServiceLoadsNotAllowedUser() {
-        // Given: Test user details service is configured
-        val expectedUsername = TestSecurityConfiguration.NOT_ALLOWED_EMAIL
+        // Given: MockMVC test user details service is configured
+        val expectedUsername = MockMvcTestSecurityConfiguration.NOT_ALLOWED_EMAIL
 
         // When: Loading not allowed user
         val userDetails = userDetailsService.loadUserByUsername(expectedUsername)
@@ -122,7 +128,7 @@ class TestSecurityConfigurationTest (
     @DisplayName("Given password encoder, when encoding test password, then password is encoded correctly")
     fun testPasswordEncoderWorksCorrectly() {
         // Given: Password encoder is configured
-        val plainPassword = TestSecurityConfiguration.TEST_PASSWORD
+        val plainPassword = MockMvcTestSecurityConfiguration.TEST_PASSWORD
 
         // When: Encoding test password
         val encodedPassword = passwordEncoder.encode(plainPassword)
@@ -190,10 +196,10 @@ class TestSecurityConfigurationTest (
     fun testFormLoginWithValidCredentials() {
         // Given: Valid test user credentials
         val loginUrl = "$baseUrl/login"
-        val username = TestSecurityConfiguration.ALLOWED_EMAIL_1
-        val password = TestSecurityConfiguration.TEST_PASSWORD
+        val username = MockMvcTestSecurityConfiguration.ALLOWED_EMAIL_1
+        val password = MockMvcTestSecurityConfiguration.TEST_PASSWORD
 
-        // When: Submitting login form with valid credentials
+        // When: Submitting login form with valid credentials (CSRF disabled in mockmvc-test profile)
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("username", username)
         formData.add("password", password)
@@ -215,10 +221,10 @@ class TestSecurityConfigurationTest (
     fun testFormLoginWithInvalidCredentials() {
         // Given: Invalid test user credentials
         val loginUrl = "$baseUrl/login"
-        val username = TestSecurityConfiguration.ALLOWED_EMAIL_1
+        val username = MockMvcTestSecurityConfiguration.ALLOWED_EMAIL_1
         val password = "wrongpassword"
 
-        // When: Submitting login form with invalid credentials
+        // When: Submitting login form with invalid credentials (CSRF disabled in mockmvc-test profile)
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("username", username)
         formData.add("password", password)
@@ -241,9 +247,9 @@ class TestSecurityConfigurationTest (
         // Given: Non-existent user credentials
         val loginUrl = "$baseUrl/login"
         val username = "nonexistent@example.com"
-        val password = TestSecurityConfiguration.TEST_PASSWORD
+        val password = MockMvcTestSecurityConfiguration.TEST_PASSWORD
 
-        // When: Submitting login form with non-existent user
+        // When: Submitting login form with non-existent user (CSRF disabled in mockmvc-test profile)
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("username", username)
         formData.add("password", password)

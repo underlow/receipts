@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @ExtendWith(MockitoExtension::class)
 @WebMvcTest(FileUploadController::class)
 @Import(SecurityConfiguration::class, TestSecurityConfiguration::class)
-@ActiveProfiles("test")
+@ActiveProfiles("mockmvc-test")
 class FileUploadControllerTest {
 
     @Autowired

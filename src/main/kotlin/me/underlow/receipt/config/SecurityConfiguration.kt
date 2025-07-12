@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain
  */
 @Configuration
 @EnableWebSecurity
-@Profile("!test")
+@Profile("!test & !mockmvc-test & !e2e-test")
 class SecurityConfiguration(
     private val customOAuth2UserService: CustomOAuth2UserService,
     private val customAuthenticationSuccessHandler: CustomAuthenticationSuccessHandler,

@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
@@ -29,6 +30,7 @@ import java.time.LocalDateTime
  * Tests all REST endpoints with proper authentication, validation, and error handling.
  */
 @WebMvcTest(ServiceProviderController::class)
+@ActiveProfiles("mockmvc-test")
 class ServiceProviderControllerTest {
 
     @Autowired
