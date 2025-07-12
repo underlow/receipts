@@ -271,14 +271,8 @@ class ServicesE2ETest : BaseE2ETest() {
         // When: User fills form and avatar section is displayed
         serviceProviderFormPage.fillForm(name = "Provider with Avatar")
 
-        // Then: Avatar upload controls should be available
+        // Then: Avatar fallback should be displayed (no upload button)
         serviceProviderFormPage.shouldHaveAvatarFallback()
-
-        // When: User clicks upload avatar button
-        serviceProviderFormPage.clickUploadAvatar()
-
-        // Then: Avatar upload functionality should be triggered
-        // Note: Actual file upload testing would require additional setup
     }
 
     @Test

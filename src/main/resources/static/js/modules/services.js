@@ -143,14 +143,9 @@ class ServicesModule {
                             <label class="form-label">Avatar</label>
                             <div class="avatar-upload-section">
                                 ${this.selectedServiceProvider.avatar ? 
-                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;">` :
-                                    `<div data-test-id="avatar-preview" id="avatarPreview" onclick="uploadAvatar()" style="cursor: pointer;"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
+                                    `<img src="/attachments/avatars/${this.selectedServiceProvider.avatar}" alt="Avatar" class="avatar-preview" data-test-id="avatar-preview" id="avatarPreview">` :
+                                    `<div data-test-id="avatar-preview" id="avatarPreview"><div class="avatar-preview-fallback avatar-fallback">${this.selectedServiceProvider.name ? this.selectedServiceProvider.name.substring(0, 1).toUpperCase() : 'SP'}</div></div>`
                                 }
-                                <div class="avatar-upload-controls">
-                                    <button type="button" class="btn-upload" data-test-id="upload-avatar-button" onclick="uploadAvatar()">
-                                        <i class="fas fa-upload me-1"></i> Upload Avatar
-                                    </button>
-                                </div>
                             </div>
                         </div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
