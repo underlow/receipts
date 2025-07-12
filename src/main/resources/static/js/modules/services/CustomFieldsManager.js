@@ -3,7 +3,7 @@
  * Provides methods to render, parse, and manipulate custom fields
  */
 class CustomFieldsManager {
-    
+
     /**
      * Render custom fields as HTML
      * @param {Object} customFields - The custom fields object
@@ -59,11 +59,14 @@ class CustomFieldsManager {
             customFields = {};
         }
 
+        // Parse customFields if it's a string, otherwise use as-is
+        const newFields = this.parseCustomFields(customFields);
+
         // Add empty field that user can fill in
         const fieldKey = '';
-        customFields[fieldKey] = '';
+        newFields[fieldKey] = '';
 
-        return customFields;
+        return newFields;
     }
 
     /**
