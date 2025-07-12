@@ -130,6 +130,7 @@ class ServicesModule {
 
         const formHtml = `
             <form class="service-provider-form" data-test-id="service-provider-form" onsubmit="saveServiceProvider(event)" style="gap: 1rem;">
+                <h2 class="form-title" data-test-id="form-title">${isNewProvider ? 'Create Service Provider' : 'Edit Service Provider'}</h2>
                 <!-- Avatar and Name Section -->
                 <div class="form-group">
                     <div style="display: flex; gap: 20px;">
@@ -199,13 +200,20 @@ class ServicesModule {
                 </div>
 
                 <!-- Form Actions -->
-                <div class="form-actions" style="justify-content: flex-end;">
-                    <button type="button" class="btn-cancel" data-test-id="cancel-button" onclick="cancelEdit()">
-                        <i class="fas fa-times me-1"></i> Cancel
-                    </button>
-                    <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton">
-                        <i class="fas fa-save me-1"></i> Save
-                    </button>
+                <div class="form-actions" style="justify-content: ${isNewProvider ? 'flex-end' : 'space-between'};">
+                    ${!isNewProvider ? `
+                        <button type="button" class="btn-delete" data-test-id="delete-button" onclick="deleteServiceProvider()">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    ` : ''}
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-cancel" data-test-id="cancel-button" onclick="cancelEdit()">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn-save" data-test-id="save-button" id="saveButton">
+                            <i class="fas fa-save me-1"></i> Save
+                        </button>
+                    </div>
                 </div>
             </form>
         `;
