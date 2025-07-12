@@ -21,7 +21,7 @@ class AvatarUploadPage {
     private val fileInput: SelenideElement get() = `$`("[data-test-id='avatar-file-input']")
     
     // Image display and manipulation elements
-    private val cropperImage: SelenideElement get() = `$`("[data-test-id='avatar-cropper-image']")
+    private val cropperImage: SelenideElement get() = `$`("[data-test-id='avatar-preview-image']")
     private val imagePreview: SelenideElement get() = `$`("[data-test-id='avatar-image-preview']")
     private val previewImage: SelenideElement get() = `$`("[data-test-id='avatar-preview-image']")
     private val previewPlaceholder: SelenideElement get() = `$`("[data-test-id='avatar-preview-placeholder']")

@@ -18,7 +18,7 @@
                         <div class="col-12">
                             <div id="avatarImagePreview" class="avatar-image-preview mb-3 position-relative" data-test-id="avatar-image-preview"
                                  style="height: 300px; border: 2px dashed #ddd; display: flex; justify-content: center; align-items: center; background-color: #f8f9fa;">
-                                <img id="avatarCropperImage" data-test-id="avatar-cropper-image" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;" alt="Avatar preview">
+                                <img id="avatarCropperImage" data-test-id="avatar-preview-image" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;" alt="Avatar preview">
                                 <div id="avatarImageControls" class="position-absolute" style="bottom: 10px; right: 10px; display: none;">
                                     <button type="button" class="btn btn-sm btn-outline-light me-2" id="avatarCropButton" data-test-id="avatar-crop-button">
                                         <i class="fas fa-crop"></i> Crop
@@ -43,7 +43,7 @@
                     <!-- Progress Bar -->
                     <div id="avatarProgressContainer" class="mb-3" data-test-id="avatar-progress-container" style="display: none;">
                         <div class="progress">
-                            <div id="avatarProgressBar" class="progress-bar" role="progressbar" 
+                            <div id="avatarProgressBar" class="progress-bar" role="progressbar"
                                  style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                                 <span id="avatarProgressText">0%</span>
                             </div>
@@ -79,7 +79,7 @@
                             <i class="fas fa-folder-open me-2"></i>Select Avatar Image
                         </button>
                     </div>
-                    
+
 
                     <!-- Success Alert -->
                     <div id="avatarSuccessAlert" class="alert alert-success d-none" data-test-id="avatar-success-alert" role="alert">
