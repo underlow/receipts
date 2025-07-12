@@ -9,6 +9,9 @@ class ServicesModule {
         this.serviceProviders = [];
         this.selectedServiceProvider = null;
         this.isEditingServiceProvider = false;
+        // Initialize AlertManager and API
+        this.alertManager = new AlertManager();
+        this.serviceProviderAPI = new ServiceProviderAPI(this.alertManager);
     }
 
     /**
@@ -35,13 +38,7 @@ class ServicesModule {
      * Load services data from the API
      */
     loadServicesData() {
-        fetch('/api/service-providers')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load service providers');
-                }
-                return response.json();
-            })
+        this.serviceProviderAPI.fetchServiceProviders()
             .then(data => {
                 this.serviceProviders = data;
                 this.renderServiceProviderList();
@@ -411,72 +408,27 @@ class ServicesModule {
         }
 
         const isNewProvider = this.selectedServiceProvider ? this.selectedServiceProvider.id === null : true;
-        const url = isNewProvider ? '/api/service-providers' : `/api/service-providers/${this.selectedServiceProvider.id}`;
-        const method = isNewProvider ? 'POST' : 'PUT';
-
 
         const saveButton = document.getElementById('saveButton');
         if (saveButton) {
             saveButton.disabled = true;
         }
 
-        // Check for CSRF token
-        const csrfMeta = document.querySelector('meta[name="_csrf"]');
-        if (!csrfMeta) {
-            console.error('CSRF token meta tag not found');
-            this.showErrorMessage('Security token not found. Please refresh the page.');
-            if (saveButton) saveButton.disabled = false;
-            return;
-        }
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfMeta.getAttribute('content')
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.error('Server error response:', text);
-                    let errorMessage = 'Failed to save service provider';
-                    try {
-                        const errorData = JSON.parse(text);
-                        if (errorData.message) {
-                            errorMessage = errorData.message;
-                        }
-                    } catch (e) {
-                        // If not JSON, use the text as error message if it's reasonable length
-                        if (text && text.length < 200) {
-                            errorMessage = text;
-                        }
-                    }
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
-        .then(response => {
-            // Handle both direct ServiceProvider and ServiceProviderResponse formats
-            const data = response.data ? response.data : response;
-            this.selectedServiceProvider = data;
-
-            this.loadServicesData(); // Reload the list
-            this.showSuccessMessage(isNewProvider ? 'Service provider created successfully' : 'Service provider updated successfully');
-            return Promise.resolve();
-        })
-        .catch(error => {
-            console.error('Error saving service provider:', error);
-            this.showErrorMessage(error.message || 'Failed to save service provider. Please try again.');
-        })
-        .finally(() => {
-            const saveButton = document.getElementById('saveButton');
-            if (saveButton) {
-                saveButton.disabled = false;
-            }
-        });
+        this.serviceProviderAPI.saveServiceProvider(formData, isNewProvider, this.selectedServiceProvider.id)
+            .then(data => {
+                this.selectedServiceProvider = data;
+                this.loadServicesData(); // Reload the list
+                return Promise.resolve();
+            })
+            .catch(error => {
+                console.error('Error saving service provider:', error);
+            })
+            .finally(() => {
+                const saveButton = document.getElementById('saveButton');
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+            });
     }
 
     /**
@@ -486,34 +438,13 @@ class ServicesModule {
      * @returns {Promise} Promise that resolves when state is changed
      */
     changeServiceProviderState(id, state) {
-        const csrfMeta = document.querySelector('meta[name="_csrf"]');
-        if (!csrfMeta) {
-            return Promise.reject(new Error('CSRF token not found'));
-        }
-
-        return fetch(`/api/service-providers/${id}/state`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfMeta.getAttribute('content')
-            },
-            body: JSON.stringify({ state: state })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(text || 'Failed to change service provider state');
-                });
-            }
-            return response.json();
-        })
-        .then(response => {
-            const data = response.data ? response.data : response;
-            if (this.selectedServiceProvider) {
-                this.selectedServiceProvider.state = state;
-            }
-            return data;
-        });
+        return this.serviceProviderAPI.changeServiceProviderState(id, state)
+            .then(data => {
+                if (this.selectedServiceProvider) {
+                    this.selectedServiceProvider.state = state;
+                }
+                return data;
+            });
     }
 
     /**
@@ -537,25 +468,15 @@ class ServicesModule {
         if (!this.selectedServiceProvider || this.selectedServiceProvider.id === null) return;
 
         if (confirm('Are you sure you want to delete this service provider? This action cannot be undone.')) {
-            fetch(`/api/service-providers/${this.selectedServiceProvider.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to delete service provider');
-                }
-                this.selectedServiceProvider = null;
-                this.loadServicesData(); // Reload the list
-                this.renderServiceProviderForm();
-                this.showSuccessMessage('Service provider deleted successfully');
-            })
-            .catch(error => {
-                console.error('Error deleting service provider:', error);
-                this.showErrorMessage('Failed to delete service provider. Please try again.');
-            });
+            this.serviceProviderAPI.deleteServiceProvider(this.selectedServiceProvider.id)
+                .then(() => {
+                    this.selectedServiceProvider = null;
+                    this.loadServicesData(); // Reload the list
+                    this.renderServiceProviderForm();
+                })
+                .catch(error => {
+                    console.error('Error deleting service provider:', error);
+                });
         }
     }
 
@@ -696,57 +617,6 @@ class ServicesModule {
         }
     }
 
-    /**
-     * Show success message
-     * @param {string} message - The success message to display
-     */
-    showSuccessMessage(message) {
-        const alertHtml = `
-            <div class="alert alert-success alert-dismissible fade show" role="alert" data-test-id="success-message">
-                <i class="fas fa-check-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        this.showAlert(alertHtml);
-    }
-
-    /**
-     * Show error message
-     * @param {string} message - The error message to display
-     */
-    showErrorMessage(message) {
-        const alertHtml = `
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        this.showAlert(alertHtml);
-    }
-
-    /**
-     * Show alert
-     * @param {string} alertHtml - The alert HTML to display
-     */
-    showAlert(alertHtml) {
-        const alertContainer = document.createElement('div');
-        alertContainer.innerHTML = alertHtml;
-
-        const dashboardLayout = document.querySelector('.dashboard-layout');
-        if (dashboardLayout) {
-            dashboardLayout.insertBefore(alertContainer.firstElementChild, dashboardLayout.firstElementChild);
-        }
-
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-            const alert = document.querySelector('.alert');
-            if (alert) {
-                alert.remove();
-            }
-        }, 5000);
-    }
 }
 
 // Create global services module instance
