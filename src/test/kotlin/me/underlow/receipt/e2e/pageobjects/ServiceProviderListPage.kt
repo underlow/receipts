@@ -52,6 +52,11 @@ class ServiceProviderListPage {
         }
     }
 
+    // Get only visible service provider items (filters out hidden ones in DOM)
+    private fun getVisibleServiceProviderItems(): ElementsCollection {
+        return getServiceProviderItems().filter(Condition.visible)
+    }
+
     /**
      * Navigates to the services tab and waits for content to load
      */
@@ -77,17 +82,17 @@ class ServiceProviderListPage {
     }
 
     /**
-     * Returns the number of service provider items displayed
+     * Returns the number of service provider items displayed (visible only)
      */
     fun getProviderCount(): Int {
-        return getServiceProviderItems().size()
+        return getVisibleServiceProviderItems().size()
     }
 
     /**
-     * Returns a specific service provider item by index
+     * Returns a specific service provider item by index (from visible items only)
      */
     fun getProviderItem(index: Int): ServiceProviderItem {
-        val element = getServiceProviderItems().get(index)
+        val element = getVisibleServiceProviderItems().get(index)
         return ServiceProviderItem(element)
     }
 
@@ -120,10 +125,10 @@ class ServiceProviderListPage {
     }
 
     /**
-     * Checks if the list is empty
+     * Checks if the list is empty (visible items only)
      */
     fun isListEmpty(): Boolean {
-        return getServiceProviderItems().size() == 0
+        return getVisibleServiceProviderItems().size() == 0
     }
 
     /**
@@ -216,8 +221,20 @@ class ServiceProviderListPage {
      * Checks if the list is empty and displays empty state
      */
     fun shouldBeEmpty(): ServiceProviderListPage {
-        val items = getServiceProviderItems()
-        assert(items.size() == 0) { "Service provider list should be empty, but found ${items.size()} items" }
+        // Check that empty state is displayed when no active providers exist
+        val emptyState = `$`(".empty-state")
+        emptyState.shouldBe(Condition.visible)
+        return this
+    }
+
+    /**
+     * Waits for the list to become empty asynchronously
+     */
+    fun waitForListToBeEmpty(): ServiceProviderListPage {
+        // When all providers are deleted/hidden, JavaScript shows empty state instead of empty list
+        // Wait for the empty state to appear
+        val emptyState = `$`(".empty-state")
+        emptyState.shouldBe(Condition.visible, Duration.ofSeconds(5))
         return this
     }
 

@@ -66,7 +66,10 @@ class ServicesModule {
     renderServiceProviderList() {
         const listContainer = document.getElementById('serviceProviderList');
         
-        if (this.serviceProviders.length === 0) {
+        // Filter out HIDDEN providers - they should not appear in the list at all
+        const activeProviders = this.serviceProviders.filter(provider => provider.state === 'ACTIVE');
+        
+        if (activeProviders.length === 0) {
             listContainer.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-building empty-state-icon"></i>
@@ -76,11 +79,11 @@ class ServicesModule {
             `;
             return;
         }
-
+        
         const listHtml = `
             <ul class="service-provider-list">
-                ${this.serviceProviders.map(provider => `
-                    <li class="service-provider-item ${provider.state === 'HIDDEN' ? 'hidden' : ''} ${this.selectedServiceProvider && this.selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
+                ${activeProviders.map(provider => `
+                    <li class="service-provider-item ${this.selectedServiceProvider && this.selectedServiceProvider.id === provider.id ? 'selected' : ''}" 
                         onclick="selectServiceProvider(${provider.id})">
                         ${provider.avatar ? 
                             `<img src="/attachments/avatars/${provider.avatar}" alt="${provider.name}" class="service-provider-avatar">` :
@@ -88,7 +91,7 @@ class ServicesModule {
                         }
                         <div class="service-provider-info">
                             <h4 class="service-provider-name">${provider.name}</h4>
-                            <p class="service-provider-state">${provider.state === 'ACTIVE' ? 'Active' : 'Hidden'}</p>
+                            <p class="service-provider-state">Active</p>
                         </div>
                     </li>
                 `).join('')}

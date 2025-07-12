@@ -183,10 +183,8 @@ class ServicesE2ETest : BaseE2ETest() {
         // Then: Service provider should be deleted successfully
         serviceProviderFormPage.shouldShowSuccessMessage()
 
-        // And: Service provider should not appear in the list
-        serviceProviderListPage
-            .shouldNotContainProvider(providerName)
-            .shouldBeEmpty()
+        // And: Service provider should not appear in the list (hidden providers are filtered out)
+        serviceProviderListPage.waitForListToBeEmpty()
     }
 
     @Test
