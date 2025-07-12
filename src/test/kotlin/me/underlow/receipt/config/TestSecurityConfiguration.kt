@@ -85,9 +85,7 @@ class TestSecurityConfiguration {
                     .deleteCookies("JSESSIONID")
                     .permitAll()
             }
-            .csrf { csrf ->
-                csrf.disable() // Disable CSRF for E2E testing simplicity
-            }
+            // Keep CSRF enabled with default configuration (same as production)
 
         return http.build()
     }
